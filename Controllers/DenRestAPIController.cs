@@ -13,28 +13,12 @@ namespace WaykDen.Controllers
 {
     public class DenRestAPIController
     {
-        private const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
-        public string Path {get; set;} = string.Empty;
-        public DenConfig DenConfig {get;}
-        public DenRestAPIController(string path)
+        private string apiKey;
+        private string serverUrl;
+        public DenRestAPIController(string apikey, string serverUrl)
         {
-            this.Path = Environment.GetEnvironmentVariable(WAYK_DEN_HOME);
-            if(string.IsNullOrEmpty(this.Path))
-            {
-                this.Path = path;
-            }
-
-            this.Path = this.Path.EndsWith($"{System.IO.Path.DirectorySeparatorChar}") ? this.Path : $"{this.Path}{System.IO.Path.DirectorySeparatorChar}";
-            try
-            {
-                DenConfigController denConfigController = new DenConfigController(this.Path);
-                this.DenConfig = denConfigController.GetConfig();
-                
-            }
-            catch(Exception e)
-            {
-                if(this.OnError != null) this.OnError(e);
-            }
+            this.apiKey = apikey;
+            this.serverUrl = serverUrl;
         }
 
         private async Task<string> Get(string url)
@@ -43,7 +27,7 @@ namespace WaykDen.Controllers
             {
                 using (var request = new HttpRequestMessage(new HttpMethod("GET"), url))
                 {
-                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", this.DenConfig.DenServerConfigObject.ApiKey);
+                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", this.apiKey);
                     var response = await httpClient.SendAsync(request);
                     return await response.Content.ReadAsStringAsync();
                 }
@@ -54,7 +38,7 @@ namespace WaykDen.Controllers
         {
             var request = HttpWebRequest.Create(url);
             request.PreAuthenticate = true;
-            request.Headers.Add("Authorization", "Bearer " + this.DenConfig.DenServerConfigObject.ApiKey);
+            request.Headers.Add("Authorization", "Bearer " + this.apiKey);
             request.ContentType = "application/json";
             request.Method = "POST";
 
@@ -84,7 +68,7 @@ namespace WaykDen.Controllers
         {
             var request = HttpWebRequest.Create(url);
             request.PreAuthenticate = true;
-            request.Headers.Add("Authorization", "Bearer " + this.DenConfig.DenServerConfigObject.ApiKey);
+            request.Headers.Add("Authorization", "Bearer " + this.apiKey);
             request.ContentType = "application/json";
             request.Method = "PUT";
 
@@ -116,7 +100,7 @@ namespace WaykDen.Controllers
             {
                 using (var request = new HttpRequestMessage(new HttpMethod("DELETE"), url))
                 {
-                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", this.DenConfig.DenServerConfigObject.ApiKey);
+                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", this.apiKey);
                     var response = await httpClient.DeleteAsync(url);
                     return await response.Content.ReadAsStringAsync();
                 }
@@ -125,52 +109,52 @@ namespace WaykDen.Controllers
 
         public async Task<string> GetSessions(string parameter = null)
         {
-            return await this.Get($"{this.DenConfig.DenServerConfigObject.ExternalUrl}/session{parameter}");
+            return await this.Get($"{this.serverUrl}/session{parameter}");
         }
 
         public async Task<string> GetUsers(string parameter = null)
         {
-            return await this.Get($"{this.DenConfig.DenServerConfigObject.ExternalUrl}/user{parameter}");
+            return await this.Get($"{this.serverUrl}/user{parameter}");
         }
 
         public async Task<string> GetLicenses(string parameter = null)
         {
-            return await this.Get($"{this.DenConfig.DenServerConfigObject.ExternalUrl}/license{parameter}");
+            return await this.Get($"{this.serverUrl}/license{parameter}");
         }
 
         public async Task<string> GetConnections(string parameter = null)
         {
-            return await this.Get($"{this.DenConfig.DenServerConfigObject.ExternalUrl}/connection{parameter}");
+            return await this.Get($"{this.serverUrl}/connection{parameter}");
         }
 
         public string PostLicense(string parameter = null, string content = null)
         {
-            return this.Post($"{this.DenConfig.DenServerConfigObject.ExternalUrl}/license/{parameter}", content);
+            return this.Post($"{this.serverUrl}/license/{parameter}", content);
         }
 
         public string PostUser(string parameter = null, string content = null)
         {
-            return this.Post($"{this.DenConfig.DenServerConfigObject.ExternalUrl}/user/{parameter}", content);
+            return this.Post($"{this.serverUrl}/user/{parameter}", content);
         }
 
         public string PostSession(string parameter = null, string content = null)
         {
-            return this.Post($"{this.DenConfig.DenServerConfigObject.ExternalUrl}/session/{parameter}", content);
+            return this.Post($"{this.serverUrl}/session/{parameter}", content);
         }
 
         public string PutUser(string content, string parameter = null)
         {
-            return this.Put($"{this.DenConfig.DenServerConfigObject.ExternalUrl}/user{parameter}/license", content);
+            return this.Put($"{this.serverUrl}/user{parameter}/license", content);
         }
 
         public async Task<string> DeleteUserLicense(string parameter)
         {
-            return await this.Delete($"{this.DenConfig.DenServerConfigObject.ExternalUrl}/user/{parameter}/license");
+            return await this.Delete($"{this.serverUrl}/user/{parameter}/license");
         }
 
         public async Task<string> DeleteLicense(string parameter)
         {
-            return await this.Delete($"{this.DenConfig.DenServerConfigObject.ExternalUrl}/license/{parameter}");
+            return await this.Delete($"{this.serverUrl}/license/{parameter}");
         }
 
         public T DeserializeString<T>(string json)

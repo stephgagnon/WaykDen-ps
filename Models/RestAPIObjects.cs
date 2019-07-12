@@ -7,7 +7,6 @@ namespace WaykDen.Models
 {
     public class SessionObject
     {
-        public string ID {get; set;}
         public string SessionID {get; set;}
         public string ClientDenID {get; set;}
         public string ServerDenID {get; set;}

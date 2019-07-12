@@ -7,7 +7,7 @@ using WaykDen.Models;
 namespace WaykDen.Cmdlets
 {
     [Cmdlet(VerbsCommon.Set, "WaykDenUserLicense"), CmdletBinding(DefaultParameterSetName="ByUserID")]
-    public class SetWaykDenUserLicense : baseCmdlet
+    public class SetWaykDenUserLicense : RestApiCmdlet
     {
         [Parameter(Mandatory = true, ParameterSetName = "ByUserID", HelpMessage = "ID of a user.")]
         public string UserID {get; set;}
@@ -18,21 +18,14 @@ namespace WaykDen.Cmdlets
         public string Serial {get; set;}
         [Parameter(ParameterSetName = "ByUserID", HelpMessage = "ID of a license.")]
         public string LicenseID {get; set;}
-        public SetWaykDenUserLicense()
-        {
-        }
-
         protected override void ProcessRecord()
         {
-            DenRestAPIController denRestAPIController = new DenRestAPIController(this.SessionState.Path.CurrentLocation.Path);
-            denRestAPIController.OnError += this.OnError;
-
             string data = string.Empty;
 
             if(this.ParameterSetName == "ByUsernameLicense")
             {
                 data = JsonConvert.SerializeObject(new ByUsernameLicenseObject{username = this.Username, serial_number = this.Serial});
-                denRestAPIController.PutUser(data);
+                this.DenRestAPIController.PutUser(data);
             }
             else
             {
@@ -45,7 +38,7 @@ namespace WaykDen.Cmdlets
                     data = JsonConvert.SerializeObject(new BySerialObject{serial_number = this.Serial});
                 } else return;
 
-                denRestAPIController.PutUser(data, $"/{this.UserID}");
+                this.DenRestAPIController.PutUser(data, $"/{this.UserID}");
             }
         }
     }

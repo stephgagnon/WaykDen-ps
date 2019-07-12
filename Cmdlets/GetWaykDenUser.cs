@@ -12,7 +12,7 @@ namespace WaykDen.Cmdlets
     {
         typeof(UserObject)
     })]
-    public class GetWaykDenUser : baseCmdlet
+    public class GetWaykDenUser : RestApiCmdlet
     {
         private enum UserGetOption
         {
@@ -24,15 +24,8 @@ namespace WaykDen.Cmdlets
         public string Username {get; set;}
         [Parameter(HelpMessage = "User ID.")]
         public string ID {get; set;}
-        
-        public GetWaykDenUser()
-        {
-        }
-
         protected async override void ProcessRecord()
         {
-            DenRestAPIController denRestAPIController = new DenRestAPIController(this.SessionState.Path.CurrentLocation.Path);
-            denRestAPIController.OnError += this.OnError;
             string parameter = null;
             
             if(!string.IsNullOrEmpty(this.ID))
@@ -44,14 +37,14 @@ namespace WaykDen.Cmdlets
                 parameter = this.ParameterBuilder(UserGetOption.ByUsername);
             }
 
-            Task<string> usersString = denRestAPIController.GetUsers(parameter);
+            Task<string> usersString = this.DenRestAPIController.GetUsers(parameter);
             usersString.Wait();
 
             string res = await usersString;
 
             if(res.StartsWith('['))
             {
-                var users = denRestAPIController.DeserializeString<User[]>(res);
+                var users = this.DenRestAPIController.DeserializeString<User[]>(res);
                 
                 foreach(User user in users)
                 {
@@ -60,7 +53,7 @@ namespace WaykDen.Cmdlets
             }
             else
             {
-                var user = denRestAPIController.DeserializeString<User>(res);
+                var user = this.DenRestAPIController.DeserializeString<User>(res);
                 this.WriteObject(user?.ToUserObject());
             }
         }

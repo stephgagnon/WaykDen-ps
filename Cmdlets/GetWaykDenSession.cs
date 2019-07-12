@@ -11,7 +11,7 @@ using WaykDen.Utils;
 namespace WaykDen.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "WaykDenSession")]
-    public class GetWaykDenSession : baseCmdlet
+    public class GetWaykDenSession : RestApiCmdlet
     {
         private enum SessionsGetOptions
         {
@@ -26,9 +26,6 @@ namespace WaykDen.Cmdlets
         public SwitchParameter InProgress {get; set;} = false;
         [Parameter(HelpMessage = "List all terminated sessions.")]
         public SwitchParameter Terminated {get; set;} = false;
-        public GetWaykDenSession()
-        {   
-        }
 
         protected async override void ProcessRecord()
         {
@@ -45,19 +42,16 @@ namespace WaykDen.Cmdlets
                     parameter = this.ParameterBuilder(SessionsGetOptions.ByState);
                 }
 
-                DenRestAPIController denRestAPIController = new DenRestAPIController(this.SessionState.Path.CurrentLocation.Path);
-                denRestAPIController.OnError += this.OnError;
-
                 try
                 {
-                    Task<string> sessionsString = denRestAPIController.GetSessions(parameter);
+                    Task<string> sessionsString = this.DenRestAPIController.GetSessions(parameter);
                     sessionsString.Wait();
                     
                     string res = await sessionsString;
 
                     if(res.StartsWith('['))
                     {
-                        var sessions = denRestAPIController.DeserializeString<Session[]>(res);
+                        var sessions = this.DenRestAPIController.DeserializeString<Session[]>(res);
                         
                         foreach(Session session in sessions)
                         {
@@ -66,7 +60,7 @@ namespace WaykDen.Cmdlets
                     }
                     else
                     {
-                        var session = denRestAPIController.DeserializeString<Session>(res);
+                        var session = this.DenRestAPIController.DeserializeString<Session>(res);
                         this.WriteObject(session?.ToSessionObject());
                     }
                 }

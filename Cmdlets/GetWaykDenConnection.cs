@@ -7,7 +7,7 @@ using WaykDen.Models;
 namespace WaykDen.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "WaykDenConnection")]
-    public class GetWaykDenConnection : baseCmdlet
+    public class GetWaykDenConnection : RestApiCmdlet
     {
         private enum ConnectionGetOptions
         {
@@ -18,9 +18,6 @@ namespace WaykDen.Cmdlets
         public string ID {get; set;} = string.Empty;
         [Parameter(HelpMessage = "List all offline connections")]
         public SwitchParameter Offline = false;
-        public GetWaykDenConnection()
-        {
-        }
 
         protected async override void ProcessRecord()
         {
@@ -37,17 +34,14 @@ namespace WaykDen.Cmdlets
                     parameter = this.ParameterBuilder(ConnectionGetOptions.ByState);
                 }
 
-                DenRestAPIController denRestAPIController = new DenRestAPIController(this.SessionState.Path.CurrentLocation.Path);
-                denRestAPIController.OnError += this.OnError;
-
-                Task<string> connectionsString = denRestAPIController.GetConnections(parameter);
+                Task<string> connectionsString = this.DenRestAPIController.GetConnections(parameter);
                 connectionsString.Wait();
 
                 string res = await connectionsString;
 
                 if(res.StartsWith('['))
                 {
-                    var connections = denRestAPIController.DeserializeString<Connection[]>(res);
+                    var connections = this.DenRestAPIController.DeserializeString<Connection[]>(res);
                     
                     foreach(Connection connection in connections)
                     {
@@ -56,7 +50,7 @@ namespace WaykDen.Cmdlets
                 }
                 else
                 {
-                    var connection = denRestAPIController.DeserializeString<Connection>(res);
+                    var connection = this.DenRestAPIController.DeserializeString<Connection>(res);
                     this.WriteObject(connection?.ToConnectionObject());
                 }
             }

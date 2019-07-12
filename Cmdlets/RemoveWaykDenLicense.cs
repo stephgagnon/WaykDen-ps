@@ -8,21 +8,13 @@ using WaykDen.Models;
 namespace WaykDen.Cmdlets
 {
     [Cmdlet(VerbsCommon.Remove, "WaykDenLicense")]
-    public class RemoveWaykDenLicense : baseCmdlet
+    public class RemoveWaykDenLicense : RestApiCmdlet
     {
-        private DenRestAPIController denRestAPIController {get; set;}
         [Parameter(Mandatory = true, HelpMessage = "ID of a WaykDen license.")]
         public string LicenseID {get; set;}
-        
-        public RemoveWaykDenLicense()
-        {
-        }
-
         protected async override void ProcessRecord()
         {
-            DenRestAPIController denRestAPIController = new DenRestAPIController(this.SessionState.Path.CurrentLocation.Path);
-            denRestAPIController.OnError += this.OnError;
-            await denRestAPIController.DeleteLicense(this.LicenseID);
+            await this.DenRestAPIController.DeleteLicense(this.LicenseID);
         }
     }
 }
