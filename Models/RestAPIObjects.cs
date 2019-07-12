@@ -3,7 +3,7 @@ using Newtonsoft.Json.Bson;
 using System;
 using System.Management.Automation;
 
-namespace WaykPS.RestAPI
+namespace WaykDen.Models
 {
     public class SessionObject
     {

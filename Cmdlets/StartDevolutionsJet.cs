@@ -1,9 +1,9 @@
 using System;
 using System.Threading;
 using System.Management.Automation;
-using WaykPS.Controllers;
+using WaykDen.Controllers;
 
-namespace WaykPS.Cmdlets
+namespace WaykDen.Cmdlets
 {
     [Cmdlet("Start", "DevolutionsJet")]
     public class StartDevolutionsJet : baseCmdlet

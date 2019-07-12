@@ -1,10 +1,10 @@
 using System;
 using System.IO;
 using System.Management.Automation;
-using WaykPS.Controllers;
-using WaykPS.Config;
+using WaykDen.Controllers;
+using WaykDen.Models;
 
-namespace WaykPS.Cmdlets
+namespace WaykDen.Cmdlets
 {
     [Cmdlet(VerbsCommon.Set, "WaykDenWebCertificate")]
     public class SetWaykDenWebCertificate : baseCmdlet
@@ -26,21 +26,28 @@ namespace WaykPS.Cmdlets
 
         protected override void ProcessRecord()
         {
-            this.Path = Environment.GetEnvironmentVariable(WAYK_DEN_HOME);
-            if(string.IsNullOrEmpty(this.Path))
+            try
             {
-                this.Path = this.SessionState.Path.CurrentLocation.Path;
+                this.Path = Environment.GetEnvironmentVariable(WAYK_DEN_HOME);
+                if(string.IsNullOrEmpty(this.Path))
+                {
+                    this.Path = this.SessionState.Path.CurrentLocation.Path;
+                }
+
+                DenConfigController denConfigController = new DenConfigController(this.Path);
+                DenConfig config = denConfigController.GetConfig();
+
+                this.FolderPath = this.FolderPath.EndsWith($"{System.IO.Path.DirectorySeparatorChar}") ? this.FolderPath : $"{this.FolderPath}{System.IO.Path.DirectorySeparatorChar}";
+                this.Path = this.Path.EndsWith($"{System.IO.Path.DirectorySeparatorChar}") ? this.Path : $"{this.Path}{System.IO.Path.DirectorySeparatorChar}";
+
+                config.DenTraefikConfigObject.Certificate = File.ReadAllText($"{this.FolderPath}{this.CertificateFile}");
+                config.DenTraefikConfigObject.PrivateKey = File.ReadAllText($"{this.FolderPath}{this.PrivateKeyFile}");
+                denConfigController.StoreConfig(config);   
             }
-
-            DenConfigStore store = new DenConfigStore($"{this.Path}/WaykDen.db");
-            DenConfigs configs = store.GetConfig();
-
-            this.FolderPath = this.FolderPath.EndsWith($"{System.IO.Path.DirectorySeparatorChar}") ? this.FolderPath : $"{this.FolderPath}{System.IO.Path.DirectorySeparatorChar}";
-            this.Path = this.Path.EndsWith($"{System.IO.Path.DirectorySeparatorChar}") ? this.Path : $"{this.Path}{System.IO.Path.DirectorySeparatorChar}";
-
-            configs.DenTraefikConfigObject.Certificate = File.ReadAllText($"{this.FolderPath}{this.CertificateFile}");
-            configs.DenTraefikConfigObject.PrivateKey = File.ReadAllText($"{this.FolderPath}{this.PrivateKeyFile}");
-            store.StoreConfig(new DenConfig{DenConfigs = configs});
+            catch(Exception e)
+            {
+                this.OnError(e);
+            }
         }
     }
 }

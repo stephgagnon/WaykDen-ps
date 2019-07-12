@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Threading.Tasks;
-using WaykPS.Controllers;
-using WaykPS.RestAPI;
+using WaykDen.Controllers;
+using WaykDen.Models;
 
-namespace WaykPS.Cmdlets
+namespace WaykDen.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "WaykDenUser")]
     [OutputType(new Type[]
@@ -47,19 +47,21 @@ namespace WaykPS.Cmdlets
             Task<string> usersString = denRestAPIController.GetUsers(parameter);
             usersString.Wait();
 
-            if(string.IsNullOrEmpty(this.ID))
+            string res = await usersString;
+
+            if(res.StartsWith('['))
             {
-                var users = denRestAPIController.DeserializeString<User[]>(await usersString);
+                var users = denRestAPIController.DeserializeString<User[]>(res);
                 
                 foreach(User user in users)
                 {
                     this.WriteObject(user.ToUserObject(), true);
                 }
             }
-            else 
+            else
             {
-                var user = denRestAPIController.DeserializeString<User>(await usersString);
-                this.WriteObject(user?.ToUserObject(), true);
+                var user = denRestAPIController.DeserializeString<User>(res);
+                this.WriteObject(user?.ToUserObject());
             }
         }
 

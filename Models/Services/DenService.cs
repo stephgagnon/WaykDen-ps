@@ -7,10 +7,10 @@ using System.Management.Automation;
 using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
-using WaykPS.Cmdlets;
-using WaykPS.Controllers;
+using WaykDen.Cmdlets;
+using WaykDen.Controllers;
 
-namespace WaykPS.Services.MicroServices
+namespace WaykDen.Models.Services
 {
     public class DenService : PSCmdlet
     {

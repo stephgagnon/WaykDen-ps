@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Management.Automation;
-using WaykPS.Controllers;
+using System.Threading.Tasks;
+using WaykDen.Controllers;
 
-namespace WaykPS.Cmdlets
+namespace WaykDen.Cmdlets
 {
     [Cmdlet("Restart", "WaykDen")]
     public class RestartWaykDen : baseCmdlet
@@ -16,8 +17,10 @@ namespace WaykPS.Cmdlets
             this.denServicesController.OnLog += this.OnLog;
             this.denServicesController.OnError += this.OnError;
             List<string> runningContainers = await this.denServicesController.GetRunningContainer();
-            await this.denServicesController.StopWaykDen(runningContainers);
-            await this.denServicesController.StartWaykDen();
+            Task stop = this.denServicesController.StopWaykDen(runningContainers);
+            stop.Wait();
+            Task start = this.denServicesController.StartWaykDen();
+            start.Wait();
         }
     }
 }

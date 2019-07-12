@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Management.Automation;
 
-namespace WaykPS.Config
+namespace WaykDen.Models
 {
     public class DenObject
     {
@@ -82,17 +82,5 @@ namespace WaykPS.Config
     {
         public int Id {get; set;}
         public string DockerClientUri {get; set;}
-    }
-
-    public class DenConfigs
-    {
-        public DenMongoConfigObject DenMongoConfigObject {get; set;}
-        public DenPickyConfigObject DenPickyConfigObject {get; set;}
-        public DenLucidConfigObject DenLucidConfigObject {get; set;}
-        public DenRouterConfigObject DenRouterConfigObject {get; set;}
-        public DenServerConfigObject DenServerConfigObject {get; set;}
-        public DenTraefikConfigObject DenTraefikConfigObject {get; set;}
-        public DenImageConfigObject DenImageConfigObject {get; set;}
-        public DenDockerConfigObject DenDockerConfigObject {get; set;}
     }
 }

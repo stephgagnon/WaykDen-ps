@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Security.Cryptography;
 
-namespace WaykPS
+namespace WaykDen.Utils
 {
     public static class DenServiceUtils
     {

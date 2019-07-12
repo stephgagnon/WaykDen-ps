@@ -2,9 +2,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Management.Automation;
-using WaykPS.Controllers;
+using WaykDen.Controllers;
 
-namespace WaykPS.Cmdlets
+namespace WaykDen.Cmdlets
 {
     [Cmdlet("Start", "WaykDen")]
     public class StartWaykDen : baseCmdlet
@@ -15,18 +15,25 @@ namespace WaykPS.Cmdlets
         private ProgressRecord record;
         protected override void ProcessRecord()
         {
-            this.denServicesController = new DenServicesController(this.SessionState.Path.CurrentLocation.Path);
-            this.denServicesController.OnLog += this.OnLog;
-            this.denServicesController.OnError += this.OnError;
-            Task<bool> start = this.denServicesController.StartWaykDen();
-
-            while(!start.IsCompleted && !start.IsCanceled)
+            try
             {
-                mre.WaitOne();
-                lock(this.mutex)
+                this.denServicesController = new DenServicesController(this.SessionState.Path.CurrentLocation.Path);
+                this.denServicesController.OnLog += this.OnLog;
+                this.denServicesController.OnError += this.OnError;
+                Task<bool> start = this.denServicesController.StartWaykDen();
+
+                while(!start.IsCompleted && !start.IsCanceled)
                 {
-                    this.WriteProgress(this.record);
+                    mre.WaitOne();
+                    lock(this.mutex)
+                    {
+                        this.WriteProgress(this.record);
+                    }
                 }
+            }
+            catch(Exception e)
+            {
+                this.OnError(e);
             }
         }
 

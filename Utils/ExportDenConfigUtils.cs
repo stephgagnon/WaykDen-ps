@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Text;
-using WaykPS.Services.MicroServices;
+using WaykDen.Models.Services;
 
-namespace WaykPS.Config
+namespace WaykDen.Utils
 {
     public class ExportDenConfigUtils
     {

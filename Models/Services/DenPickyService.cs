@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Management.Automation;
-using WaykPS.Controllers;
+using WaykDen.Controllers;
 
-namespace WaykPS.Services.MicroServices
+namespace WaykDen.Models.Services
 {
     [Cmdlet("Start", "Picky")]
     public class DenPickyService : DenService

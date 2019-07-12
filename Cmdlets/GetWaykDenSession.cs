@@ -1,12 +1,14 @@
+using Newtonsoft.Json;
 using System;
 using System.Globalization;
 using System.Text;
 using System.Management.Automation;
 using System.Threading.Tasks;
-using WaykPS.Controllers;
-using WaykPS.RestAPI;
+using WaykDen.Controllers;
+using WaykDen.Models;
+using WaykDen.Utils;
 
-namespace WaykPS.Cmdlets
+namespace WaykDen.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "WaykDenSession")]
     public class GetWaykDenSession : baseCmdlet
@@ -50,14 +52,22 @@ namespace WaykPS.Cmdlets
                 {
                     Task<string> sessionsString = denRestAPIController.GetSessions(parameter);
                     sessionsString.Wait();
-
+                    
                     string res = await sessionsString;
 
-                    var sessions = denRestAPIController.DeserializeString<Session[]>(res);
-                        
-                    foreach(Session session in sessions)
+                    if(res.StartsWith('['))
                     {
-                        this.WriteObject(session.ToSessionObject(), true);
+                        var sessions = denRestAPIController.DeserializeString<Session[]>(res);
+                        
+                        foreach(Session session in sessions)
+                        {
+                            this.WriteObject(session.ToSessionObject(), true);
+                        }
+                    }
+                    else
+                    {
+                        var session = denRestAPIController.DeserializeString<Session>(res);
+                        this.WriteObject(session?.ToSessionObject());
                     }
                 }
                 catch(Exception e)

@@ -5,18 +5,16 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Web;
 using System.Threading.Tasks;
-using WaykPS.Config;
-using WaykPS.Cmdlets;
+using WaykDen.Models;
+using WaykDen.Utils;
 
-namespace WaykPS.Controllers
+namespace WaykDen.Controllers
 {
     public class DenRestAPIController
     {
         private const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
         public string Path {get; set;} = string.Empty;
-        private DenConfigStore store;
         public DenConfig DenConfig {get;}
         public DenRestAPIController(string path)
         {
@@ -29,8 +27,8 @@ namespace WaykPS.Controllers
             this.Path = this.Path.EndsWith($"{System.IO.Path.DirectorySeparatorChar}") ? this.Path : $"{this.Path}{System.IO.Path.DirectorySeparatorChar}";
             try
             {
-                this.store = new DenConfigStore($"{this.Path}WaykDen.db");
-                this.DenConfig = new DenConfig(){DenConfigs = this.store.GetConfig(), Path = this.Path};
+                DenConfigController denConfigController = new DenConfigController(this.Path);
+                this.DenConfig = denConfigController.GetConfig();
                 
             }
             catch(Exception e)
@@ -177,7 +175,7 @@ namespace WaykPS.Controllers
 
         public T DeserializeString<T>(string json)
         {
-            return JsonConvert.DeserializeObject<T>(json);
+            return (T)JsonConvert.DeserializeObject<T>(json);
         }
 
         public delegate void OnErrorHandler(Exception e);

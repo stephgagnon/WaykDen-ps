@@ -1,29 +1,26 @@
 ﻿using System;
 using System.IO;
 using System.Management.Automation;
-using WaykPS.Config;
+using WaykDen.Models;
+using WaykDen.Controllers;
 
-namespace WaykPS.Cmdlets
+namespace WaykDen.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "WaykDenConfig")]
-    public class DenConfig : baseCmdlet
+    public class GetWaykDenConfig : baseCmdlet
     {
         private const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
         private const string WORKING_DIRECTORY = "Working Directory";
         public string Path {get; set;}
-        public DenMongoConfigObject DenMongoConfigObject => this.DenConfigs.DenMongoConfigObject;
-        public DenPickyConfigObject DenPickyConfigObject => this.DenConfigs.DenPickyConfigObject;
-        public DenLucidConfigObject DenLucidConfigObject => this.DenConfigs.DenLucidConfigObject;
-        public DenRouterConfigObject DenRouterConfigObject => this.DenConfigs.DenRouterConfigObject;
-        public DenServerConfigObject DenServerConfigObject => this.DenConfigs.DenServerConfigObject;
-        public DenTraefikConfigObject DenTraefikConfigObject => this.DenConfigs.DenTraefikConfigObject;
-        public DenImageConfigObject DenImageConfigObject => this.DenConfigs.DenImageConfigObject;
-        public DenDockerConfigObject DenDockerConfigObject => this.DenConfigs.DenDockerConfigObject;
-        public DenConfigs DenConfigs {get; set;}
-
-        public DenConfig()
-        {
-        }
+        public DenMongoConfigObject DenMongoConfigObject => this.DenConfig.DenMongoConfigObject;
+        public DenPickyConfigObject DenPickyConfigObject => this.DenConfig.DenPickyConfigObject;
+        public DenLucidConfigObject DenLucidConfigObject => this.DenConfig.DenLucidConfigObject;
+        public DenRouterConfigObject DenRouterConfigObject => this.DenConfig.DenRouterConfigObject;
+        public DenServerConfigObject DenServerConfigObject => this.DenConfig.DenServerConfigObject;
+        public DenTraefikConfigObject DenTraefikConfigObject => this.DenConfig.DenTraefikConfigObject;
+        public DenImageConfigObject DenImageConfigObject => this.DenConfig.DenImageConfigObject;
+        public DenDockerConfigObject DenDockerConfigObject => this.DenConfig.DenDockerConfigObject;
+        public DenConfig DenConfig {get; set;}
 
         protected override void ProcessRecord()
         {
@@ -35,11 +32,10 @@ namespace WaykPS.Cmdlets
 
             try
             {
-                this.Path = this.Path.EndsWith($"{System.IO.Path.DirectorySeparatorChar}") ? $"{this.Path}WaykDen.db" : $"{this.Path}{System.IO.Path.DirectorySeparatorChar}WaykDen.db";
-                if(File.Exists(this.Path))
+                DenConfigController denConfigController = new DenConfigController(this.Path);
+                if(denConfigController.DbExists)
                 {
-                    DenConfigStore store = new DenConfigStore($"{this.Path}");
-                    this.DenConfigs = store.GetConfig();
+                    this.DenConfig = denConfigController.GetConfig();
                 }
             }
             catch(Exception e)

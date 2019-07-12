@@ -1,6 +1,6 @@
-using WaykPS.Controllers;
+using WaykDen.Controllers;
 
-namespace WaykPS.Services.MicroServices
+namespace WaykDen.Models.Services
 {
     public class DenLucidService : DenService
     {

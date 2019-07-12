@@ -1,10 +1,10 @@
 using System;
 using System.Management.Automation;
 using System.Threading.Tasks;
-using WaykPS.Controllers;
-using WaykPS.RestAPI;
+using WaykDen.Controllers;
+using WaykDen.Models;
 
-namespace WaykPS.Cmdlets
+namespace WaykDen.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "WaykDenLicense")]
     public class GetWaykDenLicense : baseCmdlet
@@ -29,19 +29,21 @@ namespace WaykPS.Cmdlets
                 Task<string> licensesString = denRestAPIController.GetLicenses(parameter);
                 licensesString.Wait();
 
-                if(parameter == null)
+                string res = await licensesString;
+
+                if(res.StartsWith('['))
                 {
-                    var licenses = denRestAPIController.DeserializeString<License[]>(await licensesString);
+                    var licenses = denRestAPIController.DeserializeString<License[]>(res);
                     
                     foreach(License license in licenses)
                     {
                         this.WriteObject(license.ToLicenseObject(), true);
                     }
                 }
-                else 
+                else
                 {
-                    var user = denRestAPIController.DeserializeString<License>(await licensesString);
-                    this.WriteObject(user?.ToLicenseObject(), true);
+                    var license = denRestAPIController.DeserializeString<License>(res);
+                    this.WriteObject(license?.ToLicenseObject());
                 }
             }
             catch(Exception e)

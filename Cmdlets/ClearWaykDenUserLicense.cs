@@ -1,11 +1,9 @@
 using Newtonsoft.Json;
-using System;
 using System.Management.Automation;
-using System.Threading.Tasks;
-using WaykPS.Controllers;
-using WaykPS.RestAPI;
+using WaykDen.Controllers;
+using WaykDen.Models;
 
-namespace WaykPS.Cmdlets
+namespace WaykDen.Cmdlets
 {
     [Cmdlet(VerbsCommon.Clear, "WaykDenUserLicense"), CmdletBinding(DefaultParameterSetName="ByUserID")]
     public class ClearWaykDenUserLicense : baseCmdlet

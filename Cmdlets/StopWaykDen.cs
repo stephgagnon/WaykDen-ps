@@ -3,9 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Management.Automation;
-using WaykPS.Controllers;
+using WaykDen.Controllers;
 
-namespace WaykPS.Cmdlets
+namespace WaykDen.Cmdlets
 {
     [Cmdlet("Stop", "WaykDen")]
     public class StopWaykDen : baseCmdlet

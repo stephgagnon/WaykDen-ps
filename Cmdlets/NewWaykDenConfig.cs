@@ -1,16 +1,17 @@
 using System;
 using System.IO;
 using System.Management.Automation;
-using DenRsa;
-using WaykPS.Config;
+using WaykDen.Controllers;
+using WaykDen.Models;
+using WaykDen.Utils;
 
-namespace WaykPS.Cmdlets
+namespace WaykDen.Cmdlets
 {
     [Cmdlet(VerbsCommon.New, "WaykDenConfig")]
     public class NewWaykDenConfig : baseCmdlet
     {
         private const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
-        private DenConfigs DenConfigs {get; set;}
+        private DenConfig DenConfig {get; set;}
         public string Path {get; set;} = string.Empty;
         [Parameter(HelpMessage = "Url of a running MongoDB instance.")]
         public string MongoUrl {get; set;} = string.Empty;
@@ -66,113 +67,118 @@ namespace WaykPS.Cmdlets
 
         protected override void ProcessRecord()
         {
-            this.Path = Environment.GetEnvironmentVariable(WAYK_DEN_HOME);
-            if(string.IsNullOrEmpty(this.Path))
+            try
             {
-                this.Path = this.SessionState.Path.CurrentLocation.Path;
-            }
-
-            string liteDBPath = $"{this.Path}/WaykDen.db";
-            DenConfigStore store = new DenConfigStore(liteDBPath);
-
-            if(File.Exists(liteDBPath))
-            {
-                this.DenConfigs = store.GetConfig();
-                this.UpdateConfigs();
-            }
-            else
-            {
-                RsaKeyGenerator rsaKeyGenerator = new RsaKeyGenerator();
-                this.DenConfigs = new DenConfigs()
+                this.Path = Environment.GetEnvironmentVariable(WAYK_DEN_HOME);
+                if(string.IsNullOrEmpty(this.Path))
                 {
-                    DenDockerConfigObject = new DenDockerConfigObject
-                    {
-                        DockerClientUri = this.DockerClientUri != null ? this.DockerClientUri : string.Empty
-                    },
+                    this.Path = this.SessionState.Path.CurrentLocation.Path;
+                }
 
-                    DenMongoConfigObject = new DenMongoConfigObject
-                    {
-                        Port = this.MongoPort != null ? this.MongoPort : string.Empty,
-                        Url = this.MongoUrl != null ? this.MongoUrl : string.Empty
-                    },
+                DenConfigController denConfigController = new DenConfigController(this.Path);
 
-                    DenPickyConfigObject = new DenPickyConfigObject
+                if(denConfigController.DbExists)
+                {
+                    this.DenConfig = denConfigController.GetConfig();
+                    this.UpdateConfig();
+                }
+                else
+                {
+                    RsaKeyGenerator rsaKeyGenerator = new RsaKeyGenerator();
+                    this.DenConfig = new DenConfig()
                     {
-                        ApiKey = DenServiceUtils.Generate(32),
-                        Backend = "mongodb",
-                        Realm = this.Realm
-                    },
+                        DenDockerConfigObject = new DenDockerConfigObject
+                        {
+                            DockerClientUri = this.DockerClientUri != null ? this.DockerClientUri : string.Empty
+                        },
 
-                    DenLucidConfigObject = new DenLucidConfigObject
-                    {
-                        AdminSecret = DenServiceUtils.Generate(10),
-                        AdminUsername =  DenServiceUtils.Generate(16),
-                        ApiKey = DenServiceUtils.Generate(32)
-                    },
+                        DenMongoConfigObject = new DenMongoConfigObject
+                        {
+                            Port = this.MongoPort != null ? this.MongoPort : string.Empty,
+                            Url = this.MongoUrl != null ? this.MongoUrl : string.Empty
+                        },
 
-                    DenRouterConfigObject = new DenRouterConfigObject
-                    {
-                        PublicKey = RsaKeyutils.PemToDer(rsaKeyGenerator.PublicKey)
-                    },
+                        DenPickyConfigObject = new DenPickyConfigObject
+                        {
+                            ApiKey = DenServiceUtils.Generate(32),
+                            Backend = "mongodb",
+                            Realm = this.Realm
+                        },
 
-                    DenServerConfigObject = new DenServerConfigObject
-                    {
-                        ApiKey = DenServiceUtils.Generate(32),
-                        AuditTrails = "true",
-                        ExternalUrl = this.ExternalUrl,
-                        LDAPPassword = this.LDAPPassword != null ? this.LDAPPassword : string.Empty,
-                        LDAPServerUrl = this.LDAPServerUrl != null ? this.LDAPServerUrl : string.Empty,
-                        LDAPUserGroup = this.LDAPUserGroup != null ? this.LDAPUserGroup : string.Empty,
-                        LDAPUsername = this.LDAPUsername != null ? this.LDAPUsername : string.Empty,
-                        LDAPServerType = this.LDAPServerType != null ? this.LDAPServerType : string.Empty,
-                        LDAPBaseDN = this.LDAPBaseDN != null ? this.LDAPBaseDN : string.Empty,
-                        PrivateKey = RsaKeyutils.PemToDer(rsaKeyGenerator.PrivateKey),
-                        JetServerUrl = this.JetServerUrl != null ? this.JetServerUrl : string.Empty
-                    },
+                        DenLucidConfigObject = new DenLucidConfigObject
+                        {
+                            AdminSecret = DenServiceUtils.Generate(10),
+                            AdminUsername =  DenServiceUtils.Generate(16),
+                            ApiKey = DenServiceUtils.Generate(32)
+                        },
 
-                    DenTraefikConfigObject = new DenTraefikConfigObject
-                    {
-                        ApiPort = this.TraefikApiPort != null ? this.TraefikApiPort : "8080",
-                        WaykDenPort = this.WaykDenPort != null ? this.WaykDenPort : "4000",
-                        Certificate = this.CertificatePath != null ? this.CertificatePath : string.Empty,
-                        PrivateKey = this.PrivateKeyPath != null ? this.PrivateKeyPath : string.Empty
-                    },
+                        DenRouterConfigObject = new DenRouterConfigObject
+                        {
+                            PublicKey = RsaKeyutils.PemToDer(rsaKeyGenerator.PublicKey)
+                        },
 
-                    DenImageConfigObject = new DenImageConfigObject
-                    {   
-                        DenMongoImage = this.MongoImage != null ? this.MongoImage : "library/mongo",
-                        DenLucidImage = this.DenLucidImage != null ? this.DenLucidImage : "devolutions/den-lucid:3.3.3-stretch-dev",
-                        DenPickyImage = this.PickyImage != null ? this.PickyImage : "devolutions/picky:3.0.0-stretch-dev",
-                        DenRouterImage = this.DenRouterImage != null ? this.DenRouterImage : "devolutions/den-router:0.5.0-stretch-dev",
-                        DenServerImage = this.DenServerImage != null ? this.DenServerImage : "devolutions/den-server:1.2.0-stretch-dev",
-                        DenTraefikImage = this.DenTraefikImage != null ? this.DenTraefikImage : "library/traefik:1.7",
-                        DevolutionsJetImage = this.DevolutionsJetImage != null ? this.DevolutionsJetImage : "devolutions/devolutions-jet:0.4.0-stretch",
-                    }
-                };
+                        DenServerConfigObject = new DenServerConfigObject
+                        {
+                            ApiKey = DenServiceUtils.Generate(32),
+                            AuditTrails = "true",
+                            ExternalUrl = this.ExternalUrl,
+                            LDAPPassword = this.LDAPPassword != null ? this.LDAPPassword : string.Empty,
+                            LDAPServerUrl = this.LDAPServerUrl != null ? this.LDAPServerUrl : string.Empty,
+                            LDAPUserGroup = this.LDAPUserGroup != null ? this.LDAPUserGroup : string.Empty,
+                            LDAPUsername = this.LDAPUsername != null ? this.LDAPUsername : string.Empty,
+                            LDAPServerType = this.LDAPServerType != null ? this.LDAPServerType : string.Empty,
+                            LDAPBaseDN = this.LDAPBaseDN != null ? this.LDAPBaseDN : string.Empty,
+                            PrivateKey = RsaKeyutils.PemToDer(rsaKeyGenerator.PrivateKey),
+                            JetServerUrl = this.JetServerUrl != null ? this.JetServerUrl : string.Empty
+                        },
+
+                        DenTraefikConfigObject = new DenTraefikConfigObject
+                        {
+                            ApiPort = this.TraefikApiPort != null ? this.TraefikApiPort : "8080",
+                            WaykDenPort = this.WaykDenPort != null ? this.WaykDenPort : "4000",
+                            Certificate = this.CertificatePath != null ? this.CertificatePath : string.Empty,
+                            PrivateKey = this.PrivateKeyPath != null ? this.PrivateKeyPath : string.Empty
+                        },
+
+                        DenImageConfigObject = new DenImageConfigObject
+                        {   
+                            DenMongoImage = this.MongoImage != null ? this.MongoImage : "library/mongo",
+                            DenLucidImage = this.DenLucidImage != null ? this.DenLucidImage : "devolutions/den-lucid:3.3.3-stretch-dev",
+                            DenPickyImage = this.PickyImage != null ? this.PickyImage : "devolutions/picky:3.0.0-stretch-dev",
+                            DenRouterImage = this.DenRouterImage != null ? this.DenRouterImage : "devolutions/den-router:0.5.0-stretch-dev",
+                            DenServerImage = this.DenServerImage != null ? this.DenServerImage : "devolutions/den-server:1.2.0-stretch-dev",
+                            DenTraefikImage = this.DenTraefikImage != null ? this.DenTraefikImage : "library/traefik:1.7",
+                            DevolutionsJetImage = this.DevolutionsJetImage != null ? this.DevolutionsJetImage : "devolutions/devolutions-jet:0.4.0-stretch",
+                        }
+                    };
+                }
+
+                denConfigController.StoreConfig(this.DenConfig);
+                Environment.SetEnvironmentVariable(WAYK_DEN_HOME, this.Path);
             }
-
-            DenConfig config = new DenConfig(){DenConfigs = this.DenConfigs, Path = this.Path};
-            store.StoreConfig(config);
-
-            Environment.SetEnvironmentVariable(WAYK_DEN_HOME, this.Path);
+            catch(Exception e)
+            {
+                this.OnError(e);
+            }
+            
             base.ProcessRecord();
         }
 
-        private void UpdateConfigs()
+        private void UpdateConfig()
         {
-            this.DenConfigs.DenDockerConfigObject.DockerClientUri = !string.IsNullOrEmpty(this.DockerClientUri) ? this.DockerClientUri : this.DenConfigs.DenDockerConfigObject.DockerClientUri;
-            this.DenConfigs.DenMongoConfigObject.Port = !string.IsNullOrEmpty(this.MongoPort) ? this.MongoPort : this.DenConfigs.DenMongoConfigObject.Port;
-            this.DenConfigs.DenMongoConfigObject.Url = !string.IsNullOrEmpty(this.MongoUrl) ? this.MongoUrl : this.DenConfigs.DenMongoConfigObject.Url;
-            this.DenConfigs.DenPickyConfigObject.Realm = !string.IsNullOrEmpty(this.Realm) ? this.Realm: this.DenConfigs.DenPickyConfigObject.Realm;
-            this.DenConfigs.DenServerConfigObject.ExternalUrl = !string.IsNullOrEmpty(this.ExternalUrl) ? this.ExternalUrl : this.DenConfigs.DenServerConfigObject.ExternalUrl;
-            this.DenConfigs.DenServerConfigObject.LDAPServerType = !string.IsNullOrEmpty(this.LDAPServerType) ? this.LDAPServerType : this.DenConfigs.DenServerConfigObject.LDAPServerType;
-            this.DenConfigs.DenServerConfigObject.LDAPBaseDN = !string.IsNullOrEmpty(this.LDAPBaseDN) ? this.LDAPBaseDN : this.DenConfigs.DenServerConfigObject.LDAPBaseDN;
-            this.DenConfigs.DenServerConfigObject.LDAPUsername = !string.IsNullOrEmpty(this.LDAPUsername) ? this.LDAPUsername : this.DenConfigs.DenServerConfigObject.LDAPUsername;
-            this.DenConfigs.DenServerConfigObject.LDAPPassword = !string.IsNullOrEmpty(this.LDAPPassword) ? this.LDAPPassword : this.DenConfigs.DenServerConfigObject.LDAPPassword;
-            this.DenConfigs.DenServerConfigObject.LDAPUserGroup = !string.IsNullOrEmpty(this.LDAPUserGroup) ? this.LDAPUserGroup : this.DenConfigs.DenServerConfigObject.LDAPUserGroup;
-            this.DenConfigs.DenServerConfigObject.JetServerUrl = !string.IsNullOrEmpty(this.JetServerUrl) ? this.JetServerUrl : this.DenConfigs.DenServerConfigObject.JetServerUrl;
-            this.DenConfigs.DenTraefikConfigObject.ApiPort = !string.IsNullOrEmpty(this.TraefikApiPort) ? this.TraefikApiPort : this.DenConfigs.DenTraefikConfigObject.ApiPort;
-            this.DenConfigs.DenTraefikConfigObject.WaykDenPort = !string.IsNullOrEmpty(this.WaykDenPort) ? this.WaykDenPort : this.DenConfigs.DenTraefikConfigObject.WaykDenPort;
+            this.DenConfig.DenDockerConfigObject.DockerClientUri = !string.IsNullOrEmpty(this.DockerClientUri) ? this.DockerClientUri : this.DenConfig.DenDockerConfigObject.DockerClientUri;
+            this.DenConfig.DenMongoConfigObject.Port = !string.IsNullOrEmpty(this.MongoPort) ? this.MongoPort : this.DenConfig.DenMongoConfigObject.Port;
+            this.DenConfig.DenMongoConfigObject.Url = !string.IsNullOrEmpty(this.MongoUrl) ? this.MongoUrl : this.DenConfig.DenMongoConfigObject.Url;
+            this.DenConfig.DenPickyConfigObject.Realm = !string.IsNullOrEmpty(this.Realm) ? this.Realm: this.DenConfig.DenPickyConfigObject.Realm;
+            this.DenConfig.DenServerConfigObject.ExternalUrl = !string.IsNullOrEmpty(this.ExternalUrl) ? this.ExternalUrl : this.DenConfig.DenServerConfigObject.ExternalUrl;
+            this.DenConfig.DenServerConfigObject.LDAPServerType = !string.IsNullOrEmpty(this.LDAPServerType) ? this.LDAPServerType : this.DenConfig.DenServerConfigObject.LDAPServerType;
+            this.DenConfig.DenServerConfigObject.LDAPBaseDN = !string.IsNullOrEmpty(this.LDAPBaseDN) ? this.LDAPBaseDN : this.DenConfig.DenServerConfigObject.LDAPBaseDN;
+            this.DenConfig.DenServerConfigObject.LDAPUsername = !string.IsNullOrEmpty(this.LDAPUsername) ? this.LDAPUsername : this.DenConfig.DenServerConfigObject.LDAPUsername;
+            this.DenConfig.DenServerConfigObject.LDAPPassword = !string.IsNullOrEmpty(this.LDAPPassword) ? this.LDAPPassword : this.DenConfig.DenServerConfigObject.LDAPPassword;
+            this.DenConfig.DenServerConfigObject.LDAPUserGroup = !string.IsNullOrEmpty(this.LDAPUserGroup) ? this.LDAPUserGroup : this.DenConfig.DenServerConfigObject.LDAPUserGroup;
+            this.DenConfig.DenServerConfigObject.JetServerUrl = !string.IsNullOrEmpty(this.JetServerUrl) ? this.JetServerUrl : this.DenConfig.DenServerConfigObject.JetServerUrl;
+            this.DenConfig.DenTraefikConfigObject.ApiPort = !string.IsNullOrEmpty(this.TraefikApiPort) ? this.TraefikApiPort : this.DenConfig.DenTraefikConfigObject.ApiPort;
+            this.DenConfig.DenTraefikConfigObject.WaykDenPort = !string.IsNullOrEmpty(this.WaykDenPort) ? this.WaykDenPort : this.DenConfig.DenTraefikConfigObject.WaykDenPort;
         }
     }
 }

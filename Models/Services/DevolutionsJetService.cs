@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Docker.DotNet.Models;
-using WaykPS.Controllers;
+using WaykDen.Controllers;
 
-namespace WaykPS.Services.MicroServices
+namespace WaykDen.Models.Services
 {
     public class DevolutionsJetService : DenService
     {

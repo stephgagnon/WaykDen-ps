@@ -1,11 +1,13 @@
 using System;
 using System.IO;
 using LiteDB;
-using WaykPS.Cmdlets;
+using WaykDen.Cmdlets;
+using WaykDen.Models;
+using WaykDen.Utils;
 
-namespace WaykPS.Config
+namespace WaykDen.Controllers
 {
-    public class DenConfigStore
+    public class DenConfigController
     {
         private const string DEN_IMAGE_CONFIG_COLLECTION = "DenImageConfig";
         private const string DEN_MONGO_CONFIG_COLLECTION = "DenMongoConfig";
@@ -18,11 +20,16 @@ namespace WaykPS.Config
         private const int DB_ID = 1;
         private string path;
         private string password = string.Empty;
-        public DenConfigStore(string path)
+        public DenConfigController(string path)
         {
-            this.path = path;
+            this.path = $"{path}/WaykDen.db";
             BsonMapper.Global.EmptyStringToNull = false;
             this.password = this.LoadPassword();
+        }
+
+        public bool DbExists
+        {
+            get => File.Exists(this.path);
         }
 
         public void StoreConfig(DenConfig config)
@@ -60,11 +67,11 @@ namespace WaykPS.Config
             this.UpdateDocker(db, config.DenDockerConfigObject);
         }
 
-        public DenConfigs GetConfig()
+        public DenConfig GetConfig()
         { 
             using(var db = new LiteDatabase($"Filename={path};Password={this.password}; Mode=Exclusive"))
             {
-                return new DenConfigs()
+                return new DenConfig()
                 {
                     DenImageConfigObject = this.GetImage(db),
                     DenLucidConfigObject = this.GetLucid(db),
@@ -315,7 +322,7 @@ namespace WaykPS.Config
             try
             {
                 string dir = Directory.GetParent(this.path).FullName;
-                string file = $"{dir}/DenDB.key";
+                string file = $"{dir}/WaykDen.key";
                 if(!File.Exists(file))
                 {
                     string pswd = DenServiceUtils.Generate(20);

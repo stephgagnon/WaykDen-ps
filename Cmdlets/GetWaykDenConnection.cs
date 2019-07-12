@@ -1,10 +1,10 @@
 using System;
 using System.Management.Automation;
 using System.Threading.Tasks;
-using WaykPS.Controllers;
-using WaykPS.RestAPI;
+using WaykDen.Controllers;
+using WaykDen.Models;
 
-namespace WaykPS.Cmdlets
+namespace WaykDen.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "WaykDenConnection")]
     public class GetWaykDenConnection : baseCmdlet
@@ -45,19 +45,19 @@ namespace WaykPS.Cmdlets
 
                 string res = await connectionsString;
 
-                if(string.IsNullOrEmpty(this.ID))
+                if(res.StartsWith('['))
                 {
                     var connections = denRestAPIController.DeserializeString<Connection[]>(res);
-
+                    
                     foreach(Connection connection in connections)
                     {
                         this.WriteObject(connection.ToConnectionObject(), true);
                     }
                 }
-                else 
+                else
                 {
-                    var connection  = denRestAPIController.DeserializeString<Connection>(res);
-                    this.WriteObject(connection?.ToConnectionObject(), true);
+                    var connection = denRestAPIController.DeserializeString<Connection>(res);
+                    this.WriteObject(connection?.ToConnectionObject());
                 }
             }
             catch(Exception e)

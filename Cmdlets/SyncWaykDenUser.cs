@@ -1,8 +1,8 @@
 using System;
 using System.Management.Automation;
-using WaykPS.Controllers;
+using WaykDen.Controllers;
 
-namespace WaykPS.Cmdlets
+namespace WaykDen.Cmdlets
 {
     [Cmdlet("Sync", "WaykDenUser")]
     public class SyncWaykDenUser : baseCmdlet

@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
-using WaykPS.Config;
+using WaykDen.Controllers;
+using WaykDen.Models;
 
-namespace WaykPS.Cmdlets
+namespace WaykDen.Cmdlets
 {
     [Cmdlet(VerbsCommon.Remove, "WaykDenConfig")]
     public class RemoveWaykDenConfig : baseCmdlet
@@ -72,8 +73,8 @@ namespace WaykPS.Cmdlets
 
                 (string, bool)[] res = values.Where(x => x.Item2.Equals(true)).ToArray();
 
-                DenConfigStore store = new DenConfigStore($"{this.Path}/WaykDen.db");
-                DenConfigs configs = store.GetConfig();
+                DenConfigController denConfigController = new DenConfigController(this.Path);
+                DenConfig config = denConfigController.GetConfig();
 
                 if(res.Length > 0)
                 {
@@ -86,11 +87,11 @@ namespace WaykPS.Cmdlets
                             return;
                         }
 
-                        var property = configs.GetType().GetProperty(value.Item1.Name).GetValue(configs);
+                        var property = config.GetType().GetProperty(value.Item1.Name).GetValue(config);
                         property.GetType().GetProperty(value.Item2).SetValue(property, "");
                     }  
 
-                    store.StoreConfig(new DenConfig{DenConfigs = configs}); 
+                    denConfigController.StoreConfig(config); 
                 }
             }
             catch(Exception e)

@@ -5,11 +5,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
-using WaykPS.Config;
-using WaykPS.Services.MicroServices;
-using WaykPS.Cmdlets;
+using WaykDen.Utils;
+using WaykDen.Models;
+using WaykDen.Models.Services;
+using WaykDen.Cmdlets;
 
-namespace WaykPS.Controllers
+namespace WaykDen.Controllers
 {
     public class DenServicesController
     {
@@ -23,7 +24,7 @@ namespace WaykPS.Controllers
         public DockerClient DockerClient {get;}
         public List<DenService> RunningDenServices = new List<DenService>();
         public int ServicesCount;
-        private DenConfigStore store;
+        private DenConfigController denConfigController;
         private string dockerDefaultEndpoint
         {
             get
@@ -50,14 +51,14 @@ namespace WaykPS.Controllers
             this.Path = this.Path.EndsWith($"{System.IO.Path.DirectorySeparatorChar}") ? this.Path : $"{this.Path}{System.IO.Path.DirectorySeparatorChar}";
             try
             {
-                this.store = new DenConfigStore($"{this.Path}WaykDen.db");
-                this.DenConfig = new DenConfig(){DenConfigs = this.store.GetConfig(), Path = this.Path};
-                
+                this.denConfigController = new DenConfigController(this.Path);
+                this.DenConfig = this.denConfigController.GetConfig();   
             }
             catch(Exception e)
             {
                 if(this.OnError != null) this.OnError(e);
             }
+            
             this.DenNetwork = new DenNetwork(this);
             
             if(string.IsNullOrEmpty(this.DenConfig.DenDockerConfigObject.DockerClientUri))
@@ -114,7 +115,7 @@ namespace WaykPS.Controllers
         {
             DevolutionsJetService jet = new DevolutionsJetService(this);
             bool started = await this.StartService(jet);
-            this.store.StoreConfig(this.DenConfig);
+            this.denConfigController.StoreConfig(this.DenConfig);
             return started;
         }
 
@@ -301,7 +302,7 @@ namespace WaykPS.Controllers
             started = started ? await this.StartDenServer(): false;
             started = started ? await this.StartTraefikService(): false;
             
-            this.store.StoreConfig(this.DenConfig);
+            this.denConfigController.StoreConfig(this.DenConfig);
             return started;
         }
 

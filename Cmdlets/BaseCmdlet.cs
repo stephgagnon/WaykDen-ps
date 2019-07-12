@@ -1,7 +1,7 @@
 using System;
 using System.Management.Automation;
 
-namespace WaykPS.Cmdlets
+namespace WaykDen.Cmdlets
 {
     public class baseCmdlet : PSCmdlet
     {

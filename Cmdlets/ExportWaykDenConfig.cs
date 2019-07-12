@@ -3,9 +3,9 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
-using WaykPS.Controllers;
+using WaykDen.Controllers;
 
-namespace WaykPS.Cmdlets
+namespace WaykDen.Cmdlets
 {
     [Cmdlet("Export", "WaykDenConfig")]
     public class ExportWaykDenConfig : baseCmdlet

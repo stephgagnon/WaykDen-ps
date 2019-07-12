@@ -1,7 +1,7 @@
-using DenRsa;
-using WaykPS.Controllers;
+using WaykDen.Utils;
+using WaykDen.Controllers;
 
-namespace WaykPS.Services.MicroServices
+namespace WaykDen.Models.Services
 {
     public class DenRouterService : DenService
     {
