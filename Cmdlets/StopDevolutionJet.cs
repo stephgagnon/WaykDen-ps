@@ -9,7 +9,6 @@ namespace WaykDen.Cmdlets
     public class StopDevolutionsJet : baseCmdlet
     {
         private DenServicesController denServicesController;
-        private ManualResetEvent mre = new ManualResetEvent(false);
         protected async override void ProcessRecord()
         {
             this.denServicesController = new DenServicesController(this.SessionState.Path.CurrentLocation.Path);

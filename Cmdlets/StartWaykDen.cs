@@ -10,9 +10,6 @@ namespace WaykDen.Cmdlets
     public class StartWaykDen : baseCmdlet
     {
         private DenServicesController denServicesController;
-        private ManualResetEvent mre = new ManualResetEvent(false);
-        private Mutex mutex = new Mutex();
-        private ProgressRecord record;
         protected override void ProcessRecord()
         {
             try

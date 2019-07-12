@@ -15,7 +15,7 @@ namespace WaykDen.Controllers
     public class DenServicesController
     {
         private const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
-        private const string DENNETWORK_NAME = "den-network";
+        private const string DEN_NETWORK_NAME = "den-network";
         public const string DOCKER_DEFAULT_CLIENT_URI_LINUX = "unix:///var/run/docker.sock";
         public const string DOCKER_DEFAULT_CLIENT_URI_WINDOWS = "npipe://./pipe/docker_engine";
         public string Path {get; set;} = string.Empty;
@@ -25,6 +25,37 @@ namespace WaykDen.Controllers
         public List<DenService> RunningDenServices = new List<DenService>();
         public int ServicesCount;
         private DenConfigController denConfigController;
+        private Dictionary<Container, string> ContainersName = new Dictionary<Container, string>()
+        {
+            {Container.DenMongo, "den-mongo"},
+            {Container.DenPicky, "den-picky"},
+            {Container.DenLucid, "den-lucid"},
+            {Container.DenRouter, "den-router"},
+            {Container.DenServer, "den-server"},
+            {Container.Traefik, "traefik"},
+            {Container.DevolutionsJet, "devolutions-jet"}
+        };
+        private enum Container
+        {
+            DenMongo,
+            DenPicky,
+            DenLucid,
+            DenRouter,
+            DenServer,
+            Traefik,
+            DevolutionsJet
+        }
+        private enum ContainerState
+        {
+            Running,
+            Exited
+        }
+
+        private enum ContainerFilter
+        {
+            Name,
+            Network
+        }
         private string dockerDefaultEndpoint
         {
             get
@@ -121,7 +152,7 @@ namespace WaykDen.Controllers
 
         public async Task StopDevolutionsJet()
         {
-            List<string> jet= await this.GetRunningContainer("devolutions-jet");
+            List<string> jet= await this.ListContainers(ContainerState.Running, ContainerFilter.Name, this.ContainersName.GetValueOrDefault(Container.DevolutionsJet));
             if(jet.Count > 0)
             {
                 foreach(string container in jet)
@@ -172,7 +203,7 @@ namespace WaykDen.Controllers
 
         private async Task<List<string>> CheckIfExists(string name)
         {
-            List<string> containers = await this.GetRunningContainer(name);
+            List<string> containers = await this.ListContainers(ContainerState.Running, ContainerFilter.Name, name);
             return containers;
         }
 
@@ -200,7 +231,40 @@ namespace WaykDen.Controllers
             );
         }
 
-        public async Task<List<string>> GetRunningContainer(string container_name = null)
+        public async Task<List<string>> GetRunningContainers()
+        {
+            return await this.ListContainers(ContainerState.Running, ContainerFilter.Network, DEN_NETWORK_NAME);
+        }
+
+        public async Task RemoveWaykDenContainers()
+        {
+            string[] containersName = new string[]
+            {
+                this.ContainersName.GetValueOrDefault(Container.DenMongo),
+                this.ContainersName.GetValueOrDefault(Container.DenPicky),
+                this.ContainersName.GetValueOrDefault(Container.DenLucid),
+                this.ContainersName.GetValueOrDefault(Container.DenRouter),
+                this.ContainersName.GetValueOrDefault(Container.DenServer),
+                this.ContainersName.GetValueOrDefault(Container.Traefik),
+                this.ContainersName.GetValueOrDefault(Container.DevolutionsJet)
+            };
+            
+            foreach(string name in containersName)
+            {
+                List<string> id = await this.ListContainers(ContainerState.Exited, ContainerFilter.Name, name);
+                if(id.Count > 0)
+                {
+                    this.WriteLog($"Removing {name}");
+                    await this.DockerClient.Containers.RemoveContainerAsync
+                    (
+                        id[0],
+                        new ContainerRemoveParameters(){}
+                    );
+                }
+            }
+        }
+
+        private async Task<List<string>> ListContainers(ContainerState containerState, ContainerFilter containerFilter, string param)
         {
             if(this.DockerClient == null)
             {
@@ -208,17 +272,31 @@ namespace WaykDen.Controllers
             }
 
             IDictionary<string, IDictionary<string, bool>> filter = new Dictionary<string, IDictionary<string, bool>>();
-            if(container_name != null)
+
+            if(containerState == ContainerState.Exited)
             {
-                filter.Add("name", new Dictionary<string, bool>(){{container_name, true}});
-            } else {
-                filter.Add("network", new Dictionary<string, bool>(){{DENNETWORK_NAME, true}});
+                filter.Add("status", new Dictionary<string, bool>(){{"exited", true}});
+                filter.Add("name", new Dictionary<string, bool>(){{param, true}});
+            }
+            else
+            {
+                if(containerFilter == ContainerFilter.Name)
+                {
+                    filter.Add("name", new Dictionary<string, bool>(){{param, true}});
+                } 
+                else if(containerFilter == ContainerFilter.Network)
+                {
+                    filter.Add("network", new Dictionary<string, bool>(){{param, true}});
+                }
             }
 
-            IList<ContainerListResponse> responses = await this.DockerClient.Containers.ListContainersAsync
+            Task<IList<ContainerListResponse>> responsesTask = this.DockerClient.Containers.ListContainersAsync
             (
-                new ContainersListParameters(){Filters = filter, All = true}
+                new ContainersListParameters(){Filters = filter}
             );
+
+            responsesTask.Wait();
+            IList<ContainerListResponse> responses = await responsesTask;
 
             List<string> containerIds = new List<string>();
 
@@ -226,8 +304,6 @@ namespace WaykDen.Controllers
             {
                 containerIds.Add(response.ID);
             }
-
-            this.ServicesCount = containerIds.Count;
 
             return containerIds;
         }
@@ -239,8 +315,10 @@ namespace WaykDen.Controllers
                 return null;
             }
 
+            
+
             IDictionary<string, IDictionary<string, bool>> filter = new Dictionary<string, IDictionary<string, bool>>();
-            filter.Add("name", new Dictionary<string, bool>(){{DENNETWORK_NAME, true}});
+            filter.Add("name", new Dictionary<string, bool>(){{DEN_NETWORK_NAME, true}});
 
             IList<NetworkResponse> responses = await this.DockerClient.Networks.ListNetworksAsync
             (
@@ -261,6 +339,9 @@ namespace WaykDen.Controllers
 
         public async Task<bool> StartWaykDen()
         {
+            Task t = this.RemoveWaykDenContainers();
+            t.Wait();
+
             List<string> networks = await this.GetDenNetwork();
 
             if(networks.Count == 0)
@@ -300,7 +381,16 @@ namespace WaykDen.Controllers
             started = started ? await this.StartDenLucid(): false;
             started = started ? await this.StartDenRouter(): false;
             started = started ? await this.StartDenServer(): false;
-            started = started ? await this.StartTraefikService(): false;
+
+            if(started)
+            {
+                started = await this.StartTraefikService();
+                if(!started)
+                {
+                    this.WriteError(new Exception("Error starting Traefik service. Make sure Traefik API port is free in WaykDen Configuration or switch API port using Set-WaykDenConfig."));
+                }
+            }
+            
             
             this.denConfigController.StoreConfig(this.DenConfig);
             return started;

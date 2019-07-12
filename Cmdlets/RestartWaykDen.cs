@@ -13,14 +13,50 @@ namespace WaykDen.Cmdlets
 
         protected async override void ProcessRecord()
         {
-            this.denServicesController = new DenServicesController(this.SessionState.Path.CurrentLocation.Path);
-            this.denServicesController.OnLog += this.OnLog;
-            this.denServicesController.OnError += this.OnError;
-            List<string> runningContainers = await this.denServicesController.GetRunningContainer();
-            Task stop = this.denServicesController.StopWaykDen(runningContainers);
-            stop.Wait();
-            Task start = this.denServicesController.StartWaykDen();
-            start.Wait();
+            try
+            {
+                this.denServicesController = new DenServicesController(this.SessionState.Path.CurrentLocation.Path);
+                this.denServicesController.OnLog += this.OnLog;
+                this.denServicesController.OnError += this.OnError;
+                List<string> runningContainers = await this.denServicesController.GetRunningContainers();
+
+                Task stop = this.denServicesController.StopWaykDen(runningContainers);
+
+                while(!stop.IsCompleted && !stop.IsCanceled)
+                {
+                    mre.WaitOne();
+                    lock(this.mutex)
+                    {
+                        this.WriteProgress(this.record);
+                    }
+                }
+
+                Task start = this.denServicesController.StartWaykDen();
+
+                while(!start.IsCompleted && !start.IsCanceled)
+                {
+                    mre.WaitOne();
+                    lock(this.mutex)
+                    {
+                        this.WriteProgress(this.record);
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                this.OnError(e);
+            }
+        }
+
+        protected override void OnLog(string message)
+        {
+            ProgressRecord r = new ProgressRecord(1, "WaykDen", message);
+
+            lock(this.mutex)
+            {
+                this.record = r;
+                this.mre.Set();
+            }
         }
     }
 }

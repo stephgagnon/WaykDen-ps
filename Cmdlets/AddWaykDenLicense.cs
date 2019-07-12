@@ -19,7 +19,7 @@ namespace WaykDen.Cmdlets
             DenRestAPIController denRestAPIController = new DenRestAPIController(this.SessionState.Path.CurrentLocation.Path);
             denRestAPIController.OnError += this.OnError;
             string data = JsonConvert.SerializeObject(new BySerialObject{serial_number = this.Serial});
-            string post = denRestAPIController.PostLicense(data);
+            string post = denRestAPIController.PostLicense(null, data);
             this.WriteObject(post);
         }
     }
