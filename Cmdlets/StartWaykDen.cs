@@ -7,14 +7,14 @@ using WaykDen.Controllers;
 namespace WaykDen.Cmdlets
 {
     [Cmdlet("Start", "WaykDen")]
-    public class StartWaykDen : baseCmdlet
+    public class StartWaykDen : WaykDenConfigCmdlet
     {
         private DenServicesController denServicesController;
         protected override void ProcessRecord()
         {
             try
             {
-                this.denServicesController = new DenServicesController(this.SessionState.Path.CurrentLocation.Path);
+                this.denServicesController = new DenServicesController(this.Path, this.Key);
                 this.denServicesController.OnLog += this.OnLog;
                 this.denServicesController.OnError += this.OnError;
                 Task<bool> start = this.denServicesController.StartWaykDen();

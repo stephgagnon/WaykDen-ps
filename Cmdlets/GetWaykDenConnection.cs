@@ -48,7 +48,7 @@ namespace WaykDen.Cmdlets
                         this.WriteObject(connection.ToConnectionObject(), true);
                     }
                 }
-                else
+                else if (res.StartsWith('{'))
                 {
                     var connection = this.DenRestAPIController.DeserializeString<Connection>(res);
                     this.WriteObject(connection?.ToConnectionObject());

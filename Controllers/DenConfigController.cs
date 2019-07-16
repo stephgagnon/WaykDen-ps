@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using LiteDB;
 using WaykDen.Cmdlets;
 using WaykDen.Models;
@@ -9,6 +10,7 @@ namespace WaykDen.Controllers
 {
     public class DenConfigController
     {
+        private const string WAYK_DEN_CONFIG_KEY = "WAYK_DEN_CONFIG_KEY";
         private const string DEN_IMAGE_CONFIG_COLLECTION = "DenImageConfig";
         private const string DEN_MONGO_CONFIG_COLLECTION = "DenMongoConfig";
         private const string DEN_PICKY_CONFIG_COLLECTION = "DenPickyConfig";
@@ -19,22 +21,52 @@ namespace WaykDen.Controllers
         private const string DEN_DOCKER_CONFIG_COLLECTION = "DenDockerConfig";
         private const int DB_ID = 1;
         private string path;
-        private string password = string.Empty;
-        public DenConfigController(string path)
+        private string password;
+        private string connString = string.Empty;
+        public DenConfigController(string path, string password)
         {
             this.path = $"{path}/WaykDen.db";
+            this.password = string.IsNullOrEmpty(password) ? string.Empty : password;
+            this.connString = string.IsNullOrEmpty(password) ? $"Filename={this.path}; Mode=Exclusive" : $"Filename={this.path}; Password={this.password}; Mode=Exclusive";
+            this.TestConnString();
             BsonMapper.Global.EmptyStringToNull = false;
-            this.password = this.LoadPassword();
+        }
+
+        private void TestConnString()
+        {
+            try
+            {
+                using(var db = new LiteDatabase(this.connString))
+                {
+                    var collections = db.GetCollectionNames();
+                }
+            }
+            catch(Exception)
+            {
+                throw new Exception("Invalid database password.");
+            }
+            
+            if(!string.IsNullOrEmpty(this.password))
+            {
+                Environment.SetEnvironmentVariable(WAYK_DEN_CONFIG_KEY, this.password);
+            }
         }
 
         public bool DbExists
         {
-            get => File.Exists(this.path);
+            get
+            {
+                using(var db = new LiteDatabase(this.connString))
+                {
+                    var collections = db.GetCollectionNames().ToArray();
+                    return collections.Length > 0;
+                }
+            }
         }
 
         public void StoreConfig(DenConfig config)
         {
-            using(var db = new LiteDatabase($"Filename={path}; Password={this.password}; Mode=Exclusive"))
+            using(var db = new LiteDatabase(this.connString))
             {
                 if(db.CollectionExists(DEN_IMAGE_CONFIG_COLLECTION))
                 {
@@ -68,8 +100,13 @@ namespace WaykDen.Controllers
         }
 
         public DenConfig GetConfig()
-        { 
-            using(var db = new LiteDatabase($"Filename={path};Password={this.password}; Mode=Exclusive"))
+        {
+            if(!this.DbExists)
+            {
+                throw new Exception("Could not found WaykDen configuration in given path. Make sure WaykDen configuration is in current folder or set WAYK_DEN_HOME to the path of WaykDen configuration");
+            }
+
+            using(var db = new LiteDatabase(this.connString))
             {
                 return new DenConfig()
                 {
@@ -336,6 +373,34 @@ namespace WaykDen.Controllers
             {
                 e.ToString();
                 return string.Empty;
+            }
+        }
+
+        public void AddConfigKey(string newKey)
+        {
+            using(var db = new LiteDatabase($"Filename={path}; Mode=Exclusive"))
+            {
+                db.Engine.Shrink(newKey);
+            }
+        }
+
+        public void RemoveConfigKey(string key)
+        {
+            using(var db = new LiteDatabase($"Filename={path}; Password={key}; Mode=Exclusive"))
+            {
+                db.Engine.Shrink();
+                this.password = null;
+                Environment.SetEnvironmentVariable(WAYK_DEN_CONFIG_KEY, this.password);
+            }
+        }
+
+        public void ChangeConfigKey(string newKey, string oldKey)
+        {
+            using(var db = new LiteDatabase($"Filename={path}; Password={oldKey}; Mode=Exclusive"))
+            {
+                db.Engine.Shrink(newKey);
+                this.password = newKey;
+                Environment.SetEnvironmentVariable(WAYK_DEN_CONFIG_KEY, this.password);
             }
         }
     }

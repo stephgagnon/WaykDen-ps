@@ -119,7 +119,7 @@ namespace WaykDen.Controllers
 
         public async Task<string> GetLicenses(string parameter = null)
         {
-            return await this.Get($"{this.serverUrl}/license{parameter}");
+            return await this.Get($"{this.serverUrl}/license/{parameter}");
         }
 
         public async Task<string> GetConnections(string parameter = null)
@@ -144,7 +144,7 @@ namespace WaykDen.Controllers
 
         public string PutUser(string content, string parameter = null)
         {
-            return this.Put($"{this.serverUrl}/user{parameter}/license", content);
+            return this.Put($"{this.serverUrl}/user/{parameter}/license", content);
         }
 
         public async Task<string> DeleteUserLicense(string parameter)

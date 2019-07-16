@@ -8,11 +8,10 @@ using WaykDen.Utils;
 namespace WaykDen.Cmdlets
 {
     [Cmdlet(VerbsCommon.New, "WaykDenConfig")]
-    public class NewWaykDenConfig : baseCmdlet
+    public class NewWaykDenConfig : WaykDenConfigCmdlet
     {
         private const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
         private DenConfig DenConfig {get; set;}
-        public string Path {get; set;} = string.Empty;
         [Parameter(HelpMessage = "Url of a running MongoDB instance.")]
         public string MongoUrl {get; set;} = string.Empty;
         [Parameter(HelpMessage = "Port of a runnning MongoDB instance.")]
@@ -69,13 +68,7 @@ namespace WaykDen.Cmdlets
         {
             try
             {
-                this.Path = Environment.GetEnvironmentVariable(WAYK_DEN_HOME);
-                if(string.IsNullOrEmpty(this.Path))
-                {
-                    this.Path = this.SessionState.Path.CurrentLocation.Path;
-                }
-
-                DenConfigController denConfigController = new DenConfigController(this.Path);
+                DenConfigController denConfigController = new DenConfigController(this.Path, this.Key);
 
                 if(denConfigController.DbExists)
                 {

@@ -58,7 +58,7 @@ namespace WaykDen.Cmdlets
                             this.WriteObject(session.ToSessionObject(), true);
                         }
                     }
-                    else
+                    else if (res.StartsWith('{'))
                     {
                         var session = this.DenRestAPIController.DeserializeString<Session>(res);
                         this.WriteObject(session?.ToSessionObject());

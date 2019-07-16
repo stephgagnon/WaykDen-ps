@@ -8,11 +8,9 @@ using WaykDen.Models;
 namespace WaykDen.Cmdlets
 {
     [Cmdlet(VerbsCommon.Remove, "WaykDenConfig")]
-    public class RemoveWaykDenConfig : baseCmdlet
+    public class RemoveWaykDenConfig : WaykDenConfigCmdlet
     {
         private const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
-        [Parameter]
-        public string Path {get; set;} = string.Empty;
         [Parameter]
         public SwitchParameter MongoUrl {get; set;}
         [Parameter]
@@ -50,12 +48,6 @@ namespace WaykDen.Cmdlets
 
         protected override void ProcessRecord()
         {
-            this.Path = Environment.GetEnvironmentVariable(WAYK_DEN_HOME);
-            if(string.IsNullOrEmpty(this.Path))
-            {
-                this.Path = this.SessionState.Path.CurrentLocation.Path;
-            }
-
             try
             {
                 (string, bool)[] values = new (string, bool)[]
@@ -73,7 +65,7 @@ namespace WaykDen.Cmdlets
 
                 (string, bool)[] res = values.Where(x => x.Item2.Equals(true)).ToArray();
 
-                DenConfigController denConfigController = new DenConfigController(this.Path);
+                DenConfigController denConfigController = new DenConfigController(this.Path, this.Key);
                 DenConfig config = denConfigController.GetConfig();
 
                 if(res.Length > 0)

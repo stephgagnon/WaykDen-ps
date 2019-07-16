@@ -7,11 +7,10 @@ using WaykDen.Models;
 namespace WaykDen.Cmdlets
 {
     [Cmdlet(VerbsCommon.Set, "WaykDenWebCertificate")]
-    public class SetWaykDenWebCertificate : baseCmdlet
+    public class SetWaykDenWebCertificate : WaykDenConfigCmdlet
     {
         private const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
         private DenRestAPIController denRestAPIController {get; set;}
-        private string Path {get; set;} = string.Empty;
 
         [Parameter(Mandatory = true, HelpMessage = "Path to a directory where a certificate and its private key are found.")]
         public string FolderPath {get; set;} = string.Empty;
@@ -28,13 +27,7 @@ namespace WaykDen.Cmdlets
         {
             try
             {
-                this.Path = Environment.GetEnvironmentVariable(WAYK_DEN_HOME);
-                if(string.IsNullOrEmpty(this.Path))
-                {
-                    this.Path = this.SessionState.Path.CurrentLocation.Path;
-                }
-
-                DenConfigController denConfigController = new DenConfigController(this.Path);
+                DenConfigController denConfigController = new DenConfigController(this.Path, this.Key);
                 DenConfig config = denConfigController.GetConfig();
 
                 this.FolderPath = this.FolderPath.EndsWith($"{System.IO.Path.DirectorySeparatorChar}") ? this.FolderPath : $"{this.FolderPath}{System.IO.Path.DirectorySeparatorChar}";

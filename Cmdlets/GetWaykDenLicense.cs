@@ -18,7 +18,7 @@ namespace WaykDen.Cmdlets
                 string parameter = null;
                 if(!string.IsNullOrEmpty(this.ID))
                 {
-                    parameter = $"/{this.ID}";
+                    parameter = this.ID;
                 }
                 Task<string> licensesString = this.DenRestAPIController.GetLicenses(parameter);
                 licensesString.Wait();
@@ -34,7 +34,7 @@ namespace WaykDen.Cmdlets
                         this.WriteObject(license.ToLicenseObject(), true);
                     }
                 }
-                else
+                else if (res.StartsWith('{'))
                 {
                     var license = this.DenRestAPIController.DeserializeString<License>(res);
                     this.WriteObject(license?.ToLicenseObject());

@@ -7,7 +7,7 @@ using WaykDen.Controllers;
 
 namespace WaykDen.Cmdlets
 {
-    public class RestApiCmdlet : baseCmdlet
+    public class RestApiCmdlet : BaseCmdlet
     {
         private const string DEN_API_KEY_ENV = "DEN_API_KEY";
         private const string DEN_SERVER_URL_ENV = "DEN_SERVER_URL";
@@ -46,6 +46,11 @@ namespace WaykDen.Cmdlets
             {
                 this.OnError(new Exception("No API key or server URL were provided"));
             }
+
+            this.ServerUrl = this.ServerUrl.TrimEnd('/');
+
+            Environment.SetEnvironmentVariable(DEN_API_KEY_ENV, this.ApiKey);
+            Environment.SetEnvironmentVariable(DEN_SERVER_URL_ENV, this.ServerUrl);
 
             this.DenRestAPIController = new DenRestAPIController(this.ApiKey, this.ServerUrl);
             this.DenRestAPIController.OnError += this.OnError;

@@ -8,7 +8,7 @@ using WaykDen.Controllers;
 namespace WaykDen.Cmdlets
 {
     [Cmdlet("Export", "WaykDenConfig")]
-    public class ExportWaykDenConfig : baseCmdlet
+    public class ExportWaykDenConfig : WaykDenConfigCmdlet
     {
         private const string FILENAME = "docker-compose.yml";
         [Parameter(HelpMessage = "Path where to export WaykDen configuration.")]
@@ -21,7 +21,7 @@ namespace WaykDen.Cmdlets
         {
             try
             {
-                DenServicesController denServicesController = new DenServicesController(this.SessionState.Path.CurrentLocation.Path);
+                DenServicesController denServicesController = new DenServicesController(this.Path, this.Key);
                 denServicesController.OnLog += this.OnLog;
                 denServicesController.OnError += this.OnError;
 

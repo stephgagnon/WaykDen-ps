@@ -7,11 +7,10 @@ using WaykDen.Controllers;
 namespace WaykDen.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "WaykDenConfig")]
-    public class GetWaykDenConfig : baseCmdlet
+    public class GetWaykDenConfig : WaykDenConfigCmdlet
     {
         private const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
         private const string WORKING_DIRECTORY = "Working Directory";
-        public string Path {get; set;}
         public DenMongoConfigObject DenMongoConfigObject => this.DenConfig.DenMongoConfigObject;
         public DenPickyConfigObject DenPickyConfigObject => this.DenConfig.DenPickyConfigObject;
         public DenLucidConfigObject DenLucidConfigObject => this.DenConfig.DenLucidConfigObject;
@@ -24,18 +23,12 @@ namespace WaykDen.Cmdlets
 
         protected override void ProcessRecord()
         {
-            this.Path = Environment.GetEnvironmentVariable(WAYK_DEN_HOME);
-            if(string.IsNullOrEmpty(this.Path))
-            {
-                this.Path = this.SessionState.Path.CurrentLocation.Path;
-            }
-
             try
             {
-                DenConfigController denConfigController = new DenConfigController(this.Path);
-                if(denConfigController.DbExists)
+                this.DenConfigController = new DenConfigController(this.Path, this.Key);
+                if(this.DenConfigController.DbExists)
                 {
-                    this.DenConfig = denConfigController.GetConfig();
+                    this.DenConfig = this.DenConfigController.GetConfig();
                 }
             }
             catch(Exception e)

@@ -6,12 +6,12 @@ using WaykDen.Controllers;
 namespace WaykDen.Cmdlets
 {
     [Cmdlet("Start", "DevolutionsJet")]
-    public class StartDevolutionsJet : baseCmdlet
+    public class StartDevolutionsJet : WaykDenConfigCmdlet
     {
         private DenServicesController denServicesController;
         protected async override void ProcessRecord()
         {
-            this.denServicesController = new DenServicesController(this.SessionState.Path.CurrentLocation.Path);
+            this.denServicesController = new DenServicesController(this.Path, this.Key);
             this.denServicesController.OnError += this.OnError;
             this.denServicesController.OnLog += this.OnLog;
 

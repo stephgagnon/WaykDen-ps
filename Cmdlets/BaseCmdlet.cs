@@ -4,7 +4,7 @@ using System.Management.Automation;
 
 namespace WaykDen.Cmdlets
 {
-    public class baseCmdlet : PSCmdlet
+    public class BaseCmdlet : PSCmdlet
     {
         protected ManualResetEvent mre = new ManualResetEvent(false);
         protected Mutex mutex = new Mutex();

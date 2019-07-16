@@ -7,7 +7,7 @@ using WaykDen.Controllers;
 namespace WaykDen.Cmdlets
 {
     [Cmdlet("Restart", "WaykDen")]
-    public class RestartWaykDen : baseCmdlet
+    public class RestartWaykDen : WaykDenConfigCmdlet
     {
         private DenServicesController denServicesController;
 
@@ -15,7 +15,7 @@ namespace WaykDen.Cmdlets
         {
             try
             {
-                this.denServicesController = new DenServicesController(this.SessionState.Path.CurrentLocation.Path);
+                this.denServicesController = new DenServicesController(this.Path, this.Key);
                 this.denServicesController.OnLog += this.OnLog;
                 this.denServicesController.OnError += this.OnError;
                 List<string> runningContainers = await this.denServicesController.GetRunningContainers();

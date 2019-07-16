@@ -71,7 +71,7 @@ namespace WaykDen.Controllers
             }
         }
 
-        public DenServicesController(string path)
+        public DenServicesController(string path, string configKey = null)
         {
             this.Path = Environment.GetEnvironmentVariable(WAYK_DEN_HOME);
             if(string.IsNullOrEmpty(this.Path))
@@ -80,18 +80,16 @@ namespace WaykDen.Controllers
             }
 
             this.Path = this.Path.EndsWith($"{System.IO.Path.DirectorySeparatorChar}") ? this.Path : $"{this.Path}{System.IO.Path.DirectorySeparatorChar}";
-            try
-            {
-                this.denConfigController = new DenConfigController(this.Path);
-                this.DenConfig = this.denConfigController.GetConfig();   
-            }
-            catch(Exception e)
-            {
-                if(this.OnError != null) this.OnError(e);
-            }
             
+            this.denConfigController = new DenConfigController(this.Path, configKey);
+            this.DenConfig = this.denConfigController.GetConfig();
             this.DenNetwork = new DenNetwork(this);
-            
+
+            if(this.DenConfig == null)
+            {
+                throw new Exception("Could not found WaykDen configuration in given path. Make sure WaykDen configuration is in current folder or set WAYK_DEN_HOME to the path of WaykDen configuration");
+            }
+        
             if(string.IsNullOrEmpty(this.DenConfig.DenDockerConfigObject.DockerClientUri))
             {
                 this.DenConfig.DenDockerConfigObject.DockerClientUri = this.dockerDefaultEndpoint;
@@ -136,7 +134,7 @@ namespace WaykDen.Controllers
             if(started)
             {
                 Thread.Sleep(1000);
-                await traefik.CurlTraefikConfig();
+                started = await traefik.CurlTraefikConfig();
             }
 
             return started;

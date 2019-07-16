@@ -26,35 +26,42 @@ namespace WaykDen.Cmdlets
         public string ID {get; set;}
         protected async override void ProcessRecord()
         {
-            string parameter = null;
+            try
+            {
+                string parameter = null;
             
-            if(!string.IsNullOrEmpty(this.ID))
-            {
-                parameter = this.ParameterBuilder(UserGetOption.ByID);
-            }
-            else if(!string.IsNullOrEmpty(this.Username))
-            {
-                parameter = this.ParameterBuilder(UserGetOption.ByUsername);
-            }
-
-            Task<string> usersString = this.DenRestAPIController.GetUsers(parameter);
-            usersString.Wait();
-
-            string res = await usersString;
-
-            if(res.StartsWith('['))
-            {
-                var users = this.DenRestAPIController.DeserializeString<User[]>(res);
-                
-                foreach(User user in users)
+                if(!string.IsNullOrEmpty(this.ID))
                 {
-                    this.WriteObject(user.ToUserObject(), true);
+                    parameter = this.ParameterBuilder(UserGetOption.ByID);
+                }
+                else if(!string.IsNullOrEmpty(this.Username))
+                {
+                    parameter = this.ParameterBuilder(UserGetOption.ByUsername);
+                }
+
+                Task<string> usersString = this.DenRestAPIController.GetUsers(parameter);
+                usersString.Wait();
+
+                string res = await usersString;
+
+                if(res.StartsWith('['))
+                {
+                    var users = this.DenRestAPIController.DeserializeString<User[]>(res);
+                    
+                    foreach(User user in users)
+                    {
+                        this.WriteObject(user.ToUserObject(), true);
+                    }
+                }
+                else if (res.StartsWith('{'))
+                {
+                    var user = this.DenRestAPIController.DeserializeString<User>(res);
+                    this.WriteObject(user?.ToUserObject());
                 }
             }
-            else
+            catch(Exception e)
             {
-                var user = this.DenRestAPIController.DeserializeString<User>(res);
-                this.WriteObject(user?.ToUserObject());
+                this.OnError(e);
             }
         }
 
