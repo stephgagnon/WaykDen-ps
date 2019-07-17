@@ -9,7 +9,6 @@ namespace WaykDen.Cmdlets
     [Cmdlet(VerbsCommon.Set, "WaykDenWebCertificate")]
     public class SetWaykDenWebCertificate : WaykDenConfigCmdlet
     {
-        private const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
         private DenRestAPIController denRestAPIController {get; set;}
 
         [Parameter(Mandatory = true, HelpMessage = "Path to a directory where a certificate and its private key are found.")]

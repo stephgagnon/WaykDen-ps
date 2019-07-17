@@ -6,8 +6,8 @@ namespace WaykDen.Cmdlets
 {
     public class WaykDenConfigCmdlet : BaseCmdlet
     {
-        private const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
         private const string WAYK_DEN_CONFIG_KEY = "WAYK_DEN_CONFIG_KEY";
+        protected const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
         protected string Path {get; set;}
         protected DenConfigController DenConfigController {get; set;}
         [Parameter(HelpMessage = "Key to encrypt or decrypt configuration database.")]

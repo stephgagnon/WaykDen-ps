@@ -10,7 +10,6 @@ namespace WaykDen.Cmdlets
     [Cmdlet(VerbsCommon.Set, "WaykDenConfig")]
     public class SetWaykDenConfig : WaykDenConfigCmdlet
     {
-        private const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
         [Parameter(HelpMessage = "Url of a running MongoDB instance.")]
         public string MongoUrl {get; set;}= string.Empty;
         [Parameter(HelpMessage = "Port of a running MongoDB instance.")]

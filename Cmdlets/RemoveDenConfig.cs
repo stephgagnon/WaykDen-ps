@@ -10,7 +10,6 @@ namespace WaykDen.Cmdlets
     [Cmdlet(VerbsCommon.Remove, "WaykDenConfig")]
     public class RemoveWaykDenConfig : WaykDenConfigCmdlet
     {
-        private const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
         [Parameter]
         public SwitchParameter MongoUrl {get; set;}
         [Parameter]

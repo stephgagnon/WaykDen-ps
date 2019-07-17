@@ -62,6 +62,7 @@ namespace WaykDen.Cmdlets
             catch(Exception e)
             {
                 this.OnError(e);
+                return;
             }
         }
 

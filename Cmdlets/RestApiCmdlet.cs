@@ -20,9 +20,13 @@ namespace WaykDen.Cmdlets
         protected DenRestAPIController DenRestAPIController {get; set;}
         protected override void BeginProcessing()
         {
-            if(string.IsNullOrEmpty(this.ApiKey) || string.IsNullOrEmpty(this.ServerUrl))
+            if(string.IsNullOrEmpty(this.ApiKey))
             {
                 this.ApiKey = Environment.GetEnvironmentVariable(DEN_API_KEY_ENV);
+            }
+
+            if( string.IsNullOrEmpty(this.ServerUrl))
+            {
                 this.ServerUrl = Environment.GetEnvironmentVariable(DEN_SERVER_URL_ENV);
             }
 

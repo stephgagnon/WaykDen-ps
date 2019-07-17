@@ -13,7 +13,7 @@ namespace WaykDen.Cmdlets
         {
             ErrorRecord error = new ErrorRecord(e, e.StackTrace, ErrorCategory.InvalidData, e.Data);
             this.WriteWarning(e.Message);
-            this.ThrowTerminatingError(error);
+            this.WriteError(error);
         }
 
         protected virtual void OnLog(string message)

@@ -16,8 +16,10 @@ namespace WaykDen.Cmdlets
         }
         [Parameter(HelpMessage = "A Connection ID.")]
         public string ID {get; set;} = string.Empty;
-        [Parameter(HelpMessage = "List all offline connections")]
+        [Parameter(HelpMessage = "List all offline connections.")]
         public SwitchParameter Offline = false;
+        [Parameter(HelpMessage = "List all connections.")]
+        public SwitchParameter All = false;
 
         protected async override void ProcessRecord()
         {
@@ -29,7 +31,7 @@ namespace WaykDen.Cmdlets
                 {
                     parameter = this.ParameterBuilder(ConnectionGetOptions.ByID);
                 }
-                else
+                else if(!this.All)
                 {
                     parameter = this.ParameterBuilder(ConnectionGetOptions.ByState);
                 }

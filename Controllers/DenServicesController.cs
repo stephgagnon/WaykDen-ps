@@ -16,8 +16,6 @@ namespace WaykDen.Controllers
     {
         private const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
         private const string DEN_NETWORK_NAME = "den-network";
-        public const string DOCKER_DEFAULT_CLIENT_URI_LINUX = "unix:///var/run/docker.sock";
-        public const string DOCKER_DEFAULT_CLIENT_URI_WINDOWS = "npipe://./pipe/docker_engine";
         public string Path {get; set;} = string.Empty;
         public DenConfig DenConfig {get;}
         public DenNetwork DenNetwork {get;}
@@ -56,20 +54,6 @@ namespace WaykDen.Controllers
             Name,
             Network
         }
-        private string dockerDefaultEndpoint
-        {
-            get
-            {
-                if(Environment.OSVersion.Platform == PlatformID.Unix)
-                {
-                    return DOCKER_DEFAULT_CLIENT_URI_LINUX;
-                } 
-                else 
-                {
-                    return DOCKER_DEFAULT_CLIENT_URI_WINDOWS;
-                }
-            }
-        }
 
         public DenServicesController(string path, string configKey = null)
         {
@@ -90,10 +74,6 @@ namespace WaykDen.Controllers
                 throw new Exception("Could not found WaykDen configuration in given path. Make sure WaykDen configuration is in current folder or set WAYK_DEN_HOME to the path of WaykDen configuration");
             }
         
-            if(string.IsNullOrEmpty(this.DenConfig.DenDockerConfigObject.DockerClientUri))
-            {
-                this.DenConfig.DenDockerConfigObject.DockerClientUri = this.dockerDefaultEndpoint;
-            }
             this.DockerClient = new DockerClientConfiguration(new Uri(this.DenConfig.DenDockerConfigObject.DockerClientUri)).CreateClient();
         }
 
@@ -130,14 +110,17 @@ namespace WaykDen.Controllers
         private async Task<bool> StartTraefikService()
         {
             DenTraefikService traefik = new DenTraefikService(this);
-            bool started = await this.StartService(traefik);
-            if(started)
+            Task<bool> started = this.StartService(traefik);
+            started.Wait();
+
+            if(await started)
             {
                 Thread.Sleep(1000);
-                started = await traefik.CurlTraefikConfig();
+                started = traefik.CurlTraefikConfig();
+                started.Wait();
             }
 
-            return started;
+            return await started;
         }
 
         public async Task<bool> StartDevolutionsJet()
@@ -313,8 +296,6 @@ namespace WaykDen.Controllers
                 return null;
             }
 
-            
-
             IDictionary<string, IDictionary<string, bool>> filter = new Dictionary<string, IDictionary<string, bool>>();
             filter.Add("name", new Dictionary<string, bool>(){{DEN_NETWORK_NAME, true}});
 
@@ -382,7 +363,9 @@ namespace WaykDen.Controllers
 
             if(started)
             {
-                started = await this.StartTraefikService();
+                Task<bool> traefikStarted = this.StartTraefikService();
+                traefikStarted.Wait();
+                started = await traefikStarted;
                 if(!started)
                 {
                     this.WriteError(new Exception("Error starting Traefik service. Make sure Traefik API port is free in WaykDen Configuration or switch API port using Set-WaykDenConfig."));

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -150,7 +151,7 @@ $@"
                     request.Content = new StringContent(this.BuildConfig(), Encoding.UTF8);
                     var response = httpClient.SendAsync(request);
                     response.Wait();
-                    return (await response).IsSuccessStatusCode;
+                    return (await response).StatusCode == HttpStatusCode.OK;
                 }
             }
         }

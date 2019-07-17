@@ -10,7 +10,8 @@ namespace WaykDen.Cmdlets
     [Cmdlet(VerbsCommon.New, "WaykDenConfig")]
     public class NewWaykDenConfig : WaykDenConfigCmdlet
     {
-        private const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
+        public const string DOCKER_DEFAULT_CLIENT_URI_LINUX = "unix:///var/run/docker.sock";
+        public const string DOCKER_DEFAULT_CLIENT_URI_WINDOWS = "npipe://./pipe/docker_engine";
         private DenConfig DenConfig {get; set;}
         [Parameter(HelpMessage = "Url of a running MongoDB instance.")]
         public string MongoUrl {get; set;} = string.Empty;
@@ -45,20 +46,22 @@ namespace WaykDen.Cmdlets
         public string CertificatePath {get; set;} = string.Empty;
         [Parameter(HelpMessage = "Path to the private key of the given certificate for Traefik.")]
         public string PrivateKeyPath {get; set;} = string.Empty;
-        [Parameter]
-        public string MongoImage {get; set;} = "library/mongo:4.1-bionic";
-        [Parameter]
-        public string DenLucidImage {get; set;} = "devolutions/den-lucid:3.3.3-stretch-dev";
-        [Parameter]
-        public string PickyImage {get; set;} = "devolutions/picky:3.0.0-stretch-dev";
-        [Parameter]
-        public string DenRouterImage {get; set;} = "devolutions/den-router:0.5.0-stretch-dev";
-        [Parameter]
-        public string DenServerImage {get; set;} = "devolutions/den-server:1.2.0-stretch-dev";
-        [Parameter]
-        public string DenTraefikImage {get; set;} = "library/traefik:1.7";
-        [Parameter]
-        public string DevolutionsJetImage {get; set;} = "devolutions/devolutions-jet:0.4.0-stretch";
+        [Parameter(HelpMessage = "Use Windows container.")]
+        public SwitchParameter Windows {get; set;} = false;
+        private string dockerDefaultEndpoint
+        {
+            get
+            {
+                if(Environment.OSVersion.Platform == PlatformID.Unix)
+                {
+                    return DOCKER_DEFAULT_CLIENT_URI_LINUX;
+                } 
+                else 
+                {
+                    return DOCKER_DEFAULT_CLIENT_URI_WINDOWS;
+                }
+            }
+        }
 
         public NewWaykDenConfig()
         {
@@ -69,6 +72,7 @@ namespace WaykDen.Cmdlets
             try
             {
                 DenConfigController denConfigController = new DenConfigController(this.Path, this.Key);
+                Platform platform = this.Windows ? Platform.Windows : Platform.Linux;
 
                 if(denConfigController.DbExists)
                 {
@@ -82,7 +86,7 @@ namespace WaykDen.Cmdlets
                     {
                         DenDockerConfigObject = new DenDockerConfigObject
                         {
-                            DockerClientUri = this.DockerClientUri != null ? this.DockerClientUri : string.Empty
+                            DockerClientUri = string.IsNullOrEmpty(this.DockerClientUri) ? this.dockerDefaultEndpoint : this.DockerClientUri
                         },
 
                         DenMongoConfigObject = new DenMongoConfigObject
@@ -133,16 +137,7 @@ namespace WaykDen.Cmdlets
                             PrivateKey = this.PrivateKeyPath != null ? this.PrivateKeyPath : string.Empty
                         },
 
-                        DenImageConfigObject = new DenImageConfigObject
-                        {   
-                            DenMongoImage = this.MongoImage != null ? this.MongoImage : "library/mongo",
-                            DenLucidImage = this.DenLucidImage != null ? this.DenLucidImage : "devolutions/den-lucid:3.3.3-stretch-dev",
-                            DenPickyImage = this.PickyImage != null ? this.PickyImage : "devolutions/picky:3.0.0-stretch-dev",
-                            DenRouterImage = this.DenRouterImage != null ? this.DenRouterImage : "devolutions/den-router:0.5.0-stretch-dev",
-                            DenServerImage = this.DenServerImage != null ? this.DenServerImage : "devolutions/den-server:1.2.0-stretch-dev",
-                            DenTraefikImage = this.DenTraefikImage != null ? this.DenTraefikImage : "library/traefik:1.7",
-                            DevolutionsJetImage = this.DevolutionsJetImage != null ? this.DevolutionsJetImage : "devolutions/devolutions-jet:0.4.0-stretch",
-                        }
+                        DenImageConfigObject = new DenImageConfigObject(platform)
                     };
                 }
 

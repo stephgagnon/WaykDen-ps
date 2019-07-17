@@ -28,7 +28,11 @@ namespace WaykDen.Controllers
             this.path = $"{path}/WaykDen.db";
             this.password = string.IsNullOrEmpty(password) ? string.Empty : password;
             this.connString = string.IsNullOrEmpty(password) ? $"Filename={this.path}; Mode=Exclusive" : $"Filename={this.path}; Password={this.password}; Mode=Exclusive";
-            this.TestConnString();
+            if(File.Exists(this.path))
+            {
+                this.TestConnString();
+            }            
+
             BsonMapper.Global.EmptyStringToNull = false;
         }
 
@@ -59,7 +63,11 @@ namespace WaykDen.Controllers
                 using(var db = new LiteDatabase(this.connString))
                 {
                     var collections = db.GetCollectionNames().ToArray();
-                    return collections.Length > 0;
+                    if(collections.Length > 0)
+                    {
+                        return true;
+                    }
+                    return false;
                 }
             }
         }
@@ -103,7 +111,7 @@ namespace WaykDen.Controllers
         {
             if(!this.DbExists)
             {
-                throw new Exception("Could not found WaykDen configuration in given path. Make sure WaykDen configuration is in current folder or set WAYK_DEN_HOME to the path of WaykDen configuration");
+                throw new Exception("Could not found WaykDen configuration in given path.Use New-WaykDenConfig or make sure WaykDen configuration is in current folder or set WAYK_DEN_HOME to the path of WaykDen configuration");
             }
 
             using(var db = new LiteDatabase(this.connString))

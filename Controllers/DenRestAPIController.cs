@@ -23,12 +23,17 @@ namespace WaykDen.Controllers
 
         private async Task<string> Get(string url)
         {
+            this.ValidateUrl(url);
             using(var httpClient = new HttpClient())
             {
                 using (var request = new HttpRequestMessage(new HttpMethod("GET"), url))
                 {
                     httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", this.apiKey);
                     var response = await httpClient.SendAsync(request);
+                    if(response.StatusCode != HttpStatusCode.OK)
+                    {
+                        throw new Exception($"Error response is {response.StatusCode}");
+                    }
                     return await response.Content.ReadAsStringAsync();
                 }
             }
@@ -36,6 +41,7 @@ namespace WaykDen.Controllers
 
         private string Post(string url, string value)
         {
+            this.ValidateUrl(url);
             var request = HttpWebRequest.Create(url);
             request.PreAuthenticate = true;
             request.Headers.Add("Authorization", "Bearer " + this.apiKey);
@@ -54,6 +60,10 @@ namespace WaykDen.Controllers
                 }
 
                 var response = (HttpWebResponse)request.GetResponse();
+                if(response.StatusCode != HttpStatusCode.OK)
+                {
+                    throw new Exception($"Error response is {response.StatusCode}");
+                }
                 var responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
                 return responseString;
             }
@@ -66,6 +76,7 @@ namespace WaykDen.Controllers
 
         private string Put(string url, string value)
         {
+            this.ValidateUrl(url);
             var request = HttpWebRequest.Create(url);
             request.PreAuthenticate = true;
             request.Headers.Add("Authorization", "Bearer " + this.apiKey);
@@ -84,6 +95,10 @@ namespace WaykDen.Controllers
                 }
 
                 var response = (HttpWebResponse)request.GetResponse();
+                if(response.StatusCode != HttpStatusCode.OK)
+                {
+                    throw new Exception($"Error response is {response.StatusCode}");
+                }
                 var responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
                 return responseString;
             }
@@ -96,12 +111,17 @@ namespace WaykDen.Controllers
 
         private async Task<string> Delete(string url)
         {
+            this.ValidateUrl(url);
             using(var httpClient = new HttpClient())
             {
                 using (var request = new HttpRequestMessage(new HttpMethod("DELETE"), url))
                 {
                     httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", this.apiKey);
                     var response = await httpClient.DeleteAsync(url);
+                    if(response.StatusCode != HttpStatusCode.OK)
+                    {
+                        throw new Exception($"Error response is {response.StatusCode}");
+                    }
                     return await response.Content.ReadAsStringAsync();
                 }
             }
@@ -144,7 +164,7 @@ namespace WaykDen.Controllers
 
         public string PutUser(string content, string parameter = null)
         {
-            return this.Put($"{this.serverUrl}/user/{parameter}/license", content);
+            return this.Put($"{this.serverUrl}/user{parameter}/license", content);
         }
 
         public async Task<string> DeleteUserLicense(string parameter)
@@ -160,6 +180,16 @@ namespace WaykDen.Controllers
         public T DeserializeString<T>(string json)
         {
             return (T)JsonConvert.DeserializeObject<T>(json);
+        }
+
+        private void ValidateUrl(string url)
+        {
+            Uri uriResult;
+            bool valid = Uri.TryCreate(url, UriKind.Absolute, out uriResult);
+            if(!valid)
+            {
+                throw new Exception("Invalid URL.");
+            }
         }
 
         public delegate void OnErrorHandler(Exception e);

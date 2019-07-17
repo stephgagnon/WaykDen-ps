@@ -7,7 +7,7 @@ namespace WaykDen.Models
 {
     public class SessionObject
     {
-        public string SessionID {get; set;}
+        public string ID {get; set;}
         public string ClientDenID {get; set;}
         public string ServerDenID {get; set;}
         public string ClientConnectionID {get; set;}
@@ -20,9 +20,16 @@ namespace WaykDen.Models
         public string ServerUserAgent {get; set;}
         public string ServerUserID {get; set;}
         public string ServerUsername {get; set;}
-        public DateTime Started {get; set;}
-        public DateTime Ended {get; set;}
+        public DateTime StartTime {get; set;}
+    }
+
+    public class SessionInProgressObject : SessionObject
+    {
         public DateTime LastUpdate {get; set;}
+    }
+    public class SessionTerminatedObject : SessionObject
+    {
+        public DateTime EndTime {get; set;}
         public bool EndedGracefully {get; set;}
     }
     public class Session
@@ -40,9 +47,34 @@ namespace WaykDen.Models
 
         public SessionObject ToSessionObject()
         {
-            return new SessionObject
+            DateTime started = RestAPIUtils.GetDateTime(this.start_timestamp);
+            DateTime ended = RestAPIUtils.GetDateTime(this.end_timestamp);
+            Console.WriteLine(DateTime.Compare(started, ended));
+            if(DateTime.Compare(started, ended) > 0)
             {
-                SessionID = this.session_id,
+                return new SessionInProgressObject
+                {
+                    ID = this.session_id,
+                    ClientDenID = this.client_den_id,
+                    ServerDenID = this.server_den_id,
+                    ClientConnectionID = this.client_info.connection_id,
+                    ClientMachineName = this.client_info.machine_name,
+                    ClientUserAgent = this.client_info.user_agent,
+                    ClientUserID = this.client_info.user_id,
+                    ClientUsername = this.client_info.username,
+                    ServerConnectionID = this.server_info.connection_id,
+                    ServerMachineName = this.server_info.machine_name,
+                    ServerUserAgent = this.server_info.user_agent,
+                    ServerUserID = this.server_info.user_id,
+                    ServerUsername = this.server_info.username,
+                    StartTime = RestAPIUtils.GetDateTime(this.start_timestamp),
+                    LastUpdate = RestAPIUtils.GetDateTime(this.last_update),
+                };
+            }
+
+            return new SessionTerminatedObject()
+            {
+                ID = this.session_id,
                 ClientDenID = this.client_den_id,
                 ServerDenID = this.server_den_id,
                 ClientConnectionID = this.client_info.connection_id,
@@ -55,9 +87,8 @@ namespace WaykDen.Models
                 ServerUserAgent = this.server_info.user_agent,
                 ServerUserID = this.server_info.user_id,
                 ServerUsername = this.server_info.username,
-                Started = RestAPIUtils.GetDateTime(this.start_timestamp),
-                Ended = RestAPIUtils.GetDateTime(this.end_timestamp),
-                LastUpdate = RestAPIUtils.GetDateTime(this.last_update),
+                StartTime = RestAPIUtils.GetDateTime(this.start_timestamp),
+                EndTime = RestAPIUtils.GetDateTime(this.end_timestamp),
                 EndedGracefully = this.ended_gracefully
             };
         }
@@ -250,7 +281,6 @@ namespace WaykDen.Models
     public class ConnectionObject
     {
         public string ID {get; set;}
-        public string ConnectionID {get; set;}
         public string MachineName {get; set;}
         public string UserAgent {get; set;}
         public string UserID {get; set;}
@@ -277,7 +307,7 @@ namespace WaykDen.Models
         {
             return new ConnectionObject
             {
-                ConnectionID = this.connection_id,
+                ID = this.connection_id,
                 MachineName = this.machine_name,
                 UserAgent = this.user_agent,
                 UserID = this.user_id,

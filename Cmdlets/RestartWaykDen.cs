@@ -11,36 +11,18 @@ namespace WaykDen.Cmdlets
     {
         private DenServicesController denServicesController;
 
-        protected async override void ProcessRecord()
+        protected override void ProcessRecord()
         {
             try
             {
                 this.denServicesController = new DenServicesController(this.Path, this.Key);
                 this.denServicesController.OnLog += this.OnLog;
                 this.denServicesController.OnError += this.OnError;
-                List<string> runningContainers = await this.denServicesController.GetRunningContainers();
 
-                Task stop = this.denServicesController.StopWaykDen(runningContainers);
-
-                while(!stop.IsCompleted && !stop.IsCanceled)
-                {
-                    mre.WaitOne();
-                    lock(this.mutex)
-                    {
-                        this.WriteProgress(this.record);
-                    }
-                }
-
-                Task start = this.denServicesController.StartWaykDen();
-
-                while(!start.IsCompleted && !start.IsCanceled)
-                {
-                    mre.WaitOne();
-                    lock(this.mutex)
-                    {
-                        this.WriteProgress(this.record);
-                    }
-                }
+                var cmdStop = new StopWaykDen();
+                cmdStop.Invoke();
+                var cmdStart = new StartWaykDen();
+                cmdStart.Invoke();
             }
             catch(Exception e)
             {

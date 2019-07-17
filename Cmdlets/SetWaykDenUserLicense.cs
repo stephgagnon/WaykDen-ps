@@ -39,7 +39,7 @@ namespace WaykDen.Cmdlets
                     data = JsonConvert.SerializeObject(new BySerialObject{serial_number = this.Serial});
                 } else return;
 
-                this.DenRestAPIController.PutUser(data, this.UserID);
+                this.DenRestAPIController.PutUser(data, $"/{this.UserID}");
             }
         }
     }

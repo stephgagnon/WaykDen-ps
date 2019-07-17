@@ -22,10 +22,10 @@ namespace WaykDen.Cmdlets
         public string Before {get; set;} = string.Empty;
         [Parameter(HelpMessage = "List all sessions after given date."), ValidatePattern("\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d(?:\\.\\d+)?Z?")]
         public string After {get; set;} = string.Empty;
-        [Parameter(HelpMessage = "List all sessions in progress.")]
-        public SwitchParameter InProgress {get; set;} = false;
         [Parameter(HelpMessage = "List all terminated sessions.")]
         public SwitchParameter Terminated {get; set;} = false;
+        [Parameter(HelpMessage = "List all sessions. (In progress and terminated)")]
+        public SwitchParameter All {get; set;} = false;
 
         protected async override void ProcessRecord()
         {
@@ -37,7 +37,7 @@ namespace WaykDen.Cmdlets
                 {
                     parameter = this.ParameterBuilder(SessionsGetOptions.ByDate);
                 }
-                else if(this.InProgress || this.Terminated)
+                else if(!this.All)
                 {
                     parameter = this.ParameterBuilder(SessionsGetOptions.ByState);
                 }
@@ -98,10 +98,11 @@ namespace WaykDen.Cmdlets
             }
             else
             {
-                if(this.InProgress)
+                if(this.Terminated)
                 {
-                    parameter.Append("state=InProgress");
-                } else parameter.Append("state=Terminated");
+                    parameter.Append("state=Terminated");
+                } 
+                else parameter.Append("state=InProgress");
             }
 
             return parameter.ToString();
