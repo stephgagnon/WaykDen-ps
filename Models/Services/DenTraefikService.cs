@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Docker.DotNet.Models;
@@ -143,6 +145,8 @@ $@"
 
         public async Task<bool> CurlTraefikConfig()
         {
+          try
+          {
             using(var httpClient = new HttpClient())
             {
                 string port =  this.DenConfig.DenTraefikConfigObject.ApiPort;
@@ -154,6 +158,11 @@ $@"
                     return (await response).StatusCode == HttpStatusCode.OK;
                 }
             }
+          }
+          catch(Exception)
+          {
+            throw new Exception("Problem with Traefik. Try to restart WaykDen.");
+          }
         }
 
         private void ImportCertificate()
