@@ -30,6 +30,7 @@ namespace WaykDen.Models.Services
         private const string DEFAULT_MONGO_URL = "mongodb://den-mongo";
         private const string DEFAULT_MONGO_PORT = "27017";
         private const string DEN_API_KEY_ENV = "DEN_API_KEY";
+        private const string DEN_LOGIN_REQUIRED_ENV = "DEN_LOGIN_REQUIRED";
         public DenServerService(DenServicesController controller)
         {
             this.DenServicesController = controller;
@@ -63,6 +64,7 @@ namespace WaykDen.Models.Services
             this.Env.Add($"{ROUTER_EXTERNAL_URL_ENV}={externalRouterUrl}/cow");
             this.Env.Add($"{LUCID_INTERNAL_URL_ENV}={LUCID_INTERNAL_URL}");
             this.Env.Add($"{LUCID_EXTERNAL_URL_ENV}={this.DenConfig.DenServerConfigObject.ExternalUrl}/lucid");
+            this.Env.Add($"{DEN_LOGIN_REQUIRED_ENV}={this.DenConfig.DenServerConfigObject.LoginRequired.ToLower()}");
             if(!string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.LDAPUsername))
             {
                 this.Env.Add($"{LDAP_USERNAME_ENV}={this.DenConfig.DenServerConfigObject.LDAPUsername}");

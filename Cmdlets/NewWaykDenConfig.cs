@@ -36,6 +36,8 @@ namespace WaykDen.Cmdlets
         public string LDAPBaseDN {get; set;} = string.Empty;
         [Parameter(HelpMessage = "URL where Devolutions Jet will be listening.")]
         public string JetServerUrl {get; set;} = string.Empty;
+        [Parameter(HelpMessage = "Force the Wayk client to be logged and authenticated. WaykDen will give an ID only if the user is authenticated.")]
+        public SwitchParameter LoginRequired {get; set;} = false;
         [Parameter(HelpMessage = "Docker client endpoint URI.")]
         public string DockerClientUri {get; set;} = string.Empty;
         [Parameter(HelpMessage = "Port where traefik API will be listening.")]
@@ -126,7 +128,8 @@ namespace WaykDen.Cmdlets
                             LDAPServerType = this.LDAPServerType != null ? this.LDAPServerType : string.Empty,
                             LDAPBaseDN = this.LDAPBaseDN != null ? this.LDAPBaseDN : string.Empty,
                             PrivateKey = RsaKeyutils.PemToDer(rsaKeyGenerator.PrivateKey),
-                            JetServerUrl = this.JetServerUrl != null ? this.JetServerUrl : string.Empty
+                            JetServerUrl = this.JetServerUrl != null ? this.JetServerUrl : string.Empty,
+                            LoginRequired = this.LoginRequired ? "True": "False"
                         },
 
                         DenTraefikConfigObject = new DenTraefikConfigObject
@@ -165,6 +168,7 @@ namespace WaykDen.Cmdlets
             this.DenConfig.DenServerConfigObject.LDAPPassword = !string.IsNullOrEmpty(this.LDAPPassword) ? this.LDAPPassword : this.DenConfig.DenServerConfigObject.LDAPPassword;
             this.DenConfig.DenServerConfigObject.LDAPUserGroup = !string.IsNullOrEmpty(this.LDAPUserGroup) ? this.LDAPUserGroup : this.DenConfig.DenServerConfigObject.LDAPUserGroup;
             this.DenConfig.DenServerConfigObject.JetServerUrl = !string.IsNullOrEmpty(this.JetServerUrl) ? this.JetServerUrl : this.DenConfig.DenServerConfigObject.JetServerUrl;
+            this.DenConfig.DenServerConfigObject.LoginRequired = this.LoginRequired ? "True" : "False";
             this.DenConfig.DenTraefikConfigObject.ApiPort = !string.IsNullOrEmpty(this.TraefikApiPort) ? this.TraefikApiPort : this.DenConfig.DenTraefikConfigObject.ApiPort;
             this.DenConfig.DenTraefikConfigObject.WaykDenPort = !string.IsNullOrEmpty(this.WaykDenPort) ? this.WaykDenPort : this.DenConfig.DenTraefikConfigObject.WaykDenPort;
         }

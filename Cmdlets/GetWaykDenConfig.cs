@@ -56,6 +56,7 @@ namespace WaykDen.Cmdlets
             this.WriteObject(new DenObject {Property = $"Den-Server : {nameof(this.DenServerConfigObject.LDAPBaseDN)}", Value = this.DenServerConfigObject.LDAPBaseDN});
             this.WriteObject(new DenObject {Property = $"Den-Server : {nameof(this.DenServerConfigObject.ApiKey)}", Value = this.DenServerConfigObject.ApiKey});
             this.WriteObject(new DenObject {Property = $"Den-Server : {nameof(this.DenServerConfigObject.JetServerUrl)}", Value = this.DenServerConfigObject.JetServerUrl});
+            this.WriteObject(new DenObject {Property = $"Den-Server : {nameof(this.DenServerConfigObject.LoginRequired)}", Value = this.DenServerConfigObject.LoginRequired});
             this.WriteObject(new DenObject {Property = $"Traefik : {nameof(this.DenTraefikConfigObject.ApiPort)}", Value = this.DenTraefikConfigObject.ApiPort});
             this.WriteObject(new DenObject {Property = $"Traefik : {nameof(this.DenTraefikConfigObject.WaykDenPort)}", Value = this.DenTraefikConfigObject.WaykDenPort});
             this.WriteObject(new DenObject {Property = $"Image : {nameof(this.DenImageConfigObject.DenMongoImage)}", Value = this.DenImageConfigObject.DenMongoImage});

@@ -222,6 +222,7 @@ namespace WaykDen.Controllers
             values.TryGetValue(nameof(DenServerConfigObject.LDAPBaseDN), out var ldapbasedn);
             values.TryGetValue(nameof(DenServerConfigObject.PrivateKey), out var privatekey);
             values.TryGetValue(nameof(DenServerConfigObject.JetServerUrl), out var jetServerUrl);
+            values.TryGetValue(nameof(DenServerConfigObject.LoginRequired), out var loginRequired);
             return new DenServerConfigObject()
             {
                 ApiKey = apikey?.ToString().Trim('\"'),
@@ -234,7 +235,8 @@ namespace WaykDen.Controllers
                 LDAPUserGroup = ldapusergroup?.ToString().Trim('\"'),
                 LDAPUsername = ldapusername?.ToString().Trim('\"'),
                 PrivateKey = privatekey,
-                JetServerUrl = jetServerUrl?.ToString().Trim('\"')
+                JetServerUrl = jetServerUrl?.ToString().Trim('\"'),
+                LoginRequired = loginRequired?.ToString().Trim('\"')
             };
         }
 

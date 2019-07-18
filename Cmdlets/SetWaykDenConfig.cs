@@ -42,6 +42,8 @@ namespace WaykDen.Cmdlets
         public string CertificatePath {get; set;} = string.Empty;
         [Parameter(HelpMessage = "Path to the private key of the given certificate for Traefik.")]
         public string KeyPath {get; set;} = string.Empty;
+        [Parameter(HelpMessage = "Force the Wayk client to be logged and authenticated. WaykDen will give an ID only if the user is authenticated."), ValidateSet(new string[]{"True", "False"})]
+        public string LoginRequired {get; set;} = string.Empty;
         public string MongoImage {get; set;} = string.Empty;
         [Parameter]
         public string PickyImage {get; set;} = string.Empty;
@@ -69,6 +71,7 @@ namespace WaykDen.Cmdlets
                 {nameof(this.LDAPServerType), (typeof(DenServerConfigObject), "LDAPServerType")},
                 {nameof(this.LDAPBaseDN), (typeof(DenServerConfigObject), "LDAPBaseDN")},
                 {nameof(this.JetServerUrl), (typeof(DenServerConfigObject), "JetServerUrl")},
+                {nameof(this.LoginRequired), (typeof(DenServerConfigObject), "LoginRequired")},
                 {nameof(this.DockerClientUri), (typeof(DenDockerConfigObject), "DockerClientUri")},
                 {nameof(this.TraefikApiPort), (typeof(DenTraefikConfigObject), "ApiPort")},
                 {nameof(this.WaykDenPort), (typeof(DenTraefikConfigObject), "WaykDenPort")},
@@ -100,6 +103,7 @@ namespace WaykDen.Cmdlets
                     (nameof(this.LDAPServerType), !string.IsNullOrEmpty(this.LDAPServerType)),
                     (nameof(this.LDAPBaseDN), !string.IsNullOrEmpty(this.LDAPBaseDN)),
                     (nameof(this.JetServerUrl), !string.IsNullOrEmpty(this.JetServerUrl)),
+                    (nameof(this.LoginRequired), !string.IsNullOrEmpty(this.LoginRequired)),
                     (nameof(this.DockerClientUri), !string.IsNullOrEmpty(this.DockerClientUri)),
                     (nameof(this.TraefikApiPort), !string.IsNullOrEmpty(this.TraefikApiPort)),
                     (nameof(this.WaykDenPort), !string.IsNullOrEmpty(this.WaykDenPort)),
