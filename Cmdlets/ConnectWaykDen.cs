@@ -17,17 +17,31 @@ namespace WaykDen.Cmdlets
     {
         private const string DEN_API_KEY_ENV = "DEN_API_KEY";
         private const string DEN_SERVER_URL_ENV = "DEN_SERVER_URL";
-        private const string DEN_LUCID_URL = "/lucid/health";
         private const string DEN_SERVER_URL = "/health";
+        public string ApiKey {get; set;} = string.Empty;
+        public string ServerUrl{get; set;} = string.Empty;
         protected async override void ProcessRecord()
         {
             try
             {
-                DenConfig config = this.DenConfigController.GetConfig();
+                DenConfig config = null;
+                if(string.IsNullOrEmpty(this.ServerUrl) || string.IsNullOrEmpty(this.ApiKey))
+                {
+                    config = this.DenConfigController.GetConfig();
+                }
+
+                if(config != null)
+                {
+                    this.ServerUrl = config.DenServerConfigObject.ExternalUrl;
+                    this.ApiKey = config.DenServerConfigObject.ApiKey;
+                }
+
+                Environment.SetEnvironmentVariable(DEN_API_KEY_ENV, this.ApiKey);
+                Environment.SetEnvironmentVariable(DEN_SERVER_URL_ENV, this.ServerUrl);
+
                 DenServicesController denServicesController = new DenServicesController(this.Path, this.Key);
-                Environment.SetEnvironmentVariable(DEN_API_KEY_ENV, config?.DenServerConfigObject.ApiKey);
-                Environment.SetEnvironmentVariable(DEN_SERVER_URL_ENV, config?.DenServerConfigObject.ExternalUrl);
-                Task<bool> okTask = this.TestRoute($"{config?.DenServerConfigObject.ExternalUrl}{DEN_LUCID_URL}", config.DenLucidConfigObject.ApiKey);
+
+                Task<bool> okTask = this.TestDenServerRoute();
                 okTask.Wait();
 
                 DenTraefikService traefik= null;
@@ -41,10 +55,15 @@ namespace WaykDen.Cmdlets
                     }
                 }
 
-                okTask = this.TestRoute($"{config.DenServerConfigObject.ExternalUrl}{DEN_SERVER_URL}", config.DenServerConfigObject.ApiKey);
-                if(!await okTask)
+                okTask = this.TestDenServerRoute();
+                okTask.Wait();
+                if(await okTask)
                 {
-                    throw new Exception("Traefik routes are not set up. Try to restart WaykDen.");
+                    this.WriteObject($"Success! Server URL : {this.ServerUrl}");
+                }
+                else
+                {
+                    throw new Exception($"Having trouble reaching {this.ServerUrl}");
                 }
             }
             catch(Exception e)
@@ -53,13 +72,13 @@ namespace WaykDen.Cmdlets
             }
         }
 
-        private async Task<bool> TestRoute(string url, string apiKey)
+        private async Task<bool> TestDenServerRoute()
         {
+            string url = $"{this.ServerUrl}{DEN_SERVER_URL}";
             using(var httpClient = new HttpClient())
             {
                 using (var request = new HttpRequestMessage(new HttpMethod("GET"), url))
                 {
-                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
                     var response = await httpClient.SendAsync(request);
                     return response.StatusCode == HttpStatusCode.OK;
                 }

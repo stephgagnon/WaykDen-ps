@@ -13,6 +13,7 @@ namespace WaykDen.Controllers
 {
     public class DenRestAPIController
     {
+        private const string ENCODED_PLUS = "%2B";
         private string apiKey;
         private string serverUrl;
         public DenRestAPIController(string apikey, string serverUrl)
@@ -23,6 +24,7 @@ namespace WaykDen.Controllers
 
         private async Task<string> Get(string url)
         {
+            url = url.Replace("+", ENCODED_PLUS);
             this.ValidateUrl(url);
             using(var httpClient = new HttpClient())
             {

@@ -18,10 +18,10 @@ namespace WaykDen.Cmdlets
             ByDate,
             ByState
         }
-        [Parameter(HelpMessage = "List all sessions before given date."), ValidatePattern("\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d(?:\\.\\d+)?Z?")]
-        public string Before {get; set;} = string.Empty;
-        [Parameter(HelpMessage = "List all sessions after given date."), ValidatePattern("\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d(?:\\.\\d+)?Z?")]
-        public string After {get; set;} = string.Empty;
+        [Parameter(HelpMessage = "List all sessions before given date.")]
+        public DateTime Before {get; set;}
+        [Parameter(HelpMessage = "List all sessions after given date.")]
+        public DateTime After {get; set;} 
         [Parameter(HelpMessage = "List all terminated sessions.")]
         public SwitchParameter Terminated {get; set;} = false;
         [Parameter(HelpMessage = "List all sessions. (In progress and terminated)")]
@@ -31,15 +31,18 @@ namespace WaykDen.Cmdlets
         {
             try
             {
-                string parameter = null;
+                string parameter = string.Empty;
                 
-                if(!string.IsNullOrEmpty(this.Before) || !string.IsNullOrWhiteSpace(this.After))
+                if(this.Before != null && this.Before.Year != DateTime.MinValue.Year || this.After != null && this.After.Year != DateTime.MinValue.Year)
                 {
-                    parameter = this.ParameterBuilder(SessionsGetOptions.ByDate);
+                    if(string.IsNullOrEmpty(parameter)) parameter += "?";
+                    parameter += this.ParameterBuilder(SessionsGetOptions.ByDate);
                 }
-                else if(!this.All)
+                
+                if(!this.All)
                 {
-                    parameter = this.ParameterBuilder(SessionsGetOptions.ByState);
+                    parameter += string.IsNullOrEmpty(parameter) ? "?" : "&";
+                    parameter += this.ParameterBuilder(SessionsGetOptions.ByState);
                 }
 
                 try
@@ -77,23 +80,24 @@ namespace WaykDen.Cmdlets
 
         private string ParameterBuilder(SessionsGetOptions getOption)
         {
-            StringBuilder parameter = new StringBuilder("?");
+            StringBuilder parameter = new StringBuilder();
             if(getOption == SessionsGetOptions.ByDate)
             {
-                if(!string.IsNullOrEmpty(this.After))
+                if(this.After != null && this.After.Year != DateTime.MinValue.Year)
                 {
-                    DateTime after = this.GetDateTime(this.After);
-                    after = after.ToUniversalTime();
-                    string rfc = after.ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz", DateTimeFormatInfo.InvariantInfo);
+                    string rfc = this.After.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz", DateTimeFormatInfo.InvariantInfo);
                     parameter.Append($"from={rfc}");
+
+                    if(this.Before != null)
+                    {
+                        parameter.Append("&");
+                    }
                 }
 
-                if(!string.IsNullOrEmpty(this.Before))
+                if(this.Before != null && this.Before.Year != DateTime.MinValue.Year)
                 {
-                    DateTime before = this.GetDateTime(this.Before);
-                    before = before.ToUniversalTime();
-                    string rfc = before.ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz", DateTimeFormatInfo.InvariantInfo);
-                    parameter.Append($"from={rfc}");
+                    string rfc = this.Before.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz", DateTimeFormatInfo.InvariantInfo);
+                    parameter.Append($"to={rfc}");
                 }
             }
             else
@@ -106,34 +110,6 @@ namespace WaykDen.Cmdlets
             }
 
             return parameter.ToString();
-        }
-
-        private DateTime GetDateTime(string value)
-        {
-            string[] datetime = value.Split('T');
-            string[] date = datetime[0]?.Split('-');
-            string[] time = datetime[1]?.Split(':');
-            return new DateTime
-            (
-                this.StringToInt(date[0] != null ? date[0]: "00"),
-                this.StringToInt(date[1] != null ? date[1]: "00"),
-                this.StringToInt(date[2] != null ? date[2]: "00"),
-                this.StringToInt(time[0] != null ? time[0]: "00"),
-                this.StringToInt(time[1] != null ? time[1]: "00"),
-                this.StringToInt(time[2] != null ? time[2]: "00"),
-                DateTimeKind.Local
-            );
-        }
-
-        private int StringToInt(string value)
-        {
-            bool parsed = Int32.TryParse(value, out int result);
-            if(parsed)
-            {
-                return result;
-            }
-
-            return -1;
         }
     }
 }

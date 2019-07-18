@@ -82,13 +82,13 @@ namespace WaykDen.Models
         private const string LinuxDenServerImage = "devolutions/den-server:1.2.0-stretch-dev";
         private const string LinuxDenTraefikImage = "library/traefik:1.7";
         private const string LinuxDevolutionsJetImage = "devolutions/devolutions-jet:0.4.0-stretch";
-        private const string WindowsMongoImage = "library/mongo:4.1-bionic";
-        private const string WindowsDenLucidImage = "devolutions/den-lucid:3.3.3-stretch-dev";
-        private const string WindowsPickyImage = "devolutions/picky:3.0.0-stretch-dev";
-        private const string WindowsDenRouterImage = "devolutions/den-router:0.5.0-stretch-dev";
-        private const string WindowsDenServerImage = "devolutions/den-server:1.2.0-stretch-dev";
-        private const string WindowsDenTraefikImage = "library/traefik:1.7";
-        private const string WindowsDevolutionsJetImage = "devolutions/devolutions-jet:0.4.0-stretch";
+        private const string WindowsMongoImage = "library/mongo:4.2.0-rc2-windowsservercore-1803";
+        private const string WindowsDenLucidImage = "devolutions/den-lucid:3.3.3-servercore-ltsc2019-dev";
+        private const string WindowsPickyImage = "devolutions/picky:3.0.0-servercore-ltsc2019-dev";
+        private const string WindowsDenRouterImage = "devolutions/den-router:0.5.0-servercore-ltsc2019-dev";
+        private const string WindowsDenServerImage = "devolutions/den-server:1.2.0-servercore-ltsc2019-dev";
+        private const string WindowsDenTraefikImage = "library/traefik:1.7-nanoserver";
+        private const string WindowsDevolutionsJetImage = "devolutions/devolutions-jet:0.4.0-servercore-ltsc2019-dev";
         public int Id {get; set;}
         public string DenMongoImage {get; set;}
         public string DenPickyImage {get; set;}

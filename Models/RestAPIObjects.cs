@@ -49,7 +49,6 @@ namespace WaykDen.Models
         {
             DateTime started = RestAPIUtils.GetDateTime(this.start_timestamp);
             DateTime ended = RestAPIUtils.GetDateTime(this.end_timestamp);
-            Console.WriteLine(DateTime.Compare(started, ended));
             if(DateTime.Compare(started, ended) > 0)
             {
                 return new SessionInProgressObject
