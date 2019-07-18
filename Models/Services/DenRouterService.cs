@@ -13,7 +13,11 @@ namespace WaykDen.Models.Services
             this.DenServicesController = controller;
             this.Name = DENROUTER_NAME;
             this.ImageName = this.DenConfig.DenImageConfigObject.DenRouterImage;
-            this.Env.Add($"{DEN_PUBLIC_KEY_DATA_ENV}={RsaKeyutils.DerToPem(this.DenConfig.DenRouterConfigObject.PublicKey)}");
+
+            if(this.DenConfig.DenRouterConfigObject.PublicKey != null && this.DenConfig.DenRouterConfigObject.PublicKey.Length > 0)
+            {
+                this.Env.Add($"{DEN_PUBLIC_KEY_DATA_ENV}={RsaKeyutils.DerToPem(this.DenConfig.DenRouterConfigObject.PublicKey)}");
+            }
         }
     }
 }

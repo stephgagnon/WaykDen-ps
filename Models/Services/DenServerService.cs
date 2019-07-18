@@ -54,7 +54,7 @@ namespace WaykDen.Models.Services
                 externalRouterUrl = externalRouterUrl.Replace("https", "wss");
             } else externalRouterUrl = externalRouterUrl.Replace("http", "ws");
 
-            this.Env.Add($"{DEN_PRIVATE_KEY_DATA_ENV}={RsaKeyutils.DerToPem(this.DenConfig.DenServerConfigObject.PrivateKey)}");
+            
             this.Env.Add($"{PICKY_REALM_ENV}={this.DenConfig.DenPickyConfigObject.Realm}");
             this.Env.Add($"{PICKY_URL_ENV}={PICKY_URL}");
             this.Env.Add($"{PICKY_API_KEY_ENV}={this.DenConfig.DenPickyConfigObject.ApiKey}");
@@ -65,6 +65,12 @@ namespace WaykDen.Models.Services
             this.Env.Add($"{LUCID_INTERNAL_URL_ENV}={LUCID_INTERNAL_URL}");
             this.Env.Add($"{LUCID_EXTERNAL_URL_ENV}={this.DenConfig.DenServerConfigObject.ExternalUrl}/lucid");
             this.Env.Add($"{DEN_LOGIN_REQUIRED_ENV}={this.DenConfig.DenServerConfigObject.LoginRequired.ToLower()}");
+
+            if(this.DenConfig.DenServerConfigObject.PrivateKey != null && this.DenConfig.DenServerConfigObject.PrivateKey.Length > 0)
+            {
+                this.Env.Add($"{DEN_PRIVATE_KEY_DATA_ENV}={RsaKeyutils.DerToPem(this.DenConfig.DenServerConfigObject.PrivateKey)}");
+            }
+
             if(!string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.LDAPUsername))
             {
                 this.Env.Add($"{LDAP_USERNAME_ENV}={this.DenConfig.DenServerConfigObject.LDAPUsername}");

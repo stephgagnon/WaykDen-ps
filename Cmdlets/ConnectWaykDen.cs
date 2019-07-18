@@ -18,8 +18,10 @@ namespace WaykDen.Cmdlets
         private const string DEN_API_KEY_ENV = "DEN_API_KEY";
         private const string DEN_SERVER_URL_ENV = "DEN_SERVER_URL";
         private const string DEN_SERVER_URL = "/health";
+        [Parameter(HelpMessage = "WaykDen server API key.")]
         public string ApiKey {get; set;} = string.Empty;
-        public string ServerUrl{get; set;} = string.Empty;
+        [Parameter(HelpMessage = "WaykDen server external URL.")]
+        public string ServerUrl {get; set;} = string.Empty;
         protected async override void ProcessRecord()
         {
             try

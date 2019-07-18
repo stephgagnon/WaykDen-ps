@@ -29,7 +29,7 @@ namespace WaykDen.Models.Services
             this.ExposedPorts.Add(this.DenConfig.DenTraefikConfigObject.ApiPort, new EmptyStruct());
             this.PortBindings.Add(this.DenConfig.DenTraefikConfigObject.WaykDenPort, new List<PortBinding>(){new PortBinding(){HostIP = "0.0.0.0", HostPort = this.DenConfig.DenTraefikConfigObject.WaykDenPort}});
             this.PortBindings.Add(this.DenConfig.DenTraefikConfigObject.ApiPort, new List<PortBinding>(){new PortBinding(){HostIP = "0.0.0.0", HostPort = this.DenConfig.DenTraefikConfigObject.ApiPort}});
-            if(!string.IsNullOrEmpty(this.DenConfig.DenTraefikConfigObject.Certificate))
+            if(!string.IsNullOrEmpty(this.DenConfig.DenTraefikConfigObject.Certificate) && !string.IsNullOrEmpty(this.DenConfig.DenTraefikConfigObject.PrivateKey))
             {
               this.ImportCertificate();
               this.traefikEntrypoints = $"--entrypoints=Name:https Address::{this.DenConfig.DenTraefikConfigObject.WaykDenPort} TLS:/data/traefik.cert,/data/traefik.key";

@@ -134,22 +134,22 @@ namespace WaykDen.Controllers
         {
             var coll = db.GetCollection(DEN_IMAGE_CONFIG_COLLECTION);
             var values = coll.FindById(DB_ID);
-            values.TryGetValue(nameof(DenImageConfigObject.DenMongoImage), out var mongo);
-            values.TryGetValue(nameof(DenImageConfigObject.DenLucidImage), out var lucid);
-            values.TryGetValue(nameof(DenImageConfigObject.DenPickyImage), out var picky);
-            values.TryGetValue(nameof(DenImageConfigObject.DenRouterImage), out var router);
-            values.TryGetValue(nameof(DenImageConfigObject.DenServerImage), out var server);
-            values.TryGetValue(nameof(DenImageConfigObject.DenTraefikImage), out var traefik);
-            values.TryGetValue(nameof(DenImageConfigObject.DevolutionsJetImage), out var jet);
+            bool mongoOk = values.TryGetValue(nameof(DenImageConfigObject.DenMongoImage), out var mongo);
+            bool lucidOk = values.TryGetValue(nameof(DenImageConfigObject.DenLucidImage), out var lucid);
+            bool pickyOk = values.TryGetValue(nameof(DenImageConfigObject.DenPickyImage), out var picky);
+            bool routerOk = values.TryGetValue(nameof(DenImageConfigObject.DenRouterImage), out var router);
+            bool serverOk = values.TryGetValue(nameof(DenImageConfigObject.DenServerImage), out var server);
+            bool traefikOk = values.TryGetValue(nameof(DenImageConfigObject.DenTraefikImage), out var traefik);
+            bool jetOk = values.TryGetValue(nameof(DenImageConfigObject.DevolutionsJetImage), out var jet);
             return new DenImageConfigObject()
             {
-                DenMongoImage = mongo?.ToString().Trim('\"'),
-                DenLucidImage = lucid?.ToString().Trim('\"'),
-                DenPickyImage = picky?.ToString().Trim('\"'),
-                DenRouterImage = router?.ToString().Trim('\"'),
-                DenServerImage = server?.ToString().Trim('\"'),
-                DenTraefikImage = traefik?.ToString().Trim('\"'),
-                DevolutionsJetImage = jet?.ToString().Trim('\"')
+                DenMongoImage = mongoOk ? mongo?.ToString().Trim('\"') : string.Empty,
+                DenLucidImage = lucidOk ? lucid?.ToString().Trim('\"') : string.Empty,
+                DenPickyImage = pickyOk ? picky?.ToString().Trim('\"') : string.Empty,
+                DenRouterImage = routerOk ? router?.ToString().Trim('\"') : string.Empty,
+                DenServerImage = serverOk ? server?.ToString().Trim('\"') : string.Empty,
+                DenTraefikImage = traefikOk ? traefik?.ToString().Trim('\"') : string.Empty,
+                DevolutionsJetImage = jetOk ? jet?.ToString().Trim('\"') : string.Empty
             };
         }
 
@@ -157,12 +157,12 @@ namespace WaykDen.Controllers
         {
             var coll = db.GetCollection(DEN_MONGO_CONFIG_COLLECTION);
             var values = coll.FindById(DB_ID);
-            values.TryGetValue(nameof(DenMongoConfigObject.Url), out var url);
-            values.TryGetValue(nameof(DenMongoConfigObject.Port), out var port);
+            bool urlOk = values.TryGetValue(nameof(DenMongoConfigObject.Url), out var url);
+            bool portOk = values.TryGetValue(nameof(DenMongoConfigObject.Port), out var port);
             return new DenMongoConfigObject()
             {
-                Url = url?.ToString().Trim('\"'),
-                Port = port?.ToString().Trim('\"')
+                Url = urlOk ? url.ToString().Trim('\"') : string.Empty,
+                Port = portOk ? port.ToString().Trim('\"') : string.Empty
             };
         }
 
@@ -170,14 +170,14 @@ namespace WaykDen.Controllers
         {
             var coll = db.GetCollection(DEN_PICKY_CONFIG_COLLECTION);
             var values = coll.FindById(DB_ID);
-            values.TryGetValue(nameof(DenPickyConfigObject.Realm), out var realm);
-            values.TryGetValue(nameof(DenPickyConfigObject.ApiKey), out var apikey);
-            values.TryGetValue(nameof(DenPickyConfigObject.Backend), out var backend);
+            bool realmOk = values.TryGetValue(nameof(DenPickyConfigObject.Realm), out var realm);
+            bool apiKeyOk = values.TryGetValue(nameof(DenPickyConfigObject.ApiKey), out var apikey);
+            bool backendOk = values.TryGetValue(nameof(DenPickyConfigObject.Backend), out var backend);
             return new DenPickyConfigObject()
             {
-                Realm = realm?.ToString().Trim('\"'),
-                ApiKey = apikey?.ToString().Trim('\"'),
-                Backend = backend?.ToString().Trim('\"')
+                Realm = realmOk ? realm.ToString().Trim('\"') : string.Empty,
+                ApiKey = apiKeyOk ? apikey.ToString().Trim('\"') : string.Empty,
+                Backend = backendOk ? backend.ToString().Trim('\"') : string.Empty
             };
         }
 
@@ -185,14 +185,14 @@ namespace WaykDen.Controllers
         {
             var coll = db.GetCollection(DEN_LUCID_CONFIG_COLLECTION);
             var values = coll.FindById(DB_ID);
-            values.TryGetValue(nameof(DenLucidConfigObject.ApiKey), out var apikey);
-            values.TryGetValue(nameof(DenLucidConfigObject.AdminSecret), out var adminsecret);
-            values.TryGetValue(nameof(DenLucidConfigObject.AdminUsername), out var adminusername);
+            bool apiKeyOk = values.TryGetValue(nameof(DenLucidConfigObject.ApiKey), out var apikey);
+            bool adminSecretOk = values.TryGetValue(nameof(DenLucidConfigObject.AdminSecret), out var adminsecret);
+            bool adminUsernameOk = values.TryGetValue(nameof(DenLucidConfigObject.AdminUsername), out var adminusername);
             return new DenLucidConfigObject()
             {
-                ApiKey = apikey?.ToString().Trim('\"'),
-                AdminSecret = adminsecret?.ToString().Trim('\"'),
-                AdminUsername = adminusername?.ToString().Trim('\"')
+                ApiKey = apiKeyOk ? apikey.ToString().Trim('\"') : string.Empty,
+                AdminSecret = adminSecretOk ? adminsecret.ToString().Trim('\"') : string.Empty,
+                AdminUsername = adminUsernameOk ? adminusername.ToString().Trim('\"') : string.Empty
             };
         }
 
@@ -211,32 +211,32 @@ namespace WaykDen.Controllers
         {
             var coll = db.GetCollection(DEN_SERVER_CONFIG_COLLECTION);
             var values = coll.FindById(DB_ID);
-            values.TryGetValue(nameof(DenServerConfigObject.ApiKey), out var apikey);
-            values.TryGetValue(nameof(DenServerConfigObject.AuditTrails), out var auditTrails);
-            values.TryGetValue(nameof(DenServerConfigObject.ExternalUrl), out var externalUrl);
-            values.TryGetValue(nameof(DenServerConfigObject.LDAPServerType), out var ldapservertype);
-            values.TryGetValue(nameof(DenServerConfigObject.LDAPPassword), out var ldappassword);
-            values.TryGetValue(nameof(DenServerConfigObject.LDAPServerUrl), out var ldapserverurl);
-            values.TryGetValue(nameof(DenServerConfigObject.LDAPUserGroup), out var ldapusergroup);
-            values.TryGetValue(nameof(DenServerConfigObject.LDAPUsername), out var ldapusername);
-            values.TryGetValue(nameof(DenServerConfigObject.LDAPBaseDN), out var ldapbasedn);
+            bool apiKeyOk = values.TryGetValue(nameof(DenServerConfigObject.ApiKey), out var apikey);
+            bool auditTrailsOK = values.TryGetValue(nameof(DenServerConfigObject.AuditTrails), out var auditTrails);
+            bool externalUrlOk = values.TryGetValue(nameof(DenServerConfigObject.ExternalUrl), out var externalUrl);
+            bool ldapServerTypeOk = values.TryGetValue(nameof(DenServerConfigObject.LDAPServerType), out var ldapservertype);
+            bool ldapPasswordOk = values.TryGetValue(nameof(DenServerConfigObject.LDAPPassword), out var ldappassword);
+            bool ldapServerUrlOk = values.TryGetValue(nameof(DenServerConfigObject.LDAPServerUrl), out var ldapserverurl);
+            bool ldapUserGroupOk = values.TryGetValue(nameof(DenServerConfigObject.LDAPUserGroup), out var ldapusergroup);
+            bool ldapUsernameOk = values.TryGetValue(nameof(DenServerConfigObject.LDAPUsername), out var ldapusername);
+            bool ldapBaseDnOk = values.TryGetValue(nameof(DenServerConfigObject.LDAPBaseDN), out var ldapbasedn);
             values.TryGetValue(nameof(DenServerConfigObject.PrivateKey), out var privatekey);
-            values.TryGetValue(nameof(DenServerConfigObject.JetServerUrl), out var jetServerUrl);
-            values.TryGetValue(nameof(DenServerConfigObject.LoginRequired), out var loginRequired);
+            bool jetServerUrlOk = values.TryGetValue(nameof(DenServerConfigObject.JetServerUrl), out var jetServerUrl);
+            bool loginRequiredOk = values.TryGetValue(nameof(DenServerConfigObject.LoginRequired), out var loginRequired);
             return new DenServerConfigObject()
             {
-                ApiKey = apikey?.ToString().Trim('\"'),
-                AuditTrails = auditTrails?.ToString().Trim('\"'),
-                ExternalUrl = externalUrl?.ToString().Trim('\"'),
-                LDAPServerType = ldapservertype?.ToString().Trim('\"'),
-                LDAPBaseDN = ldapbasedn?.ToString().Trim('\"'),
-                LDAPPassword = ldappassword?.ToString().Trim('\"'),
-                LDAPServerUrl = ldapserverurl?.ToString().Trim('\"'),
-                LDAPUserGroup = ldapusergroup?.ToString().Trim('\"'),
-                LDAPUsername = ldapusername?.ToString().Trim('\"'),
+                ApiKey = apiKeyOk ? apikey.ToString().Trim('\"') : string.Empty,
+                AuditTrails = auditTrailsOK ?  auditTrails.ToString().Trim('\"') : string.Empty,
+                ExternalUrl = externalUrlOk ?  externalUrl.ToString().Trim('\"') : string.Empty,
+                LDAPServerType = ldapServerTypeOk ?  ldapservertype.ToString().Trim('\"') : string.Empty,
+                LDAPBaseDN = ldapBaseDnOk?  ldapbasedn.ToString().Trim('\"') : string.Empty,
+                LDAPPassword = ldapPasswordOk ?  ldappassword.ToString().Trim('\"') : string.Empty,
+                LDAPServerUrl = ldapServerUrlOk ?  ldapserverurl.ToString().Trim('\"') : string.Empty,
+                LDAPUserGroup = ldapUserGroupOk ?  ldapusergroup.ToString().Trim('\"') : string.Empty,
+                LDAPUsername = ldapUsernameOk ?  ldapusername.ToString().Trim('\"') : string.Empty,
                 PrivateKey = privatekey,
-                JetServerUrl = jetServerUrl?.ToString().Trim('\"'),
-                LoginRequired = loginRequired?.ToString().Trim('\"')
+                JetServerUrl = jetServerUrlOk ?  jetServerUrl.ToString().Trim('\"') : string.Empty,
+                LoginRequired = loginRequiredOk ?  loginRequired.ToString().Trim('\"') : "false"
             };
         }
 
@@ -244,15 +244,15 @@ namespace WaykDen.Controllers
         {
             var coll = db.GetCollection(DEN_TRAEFIK_CONFIG_COLLECTION);
             var values = coll.FindById(DB_ID);
-            values.TryGetValue(nameof(DenTraefikConfigObject.ApiPort), out var apiPort);
-            values.TryGetValue(nameof(DenTraefikConfigObject.WaykDenPort), out var waykDenPort);
-            values.TryGetValue(nameof(DenTraefikConfigObject.Certificate), out var certificate);
-            values.TryGetValue(nameof(DenTraefikConfigObject.PrivateKey), out var privateKey);
+            bool apiPortOk = values.TryGetValue(nameof(DenTraefikConfigObject.ApiPort), out var apiPort);
+            bool waykDenPortOk =  values.TryGetValue(nameof(DenTraefikConfigObject.WaykDenPort), out var waykDenPort);
+            bool certificateOk = values.TryGetValue(nameof(DenTraefikConfigObject.Certificate), out var certificate);
+            bool privateKeyOk = values.TryGetValue(nameof(DenTraefikConfigObject.PrivateKey), out var privateKey);
             return new DenTraefikConfigObject
             {
-                ApiPort = apiPort,
-                WaykDenPort = waykDenPort,
-                Certificate = certificate,
+                ApiPort = apiPortOk ? apiPort.ToString().Trim('\"') : string.Empty,
+                WaykDenPort = waykDenPortOk ? waykDenPort.ToString().Trim('\"') : string.Empty,
+                Certificate = certificateOk ? certificate.ToString().Trim('\"') : string.Empty,
                 PrivateKey = privateKey
             };
         }
@@ -261,10 +261,10 @@ namespace WaykDen.Controllers
         {
             var coll = db.GetCollection(DEN_DOCKER_CONFIG_COLLECTION);
             var values = coll.FindById(DB_ID);
-            values.TryGetValue(nameof(DenDockerConfigObject.DockerClientUri), out var dockerclienturi);
+            bool dockerclientUriOk = values.TryGetValue(nameof(DenDockerConfigObject.DockerClientUri), out var dockerclienturi);
             return new DenDockerConfigObject()
             {
-                DockerClientUri = dockerclienturi.ToString().Trim('\"')
+                DockerClientUri = dockerclientUriOk ?  dockerclienturi.ToString().Trim('\"') : string.Empty
             };
         }
 
