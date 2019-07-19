@@ -1,6 +1,6 @@
 
 $ModuleName = 'WaykDen'
-Remove-Item -Path .\package -Recurse -Force 
+Remove-Item -Path .\package -Recurse -Force -ErrorAction SilentlyContinue
 
 & dotnet publish -f netcoreapp2.2 -c Release -o package/$ModuleName/Core
 
