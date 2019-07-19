@@ -41,7 +41,7 @@ namespace WaykDen.Cmdlets
 
                 string res = await connectionsString;
 
-                if(res.StartsWith('['))
+                if(res.StartsWith("["))
                 {
                     var connections = this.DenRestAPIController.DeserializeString<Connection[]>(res);
                     
@@ -50,7 +50,7 @@ namespace WaykDen.Cmdlets
                         this.WriteObject(connection.ToConnectionObject(), true);
                     }
                 }
-                else if (res.StartsWith('{'))
+                else if (res.StartsWith("{"))
                 {
                     var connection = this.DenRestAPIController.DeserializeString<Connection>(res);
                     this.WriteObject(connection?.ToConnectionObject());

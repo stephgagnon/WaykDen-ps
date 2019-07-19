@@ -44,7 +44,7 @@ namespace WaykDen.Cmdlets
 
                 string res = await usersString;
 
-                if(res.StartsWith('['))
+                if(res.StartsWith("["))
                 {
                     var users = this.DenRestAPIController.DeserializeString<User[]>(res);
                     
@@ -53,7 +53,7 @@ namespace WaykDen.Cmdlets
                         this.WriteObject(user.ToUserObject(), true);
                     }
                 }
-                else if (res.StartsWith('{'))
+                else if (res.StartsWith("{"))
                 {
                     var user = this.DenRestAPIController.DeserializeString<User>(res);
                     this.WriteObject(user?.ToUserObject());

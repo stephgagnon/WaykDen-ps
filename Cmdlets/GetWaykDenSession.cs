@@ -52,7 +52,7 @@ namespace WaykDen.Cmdlets
                     
                     string res = await sessionsString;
 
-                    if(res.StartsWith('['))
+                    if(res.StartsWith("["))
                     {
                         var sessions = this.DenRestAPIController.DeserializeString<Session[]>(res);
                         
@@ -61,7 +61,7 @@ namespace WaykDen.Cmdlets
                             this.WriteObject(session.ToSessionObject(), true);
                         }
                     }
-                    else if (res.StartsWith('{'))
+                    else if (res.StartsWith("{"))
                     {
                         var session = this.DenRestAPIController.DeserializeString<Session>(res);
                         this.WriteObject(session?.ToSessionObject());

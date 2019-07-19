@@ -98,7 +98,7 @@ services:";
                 sb.AppendLine("    environment:");
                 foreach(string env in envs)
                 {
-                    string[] splittedEnv = env.Split('=', 2);
+                    string[] splittedEnv = env.Split(new char[]{'='}, 2);
 
                     if(splittedEnv.Length < 2)
                     {
@@ -107,7 +107,7 @@ services:";
 
                     string envString = "      {0}: '{1}'";
 
-                    if(splittedEnv[1].Contains('\n'))
+                    if(splittedEnv[1].Contains("\n"))
                     {
                         string envKeyString = "      {0}: |";
                         sb.AppendLine(string.Format(envKeyString, splittedEnv[0]));
@@ -142,7 +142,7 @@ services:";
 
                 foreach(string command in commands)
                 {
-                    string adjustcmd = command.Contains(' ') ? command.Insert(command.IndexOf('=') + 1, "\'").Insert(command.Length + 1, "\'") : command;
+                    string adjustcmd = command.Contains(" ") ? command.Insert(command.IndexOf('=') + 1, "\'").Insert(command.Length + 1, "\'") : command;
                     sb.Append($" {adjustcmd}");
                 }
 

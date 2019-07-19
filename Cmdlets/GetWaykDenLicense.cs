@@ -25,7 +25,7 @@ namespace WaykDen.Cmdlets
 
                 string res = await licensesString;
 
-                if(res.StartsWith('['))
+                if(res.StartsWith("["))
                 {
                     var licenses = this.DenRestAPIController.DeserializeString<License[]>(res);
                     
@@ -34,7 +34,7 @@ namespace WaykDen.Cmdlets
                         this.WriteObject(license.ToLicenseObject(), true);
                     }
                 }
-                else if (res.StartsWith('{'))
+                else if (res.StartsWith("{"))
                 {
                     var license = this.DenRestAPIController.DeserializeString<License>(res);
                     this.WriteObject(license?.ToLicenseObject());

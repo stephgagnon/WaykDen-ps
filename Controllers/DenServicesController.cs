@@ -132,8 +132,13 @@ namespace WaykDen.Controllers
         }
 
         public async Task StopDevolutionsJet()
-        {
-            List<string> jet= await this.ListContainers(ContainerState.Running, ContainerFilter.Name, this.ContainersName.GetValueOrDefault(Container.DevolutionsJet));
+        {   
+            if(!this.ContainersName.TryGetValue(Container.DevolutionsJet, out string jetContainer))
+            {
+                return;
+            }
+
+            List<string> jet= await this.ListContainers(ContainerState.Running, ContainerFilter.Name, jetContainer);
             if(jet.Count > 0)
             {
                 foreach(string container in jet)
@@ -219,15 +224,23 @@ namespace WaykDen.Controllers
 
         public async Task RemoveWaykDenContainers()
         {
+                this.ContainersName.TryGetValue(Container.DenMongo, out var mongo);
+                this.ContainersName.TryGetValue(Container.DenPicky, out var picky);
+                this.ContainersName.TryGetValue(Container.DenLucid, out var lucid);
+                this.ContainersName.TryGetValue(Container.DenRouter, out var router);
+                this.ContainersName.TryGetValue(Container.DenServer, out var server);
+                this.ContainersName.TryGetValue(Container.Traefik, out var traefik);
+                this.ContainersName.TryGetValue(Container.DevolutionsJet, out var jet);
+
             string[] containersName = new string[]
             {
-                this.ContainersName.GetValueOrDefault(Container.DenMongo),
-                this.ContainersName.GetValueOrDefault(Container.DenPicky),
-                this.ContainersName.GetValueOrDefault(Container.DenLucid),
-                this.ContainersName.GetValueOrDefault(Container.DenRouter),
-                this.ContainersName.GetValueOrDefault(Container.DenServer),
-                this.ContainersName.GetValueOrDefault(Container.Traefik),
-                this.ContainersName.GetValueOrDefault(Container.DevolutionsJet)
+                mongo,
+                picky,
+                lucid,
+                router,
+                server,
+                traefik,
+                jet
             };
             
             foreach(string name in containersName)
