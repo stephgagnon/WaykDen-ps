@@ -10,7 +10,6 @@ namespace WaykDen.Controllers
 {
     public class DenConfigController
     {
-        private const string WAYK_DEN_CONFIG_KEY = "WAYK_DEN_CONFIG_KEY";
         private const string DEN_IMAGE_CONFIG_COLLECTION = "DenImageConfig";
         private const string DEN_MONGO_CONFIG_COLLECTION = "DenMongoConfig";
         private const string DEN_PICKY_CONFIG_COLLECTION = "DenPickyConfig";
@@ -31,7 +30,7 @@ namespace WaykDen.Controllers
             if(File.Exists(this.path))
             {
                 this.TestConnString();
-            }            
+            }
 
             BsonMapper.Global.EmptyStringToNull = false;
         }
@@ -48,11 +47,6 @@ namespace WaykDen.Controllers
             catch(Exception)
             {
                 throw new Exception("Invalid database password.");
-            }
-            
-            if(!string.IsNullOrEmpty(this.password))
-            {
-                Environment.SetEnvironmentVariable(WAYK_DEN_CONFIG_KEY, this.password);
             }
         }
 
@@ -399,8 +393,6 @@ namespace WaykDen.Controllers
             using(var db = new LiteDatabase($"Filename={path}; Password={key}; Mode=Exclusive"))
             {
                 db.Engine.Shrink();
-                this.password = null;
-                Environment.SetEnvironmentVariable(WAYK_DEN_CONFIG_KEY, this.password);
             }
         }
 
@@ -409,8 +401,6 @@ namespace WaykDen.Controllers
             using(var db = new LiteDatabase($"Filename={path}; Password={oldKey}; Mode=Exclusive"))
             {
                 db.Engine.Shrink(newKey);
-                this.password = newKey;
-                Environment.SetEnvironmentVariable(WAYK_DEN_CONFIG_KEY, this.password);
             }
         }
     }

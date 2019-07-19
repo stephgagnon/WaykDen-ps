@@ -52,10 +52,6 @@ namespace WaykDen.Cmdlets
             }
 
             this.ServerUrl = this.ServerUrl.TrimEnd('/');
-
-            Environment.SetEnvironmentVariable(DEN_API_KEY_ENV, this.ApiKey);
-            Environment.SetEnvironmentVariable(DEN_SERVER_URL_ENV, this.ServerUrl);
-
             this.DenRestAPIController = new DenRestAPIController(this.ApiKey, this.ServerUrl);
             this.DenRestAPIController.OnError += this.OnError;
         }

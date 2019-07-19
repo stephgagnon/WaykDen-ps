@@ -6,7 +6,6 @@ namespace WaykDen.Cmdlets
 {
     public class WaykDenConfigCmdlet : BaseCmdlet
     {
-        private const string WAYK_DEN_CONFIG_KEY = "WAYK_DEN_CONFIG_KEY";
         protected const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
         protected string Path {get; set;}
         protected DenConfigController DenConfigController {get; set;}
@@ -20,11 +19,6 @@ namespace WaykDen.Cmdlets
                 if(string.IsNullOrEmpty(this.Path))
                 {
                     this.Path = this.SessionState.Path.CurrentLocation.Path;
-                }
-
-                if(string.IsNullOrEmpty(this.Key))
-                {
-                   this.Key  = Environment.GetEnvironmentVariable(WAYK_DEN_CONFIG_KEY);
                 }
 
                 this.DenConfigController = new DenConfigController(this.Path, this.Key);

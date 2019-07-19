@@ -5,7 +5,7 @@ using System.Management.Automation;
 
 namespace WaykDen.Models
 {
-    public class SessionObject
+    public class SessionInProgressObject
     {
         public string ID {get; set;}
         public string ClientDenID {get; set;}
@@ -21,14 +21,24 @@ namespace WaykDen.Models
         public string ServerUserID {get; set;}
         public string ServerUsername {get; set;}
         public DateTime StartTime {get; set;}
-    }
-
-    public class SessionInProgressObject : SessionObject
-    {
         public DateTime LastUpdate {get; set;}
     }
-    public class SessionTerminatedObject : SessionObject
+    public class SessionTerminatedObject
     {
+        public string ID {get; set;}
+        public string ClientDenID {get; set;}
+        public string ServerDenID {get; set;}
+        public string ClientConnectionID {get; set;}
+        public string ClientMachineName {get; set;}
+        public string ClientUserAgent {get; set;}
+        public string ClientUserID {get; set;}
+        public string ClientUsername {get; set;}
+        public string ServerConnectionID {get; set;}
+        public string ServerMachineName {get; set;}
+        public string ServerUserAgent {get; set;}
+        public string ServerUserID {get; set;}
+        public string ServerUsername {get; set;}
+        public DateTime StartTime {get; set;}
         public DateTime EndTime {get; set;}
         public bool EndedGracefully {get; set;}
     }
@@ -45,7 +55,7 @@ namespace WaykDen.Models
         public TimeStamp last_update {get; set;} = new TimeStamp();
         public bool ended_gracefully {get; set;} = false;
 
-        public SessionObject ToSessionObject()
+        public object ToSessionObject()
         {
             DateTime started = RestAPIUtils.GetDateTime(this.start_timestamp);
             DateTime ended = RestAPIUtils.GetDateTime(this.end_timestamp);

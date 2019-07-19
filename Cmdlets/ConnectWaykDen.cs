@@ -38,29 +38,12 @@ namespace WaykDen.Cmdlets
                     this.ApiKey = config.DenServerConfigObject.ApiKey;
                 }
 
-                Environment.SetEnvironmentVariable(DEN_API_KEY_ENV, this.ApiKey);
-                Environment.SetEnvironmentVariable(DEN_SERVER_URL_ENV, this.ServerUrl);
-
-                DenServicesController denServicesController = new DenServicesController(this.Path, this.Key);
-
                 Task<bool> okTask = this.TestDenServerRoute();
-                okTask.Wait();
-
-                DenTraefikService traefik= null;
-                if(!await okTask)
-                {
-                    traefik = new DenTraefikService(denServicesController);
-                    bool ok = await traefik.CurlTraefikConfig();
-                    if(!ok)
-                    {
-                        await traefik.CurlTraefikConfig();
-                    }
-                }
-
-                okTask = this.TestDenServerRoute();
                 okTask.Wait();
                 if(await okTask)
                 {
+                    Environment.SetEnvironmentVariable(DEN_API_KEY_ENV, this.ApiKey);
+                    Environment.SetEnvironmentVariable(DEN_SERVER_URL_ENV, this.ServerUrl);
                     this.WriteObject($"Success! Server URL : {this.ServerUrl}");
                 }
                 else
