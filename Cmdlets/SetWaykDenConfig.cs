@@ -44,6 +44,32 @@ namespace WaykDen.Cmdlets
         public string KeyPath {get; set;} = string.Empty;
         [Parameter(HelpMessage = "Force the Wayk client to be logged and authenticated. WaykDen will give an ID only if the user is authenticated."), ValidateSet(new string[]{"True", "False"})]
         public string LoginRequired {get; set;} = string.Empty;
+        [Parameter(HelpMessage = "Use Linux or Windows  container."), ValidateSet(new string[]{"Linux", "Windows"})]
+        public string Platform {get; set;} = "Linux";
+        [Parameter(HelpMessage = "URL of a syslog server.")]
+        public string SyslogServer {get; set;} = string.Empty;
+        [Parameter(HelpMessage = "Remove parameter"), ValidateSet(
+            new string[]
+            {
+                "MongoUrl",
+                "MongoPort",
+                "Realm",
+                "ExternalUrl",
+                "LDAPServerUrl",
+                "LDAPUsername",
+                "LDAPPassword",
+                "LDAPUserGroup",
+                "LDAPServerType",
+                "LDAPBaseDN",
+                "DockerClientUri",
+                "TraefikApiPort",
+                "WaykDenPort",
+                "CertificatePath",
+                "KeyPath",
+                "SyslogServer",
+            }
+        )]
+        public string[] Remove {get; set;} = null;
         public string MongoImage {get; set;} = string.Empty;
         [Parameter]
         public string PickyImage {get; set;} = string.Empty;
@@ -55,11 +81,16 @@ namespace WaykDen.Cmdlets
         public string DenServerImage {get; set;} = string.Empty;
         [Parameter]
         public string TraefikImage {get; set;} = string.Empty;
+        [Parameter]
+        public string DevolutionsJetImage {get; set;} = string.Empty;
         private Dictionary<string, (Type, string)> dictionary;
         public SetWaykDenConfig()
         {
             this.dictionary = new Dictionary<string, (Type, string)>
             {
+                {nameof(this.DockerClientUri), (typeof(DenDockerConfigObject), "DockerClientUri")},
+                {nameof(this.Platform), (typeof(DenDockerConfigObject), "Platform")},
+                {nameof(this.SyslogServer), (typeof(DenDockerConfigObject), "SyslogServer")},
                 {nameof(this.MongoUrl), (typeof(DenMongoConfigObject), "Url")},
                 {nameof(this.MongoPort), (typeof(DenMongoConfigObject), "Port")},
                 {nameof(this.Realm), (typeof(DenPickyConfigObject), "Realm")},
@@ -72,7 +103,6 @@ namespace WaykDen.Cmdlets
                 {nameof(this.LDAPBaseDN), (typeof(DenServerConfigObject), "LDAPBaseDN")},
                 {nameof(this.JetServerUrl), (typeof(DenServerConfigObject), "JetServerUrl")},
                 {nameof(this.LoginRequired), (typeof(DenServerConfigObject), "LoginRequired")},
-                {nameof(this.DockerClientUri), (typeof(DenDockerConfigObject), "DockerClientUri")},
                 {nameof(this.TraefikApiPort), (typeof(DenTraefikConfigObject), "ApiPort")},
                 {nameof(this.WaykDenPort), (typeof(DenTraefikConfigObject), "WaykDenPort")},
                 {nameof(this.CertificatePath), (typeof(DenTraefikConfigObject), "CertificatePath")},
@@ -82,16 +112,35 @@ namespace WaykDen.Cmdlets
                 {nameof(this.DenLucidImage), (typeof(DenImageConfigObject), "DenLucidImage")},
                 {nameof(this.DenRouterImage), (typeof(DenImageConfigObject), "DenRouterImage")},
                 {nameof(this.DenServerImage), (typeof(DenImageConfigObject), "DenServerImage")},
-                {nameof(this.TraefikImage), (typeof(DenImageConfigObject), "DenTraefikImage")}
+                {nameof(this.TraefikImage), (typeof(DenImageConfigObject), "DenTraefikImage")},
+                {nameof(this.DevolutionsJetImage), (typeof(DenImageConfigObject), "DevolutionsJetImage")}
             };
         }
 
         protected override void ProcessRecord()
         {
             try
-            {
+            { 
+                DenImageConfigObject denImages = null;
+                if(!string.IsNullOrEmpty(this.Platform))
+                {
+                    Platforms platform = this.Platform.Equals("Linux") ? Platforms.Linux : Platforms.Windows;
+                    denImages = new DenImageConfigObject(platform);
+                    this.MongoImage = denImages.DenMongoImage;
+                    this.PickyImage = denImages.DenPickyImage;
+                    this.DenLucidImage = denImages.DenLucidImage;
+                    this.DenRouterImage = denImages.DenRouterImage;
+                    this.DenServerImage = denImages.DenServerImage;
+                    this.TraefikImage = denImages.DenTraefikImage;
+                    this.DevolutionsJetImage = denImages.DevolutionsJetImage;
+                }
+
+
                 (string, bool)[] values = new (string, bool)[]
                 {
+                    (nameof(this.DockerClientUri), !string.IsNullOrEmpty(this.DockerClientUri)),
+                    (nameof(this.Platform), !string.IsNullOrEmpty(this.Platform)),
+                    (nameof(this.SyslogServer), !string.IsNullOrEmpty(this.SyslogServer)),
                     (nameof(this.MongoUrl), !string.IsNullOrEmpty(this.MongoUrl)),
                     (nameof(this.MongoPort), !string.IsNullOrEmpty(this.MongoPort)),
                     (nameof(this.Realm), !string.IsNullOrEmpty(this.Realm)),
@@ -104,7 +153,6 @@ namespace WaykDen.Cmdlets
                     (nameof(this.LDAPBaseDN), !string.IsNullOrEmpty(this.LDAPBaseDN)),
                     (nameof(this.JetServerUrl), !string.IsNullOrEmpty(this.JetServerUrl)),
                     (nameof(this.LoginRequired), !string.IsNullOrEmpty(this.LoginRequired)),
-                    (nameof(this.DockerClientUri), !string.IsNullOrEmpty(this.DockerClientUri)),
                     (nameof(this.TraefikApiPort), !string.IsNullOrEmpty(this.TraefikApiPort)),
                     (nameof(this.WaykDenPort), !string.IsNullOrEmpty(this.WaykDenPort)),
                     (nameof(this.CertificatePath), !string.IsNullOrEmpty(this.CertificatePath)),
@@ -114,12 +162,13 @@ namespace WaykDen.Cmdlets
                     (nameof(this.DenLucidImage), !string.IsNullOrEmpty(this.DenLucidImage)),
                     (nameof(this.DenRouterImage), !string.IsNullOrEmpty(this.DenRouterImage)),
                     (nameof(this.DenServerImage), !string.IsNullOrEmpty(this.DenServerImage)),
-                    (nameof(this.TraefikImage), !string.IsNullOrEmpty(this.TraefikImage))
+                    (nameof(this.TraefikImage), !string.IsNullOrEmpty(this.TraefikImage)),
+                    (nameof(this.DevolutionsJetImage), !string.IsNullOrEmpty(this.DevolutionsJetImage))
                 };
 
                 (string, bool)[] names = values.Where(x => x.Item2.Equals(true)).ToArray();
 
-                if(names.Length == 0)
+                if(names.Length == 0 && this.Remove == null)
                 {
                     return;
                 }
@@ -127,17 +176,35 @@ namespace WaykDen.Cmdlets
                 DenConfigController denConfigController = new DenConfigController(this.Path, this.Key);
                 DenConfig config = denConfigController.GetConfig();
 
-                foreach((string, bool) name in names)
+                if(this.Remove != null)
                 {
-                    bool ok = this.dictionary.TryGetValue(name.Item1, out var value);
-                    if(!ok)
+                    foreach(string name in this.Remove)
                     {
-                        continue;
-                    }
+                        bool ok = this.dictionary.TryGetValue(name, out var value);
 
-                    var property = config.GetType().GetProperty(value.Item1.Name).GetValue(config);
-                    var newValue = this.GetType().GetProperty(name.Item1).GetValue(this);
-                    property.GetType().GetProperty(value.Item2).SetValue(property, newValue);
+                        if(!ok)
+                        {
+                            continue;
+                        }
+
+                        var property = config.GetType().GetProperty(value.Item1.Name).GetValue(config);
+                        property.GetType().GetProperty(value.Item2).SetValue(property, null);
+                    }
+                }
+                else
+                {
+                    foreach((string, bool) name in names)
+                    {
+                        bool ok = this.dictionary.TryGetValue(name.Item1, out var value);
+                        if(!ok)
+                        {
+                            continue;
+                        }
+
+                        var property = config.GetType().GetProperty(value.Item1.Name).GetValue(config);
+                        var newValue = this.GetType().GetProperty(name.Item1).GetValue(this);
+                        property.GetType().GetProperty(value.Item2).SetValue(property, newValue);
+                    }
                 }
 
                 denConfigController.StoreConfig(config);

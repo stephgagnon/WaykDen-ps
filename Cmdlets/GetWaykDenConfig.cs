@@ -39,6 +39,9 @@ namespace WaykDen.Cmdlets
                 this.OnError(e);
             }
 
+            this.WriteObject(new DenObject {Property = "Docker client uri", Value = this.DenDockerConfigObject.DockerClientUri});
+            this.WriteObject(new DenObject {Property = "Containers type", Value = this.DenDockerConfigObject.Platform});
+            this.WriteObject(new DenObject {Property = $"{nameof(this.DenDockerConfigObject.SyslogServer)}", Value = this.DenDockerConfigObject.SyslogServer});
             this.WriteObject(new DenObject {Property = $"Mongo : {nameof(this.DenMongoConfigObject.Url)}", Value = this.DenMongoConfigObject.Url});
             this.WriteObject(new DenObject {Property = $"Mongo : {nameof(this.DenMongoConfigObject.Port)}", Value = this.DenMongoConfigObject.Port});
             this.WriteObject(new DenObject {Property = $"Den-Picky : {nameof(this.DenPickyConfigObject.ApiKey)}", Value = this.DenPickyConfigObject.ApiKey});

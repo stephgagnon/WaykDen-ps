@@ -10,9 +10,14 @@ namespace WaykDen.Cmdlets
     [Cmdlet("Export", "WaykDenConfig")]
     public class ExportWaykDenConfig : WaykDenConfigCmdlet
     {
-        private const string FILENAME = "docker-compose.yml";
+        private const string DOCKER_COMPOSE_FILENAME = "docker-compose.yml";
+        private const string TRAEFIK_TOML_FILENAME = "traefik.toml";
         [Parameter(HelpMessage = "Path where to export WaykDen configuration.")]
         public string ExportPath {get; set;} = string.Empty;
+        [Parameter(HelpMessage = "Export in a docker-compose.yaml file. (A traefik.toml will also be exported)")]
+        public SwitchParameter DockerCompose {get; set;} = false;
+        [Parameter(HelpMessage = "Export traefik.toml only for Traefik.")]
+        public SwitchParameter TraefikToml {get; set;} = false;
         public ExportWaykDenConfig()
         {
         }
@@ -31,7 +36,18 @@ namespace WaykDen.Cmdlets
                 }
 
                 this.ExportPath.TrimEnd(System.IO.Path.DirectorySeparatorChar);
-                File.WriteAllText($"{this.ExportPath}{System.IO.Path.DirectorySeparatorChar}{FILENAME}", denServicesController.CreateDockerCompose());
+                if(DockerCompose)
+                {
+                    string traefikExportPath = $"{this.Path}{System.IO.Path.DirectorySeparatorChar}traefik/";
+                    Directory.CreateDirectory(traefikExportPath);
+                    string[] exports = denServicesController.CreateDockerCompose();
+                    File.WriteAllText($"{this.ExportPath}{System.IO.Path.DirectorySeparatorChar}{DOCKER_COMPOSE_FILENAME}", exports[0]);
+                    File.WriteAllText($"{traefikExportPath}{TRAEFIK_TOML_FILENAME}", exports[1]);
+                }
+                else if(TraefikToml)
+                {
+                    File.WriteAllText($"{this.Path}{System.IO.Path.DirectorySeparatorChar}traefik{System.IO.Path.DirectorySeparatorChar}{TRAEFIK_TOML_FILENAME}", denServicesController.CreateTraefikToml());
+                }
             }
             catch(Exception e)
             {

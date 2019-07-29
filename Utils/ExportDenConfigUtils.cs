@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using WaykDen.Models.Services;
+using WaykDen.Models;
 
 namespace WaykDen.Utils
 {
@@ -8,8 +10,9 @@ namespace WaykDen.Utils
     {
         private const string DOCKER_COMPOSE_VERSION = "3.4";
         private static List<string> volumesString = new List<string>();
-        public static string CreateDockerCompose(DenService[] services)
+        public static string[] CreateDockerCompose(DenService[] services, Platforms platform)
         {
+            string traefiktoml = string.Empty;
             string dockercompose = 
 $@"version: '{DOCKER_COMPOSE_VERSION}'
 
@@ -19,6 +22,16 @@ services:";
 
             foreach(DenService service in services)
             {
+                if(service is DenMongoService mongo && mongo.IsExternal)
+                {
+                    continue;
+                }
+
+                if(service is DenTraefikService traefik)
+                {
+                    traefiktoml = CreateTraefikToml(traefik);
+                }
+
                 sb.AppendLine();
                 sb.Append(CreateServiceDockerCompose(service));
             }
@@ -30,9 +43,10 @@ services:";
             sb.AppendLine();
             sb.AppendLine("networks:");
             sb.AppendLine("  den-network:");
-            sb.AppendLine("    driver: bridge");
+            string networkDriver = platform == Platforms.Linux ? "bridge" : "nat";
+            sb.AppendLine($"    driver: {networkDriver}");
 
-            return sb.ToString();
+            return new string[]{sb.ToString(), traefiktoml};
         }
 
         private static string CreateServiceDockerCompose(DenService service)
@@ -45,14 +59,9 @@ services:";
             string[] dependencyPort = null;
             switch(service)
             {
-                case DenPickyService denPicky:
-                    sb.AppendLine("    depends_on:");
-                    sb.AppendLine("      - den-mongo");
-                    break;
-
                 case DenLucidService denLucid:
                     sb.AppendLine("    depends_on:");
-                    sb.AppendLine("      - den-mongo");
+                    sb.AppendLine("      - den-picky");
                     break;
                 
                 case DenRouterService denRouter:
@@ -160,6 +169,72 @@ services:";
             }
 
             return sb.ToString();
+        }
+
+        public static string CreateTraefikToml(DenTraefikService traefik)
+        {
+            string toml =
+@"logLevel = ""INFO""
+
+[file]
+
+[entryPoints]
+    [EntryPoints.{0}]
+    address = "":{1}""
+    {2}
+
+[frontends]
+    [frontends.lucid]
+    passHostHeader = true
+    backend = ""lucid""
+    entrypoints = [""{0}""]
+        [frontends.lucid.routes.lucid]
+        rule = ""PathPrefixStrip:/lucid""
+
+    [frontends.lucidop]
+    passHostHeader = true
+    backend = ""lucid""
+    entrypoints = [""{0}""]
+        [frontends.lucidop.routes.lucidop]
+        rule = ""PathPrefix:/op""
+
+    [frontends.lucidauth]
+    passHostHeader = true
+    backend = ""lucid""
+    entrypoints = [""{0}""]
+        [frontends.lucidauth.routes.lucidauth]
+        rule = ""PathPrefix:/auth""
+
+    [frontends.router]
+    passHostHeader = true
+    backend = ""router""
+    entrypoints = [""{0}""]
+        [frontends.router.routes.router]
+        rule = ""PathPrefixStrip:/cow""
+
+    [frontends.server]
+    passHostHeader = true
+    backend = ""server""
+    entrypoints = [""{0}""]
+
+[backends]
+    [backends.lucid]
+        [backends.lucid.servers.lucid]
+        url = ""http://den-lucid:4242""
+        weight = 10
+
+    [backends.router]
+        [backends.router.servers.router]
+        url = ""http://den-router:4491""
+        weight = 10
+
+    [backends.server]
+        [backends.server.servers.server]
+        url = ""http://den-server:10255""
+        weight = 10
+";
+
+            return string.Format(toml, traefik.Entrypoints, traefik.WaykDenPort, traefik.Tls);
         }
     }
 }

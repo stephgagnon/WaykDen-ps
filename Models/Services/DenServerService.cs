@@ -8,6 +8,7 @@ namespace WaykDen.Models.Services
         public const string DENSERVER_NAME = "den-server";
         private const string DENSERVER_IMAGE = "devolutions/waykden-rs:1.1.0-dev";
         private const string DEN_PRIVATE_KEY_DATA_ENV = "DEN_PRIVATE_KEY_DATA";
+        private const string DEN_PUBLIC_KEY_DATA_ENV = "DEN_PUBLIC_KEY_DATA";
         private const string PICKY_REALM_ENV = "PICKY_REALM";
         private const string PICKY_URL_ENV = "PICKY_URL";
         private const string PICKY_API_KEY_ENV = "PICKY_APIKEY";
@@ -69,6 +70,11 @@ namespace WaykDen.Models.Services
             if(this.DenConfig.DenServerConfigObject.PrivateKey != null && this.DenConfig.DenServerConfigObject.PrivateKey.Length > 0)
             {
                 this.Env.Add($"{DEN_PRIVATE_KEY_DATA_ENV}={RsaKeyutils.DerToPem(this.DenConfig.DenServerConfigObject.PrivateKey)}");
+            }
+
+            if(this.DenConfig.DenRouterConfigObject.PublicKey != null && this.DenConfig.DenRouterConfigObject.PublicKey.Length > 0)
+            {
+                this.Env.Add($"{DEN_PUBLIC_KEY_DATA_ENV}={RsaKeyutils.DerToPem(this.DenConfig.DenRouterConfigObject.PublicKey)}");
             }
 
             if(!string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.LDAPUsername))

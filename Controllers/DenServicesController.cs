@@ -80,6 +80,10 @@ namespace WaykDen.Controllers
         private async Task<bool> StartDenMongo()
         {
             DenMongoService mongo = new DenMongoService(this);
+            if(mongo.IsExternal)
+            {
+                return true;
+            }
             return await this.StartService(mongo);
         }
 
@@ -110,17 +114,7 @@ namespace WaykDen.Controllers
         private async Task<bool> StartTraefikService()
         {
             DenTraefikService traefik = new DenTraefikService(this);
-            Task<bool> started = this.StartService(traefik);
-            started.Wait();
-
-            if(await started)
-            {
-                Thread.Sleep(1000);
-                started = traefik.CurlTraefikConfig();
-                started.Wait();
-            }
-
-            return await started;
+            return await this.StartService(traefik);
         }
 
         public async Task<bool> StartDevolutionsJet()
@@ -411,9 +405,15 @@ namespace WaykDen.Controllers
             }
         }
 
-        public string CreateDockerCompose()
+        public string[] CreateDockerCompose()
         {
-            return ExportDenConfigUtils.CreateDockerCompose(this.GetDenServicesConfig());
+            Platforms platform = this.DenConfig.DenDockerConfigObject.Platform == "Linux" ? Platforms.Linux : Platforms.Windows;
+            return ExportDenConfigUtils.CreateDockerCompose(this.GetDenServicesConfig(), platform);
+        }
+
+        public string CreateTraefikToml()
+        {
+            return ExportDenConfigUtils.CreateTraefikToml(new DenTraefikService(this));
         }
 
         private DenService[] GetDenServicesConfig()

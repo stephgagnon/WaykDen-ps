@@ -275,15 +275,27 @@ namespace WaykDen.Models
         public string username {get; set;} = string.Empty;
     }
 
+    public class ByUsernameLicenseIDObject
+    {
+        public string username {get; set;} = string.Empty;
+        public string license_id {get; set;} = string.Empty;
+    }
+
+    public class ByUsernameSerialObject
+    {
+        public string username {get; set;} = string.Empty;
+        public string serial_number {get; set;} = string.Empty;
+    }
+
     public class ByUserIDLicenseIDObject
     {
         public string user_id {get; set;} = string.Empty;
         public string license_id {get; set;} = string.Empty;
     }
 
-    public class ByUsernameLicenseObject
+    public class ByUserIDSerialObject
     {
-        public string username {get; set;} = string.Empty;
+        public string user_id {get; set;} = string.Empty;
         public string serial_number {get; set;} = string.Empty;
     }
 

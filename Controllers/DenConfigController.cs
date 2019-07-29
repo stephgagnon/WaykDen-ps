@@ -256,9 +256,13 @@ namespace WaykDen.Controllers
             var coll = db.GetCollection(DEN_DOCKER_CONFIG_COLLECTION);
             var values = coll.FindById(DB_ID);
             bool dockerclientUriOk = values.TryGetValue(nameof(DenDockerConfigObject.DockerClientUri), out var dockerclienturi);
+            bool platformOk = values.TryGetValue(nameof(DenDockerConfigObject.Platform), out var platform);
+            bool syslogOk = values.TryGetValue(nameof(DenDockerConfigObject.SyslogServer), out var syslog);
             return new DenDockerConfigObject()
             {
-                DockerClientUri = dockerclientUriOk ?  dockerclienturi.ToString().Trim('\"') : string.Empty
+                DockerClientUri = dockerclientUriOk ?  dockerclienturi.ToString().Trim('\"') : string.Empty,
+                Platform = platformOk ? platform.ToString().Trim('\"') : "Linux",
+                SyslogServer = syslogOk ? syslog.ToString().Trim('\"') : string.Empty
             };
         }
 

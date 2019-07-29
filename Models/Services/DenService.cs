@@ -37,6 +37,22 @@ namespace WaykDen.Models.Services
 
         public virtual async Task<CreateContainerResponse> CreateContainer(string image)
         {
+            LogConfig logConfig = new LogConfig();
+            if(!string.IsNullOrEmpty(this.DenConfig.DenDockerConfigObject.SyslogServer))
+            {
+                logConfig = new LogConfig()
+                {
+                    Type = "syslog",
+                    Config = new Dictionary<string, string>()
+                    {
+                        {"syslog-address", $"{this.DenConfig.DenDockerConfigObject.SyslogServer}"},
+                        {"syslog-facility", "daemon"},
+                        {"syslog-format", "rfc5424"},
+                        {"tag", $"{this.Name}"}
+                    }
+                };
+            }
+
             return await this.DockerClient.Containers.CreateContainerAsync
             (
                 new CreateContainerParameters
@@ -58,7 +74,9 @@ namespace WaykDen.Models.Services
                     {
                         PortBindings = this.PortBindings,
                         AutoRemove = false,
-                        Binds = this.Volumes
+                        Binds = this.Volumes,
+                        LogConfig = logConfig,
+                        Isolation = this.DenConfig.DenDockerConfigObject.Platform == Platforms.Windows.ToString() ? "process" : string.Empty,
                     },
                     NetworkingConfig = new NetworkingConfig()
                     {

@@ -48,8 +48,10 @@ namespace WaykDen.Cmdlets
         public string CertificatePath {get; set;} = string.Empty;
         [Parameter(HelpMessage = "Path to the private key of the given certificate for Traefik.")]
         public string PrivateKeyPath {get; set;} = string.Empty;
-        [Parameter(HelpMessage = "Use Windows container.")]
-        public SwitchParameter Windows {get; set;} = false;
+        [Parameter(HelpMessage = "Use Linux or Windows  container."), ValidateSet(new string[]{"Linux", "Windows"})]
+        public string Platform {get; set;} = string.Empty;
+        [Parameter(HelpMessage = "URL of a syslog server.")]
+        public string SyslogServer {get; set;} = string.Empty;
         private string dockerDefaultEndpoint
         {
             get
@@ -74,7 +76,6 @@ namespace WaykDen.Cmdlets
             try
             {
                 DenConfigController denConfigController = new DenConfigController(this.Path, this.Key);
-                Platform platform = this.Windows ? Platform.Windows : Platform.Linux;
 
                 if(denConfigController.DbExists)
                 {
@@ -83,12 +84,20 @@ namespace WaykDen.Cmdlets
                 }
                 else
                 {
+                    if(string.IsNullOrEmpty(this.Platform))
+                    {
+                        this.Platform = "Linux";
+                    }
+
+                    Platforms platform = this.Platform.Equals("Linux") ? Platforms.Linux : Platforms.Windows;
                     RsaKeyGenerator rsaKeyGenerator = new RsaKeyGenerator();
                     this.DenConfig = new DenConfig()
                     {
                         DenDockerConfigObject = new DenDockerConfigObject
                         {
-                            DockerClientUri = string.IsNullOrEmpty(this.DockerClientUri) ? this.dockerDefaultEndpoint : this.DockerClientUri
+                            DockerClientUri = string.IsNullOrEmpty(this.DockerClientUri) ? this.dockerDefaultEndpoint : this.DockerClientUri,
+                            Platform = platform.ToString(),
+                            SyslogServer = this.SyslogServer
                         },
 
                         DenMongoConfigObject = new DenMongoConfigObject
@@ -158,6 +167,7 @@ namespace WaykDen.Cmdlets
         private void UpdateConfig()
         {
             this.DenConfig.DenDockerConfigObject.DockerClientUri = !string.IsNullOrEmpty(this.DockerClientUri) ? this.DockerClientUri : this.DenConfig.DenDockerConfigObject.DockerClientUri;
+            this.DenConfig.DenDockerConfigObject.SyslogServer = !string.IsNullOrEmpty(this.SyslogServer) ? this.SyslogServer : this.DenConfig.DenDockerConfigObject.SyslogServer;
             this.DenConfig.DenMongoConfigObject.Port = !string.IsNullOrEmpty(this.MongoPort) ? this.MongoPort : this.DenConfig.DenMongoConfigObject.Port;
             this.DenConfig.DenMongoConfigObject.Url = !string.IsNullOrEmpty(this.MongoUrl) ? this.MongoUrl : this.DenConfig.DenMongoConfigObject.Url;
             this.DenConfig.DenPickyConfigObject.Realm = !string.IsNullOrEmpty(this.Realm) ? this.Realm: this.DenConfig.DenPickyConfigObject.Realm;
@@ -169,8 +179,16 @@ namespace WaykDen.Cmdlets
             this.DenConfig.DenServerConfigObject.LDAPUserGroup = !string.IsNullOrEmpty(this.LDAPUserGroup) ? this.LDAPUserGroup : this.DenConfig.DenServerConfigObject.LDAPUserGroup;
             this.DenConfig.DenServerConfigObject.JetServerUrl = !string.IsNullOrEmpty(this.JetServerUrl) ? this.JetServerUrl : this.DenConfig.DenServerConfigObject.JetServerUrl;
             this.DenConfig.DenServerConfigObject.LoginRequired = this.LoginRequired ? "True" : "False";
+            this.DenConfig.DenServerConfigObject.LDAPServerUrl = !string.IsNullOrEmpty(this.LDAPServerUrl) ? this.LDAPServerUrl : this.DenConfig.DenServerConfigObject.LDAPServerUrl;
             this.DenConfig.DenTraefikConfigObject.ApiPort = !string.IsNullOrEmpty(this.TraefikApiPort) ? this.TraefikApiPort : this.DenConfig.DenTraefikConfigObject.ApiPort;
             this.DenConfig.DenTraefikConfigObject.WaykDenPort = !string.IsNullOrEmpty(this.WaykDenPort) ? this.WaykDenPort : this.DenConfig.DenTraefikConfigObject.WaykDenPort;
+
+            if(!string.IsNullOrEmpty(this.Platform) && !this.Platform.Equals(this.DenConfig.DenDockerConfigObject.Platform))
+            {
+                this.DenConfig.DenDockerConfigObject.Platform = this.Platform;
+                Platforms platform = this.Platform.Equals("Linux") ? Platforms.Linux : Platforms.Windows;
+                this.DenConfig.DenImageConfigObject = new DenImageConfigObject(platform);
+            }
         }
     }
 }

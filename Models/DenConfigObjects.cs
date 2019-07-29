@@ -67,10 +67,9 @@ namespace WaykDen.Models
         public string PrivateKey {get; set;}
     }
     
-    public enum Platform
+    public enum Platforms
     {
         Windows,
-        Mac,
         Linux
     }
 
@@ -83,12 +82,12 @@ namespace WaykDen.Models
         private const string LinuxDenServerImage = "devolutions/den-server:1.2.0-stretch-dev";
         private const string LinuxDenTraefikImage = "library/traefik:1.7";
         private const string LinuxDevolutionsJetImage = "devolutions/devolutions-jet:0.4.0-stretch";
-        private const string WindowsMongoImage = "library/mongo:4.2.0-rc2-windowsservercore-1803";
+        private const string WindowsMongoImage = "library/mongo:4.2.0-rc3-windowsservercore-ltsc2016";
         private const string WindowsDenLucidImage = "devolutions/den-lucid:3.3.3-servercore-ltsc2019-dev";
         private const string WindowsPickyImage = "devolutions/picky:3.0.0-servercore-ltsc2019-dev";
         private const string WindowsDenRouterImage = "devolutions/den-router:0.5.0-servercore-ltsc2019-dev";
         private const string WindowsDenServerImage = "devolutions/den-server:1.2.0-servercore-ltsc2019-dev";
-        private const string WindowsDenTraefikImage = "library/traefik:1.7-nanoserver";
+        private const string WindowsDenTraefikImage = "sixeyed/traefik:v1.7.8-windowsservercore-ltsc2019";
         private const string WindowsDevolutionsJetImage = "devolutions/devolutions-jet:0.4.0-servercore-ltsc2019-dev";
         public int Id {get; set;}
         public string DenMongoImage {get; set;}
@@ -98,9 +97,9 @@ namespace WaykDen.Models
         public string DenServerImage {get; set;}
         public string DenTraefikImage {get; set;}
         public string DevolutionsJetImage {get; set;}
-        public DenImageConfigObject(Platform platform)
+        public DenImageConfigObject(Platforms platform)
         {
-            if(platform == Platform.Windows)
+            if(platform == Platforms.Windows)
             {
                 this.DenMongoImage = WindowsMongoImage;
                 this.DenPickyImage = WindowsPickyImage;
@@ -130,5 +129,7 @@ namespace WaykDen.Models
     {
         public int Id {get; set;}
         public string DockerClientUri {get; set;}
+        public string Platform {get; set;}
+        public string SyslogServer {get; set;}
     }
 }

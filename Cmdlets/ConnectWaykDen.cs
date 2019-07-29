@@ -39,7 +39,7 @@ namespace WaykDen.Cmdlets
                 }
 
                 Task<bool> okTask = this.TestDenServerRoute();
-                okTask.Wait();
+                okTask.Wait(10000);
                 if(await okTask)
                 {
                     Environment.SetEnvironmentVariable(DEN_API_KEY_ENV, this.ApiKey);

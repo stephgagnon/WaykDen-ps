@@ -25,22 +25,28 @@ namespace WaykDen.Cmdlets
 
             if(this.ParameterSetName == "ByUsername")
             {
-                data = JsonConvert.SerializeObject(new ByUsernameLicenseObject{username = this.Username, serial_number = this.Serial});
-                this.DenRestAPIController.PutUser(data);
+                if(!string.IsNullOrEmpty(this.LicenseID))
+                {
+                    data = JsonConvert.SerializeObject(new ByUsernameLicenseIDObject{username = this.Username, license_id = this.LicenseID});
+                }
+                else if(!string.IsNullOrEmpty(this.Serial))
+                {
+                    data = JsonConvert.SerializeObject(new ByUsernameSerialObject{username = this.Username, serial_number = this.Serial});
+                } else return;
             }
             else
             {
                 if(!string.IsNullOrEmpty(this.LicenseID))
                 {
-                    data = JsonConvert.SerializeObject(new ByIDObject{license_id = this.LicenseID});
+                    data = JsonConvert.SerializeObject(new ByUserIDLicenseIDObject{user_id = this.UserID, license_id = this.LicenseID});
                 }
                 else if(!string.IsNullOrEmpty(this.Serial))
                 {
-                    data = JsonConvert.SerializeObject(new BySerialObject{serial_number = this.Serial});
+                    data = JsonConvert.SerializeObject(new ByUserIDSerialObject{user_id = this.UserID, serial_number = this.Serial});
                 } else return;
-
-                this.DenRestAPIController.PutUser(data, $"/{this.UserID}");
             }
+
+            this.DenRestAPIController.PutUser(data);
         }
     }
 }

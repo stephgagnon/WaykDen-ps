@@ -164,9 +164,9 @@ namespace WaykDen.Controllers
             return this.Post($"{this.serverUrl}/session/{parameter}", content);
         }
 
-        public string PutUser(string content, string parameter = null)
+        public string PutUser(string content)
         {
-            return this.Put($"{this.serverUrl}/user{parameter}/license", content);
+            return this.Put($"{this.serverUrl}/user/license", content);
         }
 
         public async Task<string> DeleteUserLicense(string parameter)
