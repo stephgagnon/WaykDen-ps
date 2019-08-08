@@ -10,6 +10,8 @@ namespace WaykDen.Controllers
 {
     public class DenConfigController
     {
+        private const string DEFAULT_MONGO_URL = "mongodb://den-mongo:27017";
+        private const string DEFAULT_JET_URL = "jet.wayk.net:8080";
         private const string DEN_IMAGE_CONFIG_COLLECTION = "DenImageConfig";
         private const string DEN_MONGO_CONFIG_COLLECTION = "DenMongoConfig";
         private const string DEN_PICKY_CONFIG_COLLECTION = "DenPickyConfig";
@@ -152,11 +154,11 @@ namespace WaykDen.Controllers
             var coll = db.GetCollection(DEN_MONGO_CONFIG_COLLECTION);
             var values = coll.FindById(DB_ID);
             bool urlOk = values.TryGetValue(nameof(DenMongoConfigObject.Url), out var url);
-            bool portOk = values.TryGetValue(nameof(DenMongoConfigObject.Port), out var port);
+            url = string.IsNullOrEmpty(url?.ToString()) ? DEFAULT_MONGO_URL : url?.ToString().Trim('\"');
             return new DenMongoConfigObject()
             {
-                Url = urlOk ? url.ToString().Trim('\"') : string.Empty,
-                Port = portOk ? port.ToString().Trim('\"') : string.Empty
+                Url = url,
+                IsExternal = url?.ToString().Trim('\"') != DEFAULT_MONGO_URL
             };
         }
 
@@ -229,7 +231,7 @@ namespace WaykDen.Controllers
                 LDAPUserGroup = ldapUserGroupOk ?  ldapusergroup.ToString().Trim('\"') : string.Empty,
                 LDAPUsername = ldapUsernameOk ?  ldapusername.ToString().Trim('\"') : string.Empty,
                 PrivateKey = privatekey,
-                JetServerUrl = jetServerUrlOk ?  jetServerUrl.ToString().Trim('\"') : string.Empty,
+                JetServerUrl = jetServerUrlOk ?  jetServerUrl.ToString().Trim('\"') : DEFAULT_JET_URL,
                 LoginRequired = loginRequiredOk ?  loginRequired.ToString().Trim('\"') : "false"
             };
         }
@@ -238,14 +240,12 @@ namespace WaykDen.Controllers
         {
             var coll = db.GetCollection(DEN_TRAEFIK_CONFIG_COLLECTION);
             var values = coll.FindById(DB_ID);
-            bool apiPortOk = values.TryGetValue(nameof(DenTraefikConfigObject.ApiPort), out var apiPort);
             bool waykDenPortOk =  values.TryGetValue(nameof(DenTraefikConfigObject.WaykDenPort), out var waykDenPort);
             bool certificateOk = values.TryGetValue(nameof(DenTraefikConfigObject.Certificate), out var certificate);
             bool privateKeyOk = values.TryGetValue(nameof(DenTraefikConfigObject.PrivateKey), out var privateKey);
             return new DenTraefikConfigObject
             {
-                ApiPort = apiPortOk ? apiPort.ToString().Trim('\"') : string.Empty,
-                WaykDenPort = waykDenPortOk ? waykDenPort.ToString().Trim('\"') : string.Empty,
+                WaykDenPort = waykDenPortOk ? waykDenPort.ToString().Trim('\"') : "4000",
                 Certificate = certificateOk ? certificate.ToString().Trim('\"') : string.Empty,
                 PrivateKey = privateKey
             };
@@ -370,7 +370,7 @@ namespace WaykDen.Controllers
                 string file = $"{dir}/WaykDen.key";
                 if(!File.Exists(file))
                 {
-                    string pswd = DenServiceUtils.Generate(20);
+                    string pswd = DenServiceUtils.GenerateRandom(20);
                     File.WriteAllText(file, pswd.Replace("-", string.Empty));
                     return pswd;
                 }

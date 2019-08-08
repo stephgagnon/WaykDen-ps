@@ -40,10 +40,9 @@ namespace WaykDen.Cmdlets
             }
 
             this.WriteObject(new DenObject {Property = "Docker client uri", Value = this.DenDockerConfigObject.DockerClientUri});
-            this.WriteObject(new DenObject {Property = "Containers type", Value = this.DenDockerConfigObject.Platform});
+            this.WriteObject(new DenObject {Property = nameof(this.DenDockerConfigObject.Platform), Value = this.DenDockerConfigObject.Platform});
             this.WriteObject(new DenObject {Property = $"{nameof(this.DenDockerConfigObject.SyslogServer)}", Value = this.DenDockerConfigObject.SyslogServer});
             this.WriteObject(new DenObject {Property = $"Mongo : {nameof(this.DenMongoConfigObject.Url)}", Value = this.DenMongoConfigObject.Url});
-            this.WriteObject(new DenObject {Property = $"Mongo : {nameof(this.DenMongoConfigObject.Port)}", Value = this.DenMongoConfigObject.Port});
             this.WriteObject(new DenObject {Property = $"Den-Picky : {nameof(this.DenPickyConfigObject.ApiKey)}", Value = this.DenPickyConfigObject.ApiKey});
             this.WriteObject(new DenObject {Property = $"Den-Picky : {nameof(this.DenPickyConfigObject.Realm)}", Value = this.DenPickyConfigObject.Realm});
             this.WriteObject(new DenObject {Property = $"Den-Picky : {nameof(this.DenPickyConfigObject.Backend)}", Value = this.DenPickyConfigObject.Backend});
@@ -60,7 +59,6 @@ namespace WaykDen.Cmdlets
             this.WriteObject(new DenObject {Property = $"Den-Server : {nameof(this.DenServerConfigObject.ApiKey)}", Value = this.DenServerConfigObject.ApiKey});
             this.WriteObject(new DenObject {Property = $"Den-Server : {nameof(this.DenServerConfigObject.JetServerUrl)}", Value = this.DenServerConfigObject.JetServerUrl});
             this.WriteObject(new DenObject {Property = $"Den-Server : {nameof(this.DenServerConfigObject.LoginRequired)}", Value = this.DenServerConfigObject.LoginRequired});
-            this.WriteObject(new DenObject {Property = $"Traefik : {nameof(this.DenTraefikConfigObject.ApiPort)}", Value = this.DenTraefikConfigObject.ApiPort});
             this.WriteObject(new DenObject {Property = $"Traefik : {nameof(this.DenTraefikConfigObject.WaykDenPort)}", Value = this.DenTraefikConfigObject.WaykDenPort});
             this.WriteObject(new DenObject {Property = $"Image : {nameof(this.DenImageConfigObject.DenMongoImage)}", Value = this.DenImageConfigObject.DenMongoImage});
             this.WriteObject(new DenObject {Property = $"Image : {nameof(this.DenImageConfigObject.DenPickyImage)}", Value = this.DenImageConfigObject.DenPickyImage});

@@ -12,11 +12,10 @@ namespace WaykDen.Cmdlets
     {
         public const string DOCKER_DEFAULT_CLIENT_URI_LINUX = "unix:///var/run/docker.sock";
         public const string DOCKER_DEFAULT_CLIENT_URI_WINDOWS = "npipe://./pipe/docker_engine";
+        private const string DEFAULT_MONGO_URL = "mongodb://den-mongo:27017";
         private DenConfig DenConfig {get; set;}
         [Parameter(HelpMessage = "Url of a running MongoDB instance.")]
         public string MongoUrl {get; set;} = string.Empty;
-        [Parameter(HelpMessage = "Port of a runnning MongoDB instance.")]
-        public string MongoPort {get; set;} = string.Empty;
         [Parameter(Mandatory=true, HelpMessage = "Name of domain for WaykDen. (Not a DNS domain)")]
         public string Realm {get; set;} = string.Empty;
         [Parameter(Mandatory=true, HelpMessage = "WaykDen server external URL.")]
@@ -40,8 +39,6 @@ namespace WaykDen.Cmdlets
         public SwitchParameter LoginRequired {get; set;} = false;
         [Parameter(HelpMessage = "Docker client endpoint URI.")]
         public string DockerClientUri {get; set;} = string.Empty;
-        [Parameter(HelpMessage = "Port where traefik API will be listening.")]
-        public string TraefikApiPort {get; set;} = "8080";
         [Parameter(HelpMessage = "Port where WaykDen server will be listening.")]
         public string WaykDenPort {get; set;} = "4000";
         [Parameter(HelpMessage = "Path to a x509 certificate to use https with Traefik.")]
@@ -102,22 +99,21 @@ namespace WaykDen.Cmdlets
 
                         DenMongoConfigObject = new DenMongoConfigObject
                         {
-                            Port = this.MongoPort != null ? this.MongoPort : string.Empty,
-                            Url = this.MongoUrl != null ? this.MongoUrl : string.Empty
+                            Url = !string.IsNullOrEmpty(this.MongoUrl) ? this.MongoUrl : DEFAULT_MONGO_URL
                         },
 
                         DenPickyConfigObject = new DenPickyConfigObject
                         {
-                            ApiKey = DenServiceUtils.Generate(32),
+                            ApiKey = DenServiceUtils.GenerateRandom(32),
                             Backend = "mongodb",
                             Realm = this.Realm
                         },
 
                         DenLucidConfigObject = new DenLucidConfigObject
                         {
-                            AdminSecret = DenServiceUtils.Generate(10),
-                            AdminUsername =  DenServiceUtils.Generate(16),
-                            ApiKey = DenServiceUtils.Generate(32)
+                            AdminSecret = DenServiceUtils.GenerateRandom(10),
+                            AdminUsername =  DenServiceUtils.GenerateRandom(16),
+                            ApiKey = DenServiceUtils.GenerateRandom(32)
                         },
 
                         DenRouterConfigObject = new DenRouterConfigObject
@@ -127,7 +123,7 @@ namespace WaykDen.Cmdlets
 
                         DenServerConfigObject = new DenServerConfigObject
                         {
-                            ApiKey = DenServiceUtils.Generate(32),
+                            ApiKey = DenServiceUtils.GenerateRandom(32),
                             AuditTrails = "true",
                             ExternalUrl = this.ExternalUrl,
                             LDAPPassword = this.LDAPPassword != null ? this.LDAPPassword : string.Empty,
@@ -143,7 +139,6 @@ namespace WaykDen.Cmdlets
 
                         DenTraefikConfigObject = new DenTraefikConfigObject
                         {
-                            ApiPort = this.TraefikApiPort != null ? this.TraefikApiPort : "8080",
                             WaykDenPort = this.WaykDenPort != null ? this.WaykDenPort : "4000",
                             Certificate = this.CertificatePath != null ? this.CertificatePath : string.Empty,
                             PrivateKey = this.PrivateKeyPath != null ? this.PrivateKeyPath : string.Empty
@@ -166,9 +161,13 @@ namespace WaykDen.Cmdlets
 
         private void UpdateConfig()
         {
+            if(string.IsNullOrEmpty(this.DenConfig.DenMongoConfigObject.Url))
+            {
+                this.MongoUrl = DEFAULT_MONGO_URL;
+            }
+
             this.DenConfig.DenDockerConfigObject.DockerClientUri = !string.IsNullOrEmpty(this.DockerClientUri) ? this.DockerClientUri : this.DenConfig.DenDockerConfigObject.DockerClientUri;
             this.DenConfig.DenDockerConfigObject.SyslogServer = !string.IsNullOrEmpty(this.SyslogServer) ? this.SyslogServer : this.DenConfig.DenDockerConfigObject.SyslogServer;
-            this.DenConfig.DenMongoConfigObject.Port = !string.IsNullOrEmpty(this.MongoPort) ? this.MongoPort : this.DenConfig.DenMongoConfigObject.Port;
             this.DenConfig.DenMongoConfigObject.Url = !string.IsNullOrEmpty(this.MongoUrl) ? this.MongoUrl : this.DenConfig.DenMongoConfigObject.Url;
             this.DenConfig.DenPickyConfigObject.Realm = !string.IsNullOrEmpty(this.Realm) ? this.Realm: this.DenConfig.DenPickyConfigObject.Realm;
             this.DenConfig.DenServerConfigObject.ExternalUrl = !string.IsNullOrEmpty(this.ExternalUrl) ? this.ExternalUrl : this.DenConfig.DenServerConfigObject.ExternalUrl;
@@ -180,7 +179,6 @@ namespace WaykDen.Cmdlets
             this.DenConfig.DenServerConfigObject.JetServerUrl = !string.IsNullOrEmpty(this.JetServerUrl) ? this.JetServerUrl : this.DenConfig.DenServerConfigObject.JetServerUrl;
             this.DenConfig.DenServerConfigObject.LoginRequired = this.LoginRequired ? "True" : "False";
             this.DenConfig.DenServerConfigObject.LDAPServerUrl = !string.IsNullOrEmpty(this.LDAPServerUrl) ? this.LDAPServerUrl : this.DenConfig.DenServerConfigObject.LDAPServerUrl;
-            this.DenConfig.DenTraefikConfigObject.ApiPort = !string.IsNullOrEmpty(this.TraefikApiPort) ? this.TraefikApiPort : this.DenConfig.DenTraefikConfigObject.ApiPort;
             this.DenConfig.DenTraefikConfigObject.WaykDenPort = !string.IsNullOrEmpty(this.WaykDenPort) ? this.WaykDenPort : this.DenConfig.DenTraefikConfigObject.WaykDenPort;
 
             if(!string.IsNullOrEmpty(this.Platform) && !this.Platform.Equals(this.DenConfig.DenDockerConfigObject.Platform))

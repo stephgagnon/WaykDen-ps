@@ -10,10 +10,8 @@ namespace WaykDen.Models.Services
     {
         private const string JET_NAME = "devolutions-jet";
         private const string JET_INSTANCE_ENV = "JET_INSTANCE";
-        public DevolutionsJetService(DenServicesController controller)
+        public DevolutionsJetService(DenServicesController controller):base(controller, JET_NAME)
         {
-            this.DenServicesController = controller;
-            this.Name = JET_NAME;
             this.ImageName = this.DenConfig.DenImageConfigObject.DevolutionsJetImage;
             string[] splittedUrl = this.DenConfig.DenServerConfigObject.JetServerUrl.Split(':');
             string url = splittedUrl.Where(x => x.Contains('.')).FirstOrDefault().Replace("//", "");

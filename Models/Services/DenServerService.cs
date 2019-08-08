@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using WaykDen.Utils;
 using WaykDen.Controllers;
 
@@ -7,8 +9,8 @@ namespace WaykDen.Models.Services
     {
         public const string DENSERVER_NAME = "den-server";
         private const string DENSERVER_IMAGE = "devolutions/waykden-rs:1.1.0-dev";
-        private const string DEN_PRIVATE_KEY_DATA_ENV = "DEN_PRIVATE_KEY_DATA";
-        private const string DEN_PUBLIC_KEY_DATA_ENV = "DEN_PUBLIC_KEY_DATA";
+        private const string DEN_PRIVATE_KEY_FILE_ENV = "DEN_PRIVATE_KEY_FILE";
+        private const string DEN_PUBLIC_KEY_FILE_ENV = "DEN_PUBLIC_KEY_FILE";
         private const string PICKY_REALM_ENV = "PICKY_REALM";
         private const string PICKY_URL_ENV = "PICKY_URL";
         private const string PICKY_API_KEY_ENV = "PICKY_APIKEY";
@@ -28,26 +30,13 @@ namespace WaykDen.Models.Services
         private const string PICKY_URL = "http://den-picky:12345";
         private const string ROUTER_INTERNAL_URL = "ws://den-router:4491";
         private const string LUCID_INTERNAL_URL = "http://den-lucid:4242";
-        private const string DEFAULT_MONGO_URL = "mongodb://den-mongo";
-        private const string DEFAULT_MONGO_PORT = "27017";
         private const string DEN_API_KEY_ENV = "DEN_API_KEY";
         private const string DEN_LOGIN_REQUIRED_ENV = "DEN_LOGIN_REQUIRED";
-        public DenServerService(DenServicesController controller)
+        private const string DEN_SERVER_LINUX_PATH = "/etc/den-server";
+        private const string DEN_SERVER_WINDOWS_PATH = "c:\\den-server";
+        public DenServerService(DenServicesController controller):base(controller, DENSERVER_NAME)
         {
-            this.DenServicesController = controller;
-            this.Name = DENSERVER_NAME;
             this.ImageName = this.DenConfig.DenImageConfigObject.DenServerImage;
-
-            string dburl = string.Empty;
-            if(string.IsNullOrEmpty(this.DenConfig.DenMongoConfigObject.Url))
-            {
-                if(this.DenConfig.DenMongoConfigObject.Port == string.Empty)
-                {
-                    dburl = $"{DEFAULT_MONGO_URL}:{DEFAULT_MONGO_PORT}";
-                } else dburl = $"{DEFAULT_MONGO_URL}:{this.DenConfig.DenMongoConfigObject.Port}";
-            } else {
-                dburl = $"{this.DenConfig.DenMongoConfigObject.Url}:{this.DenConfig.DenMongoConfigObject.Port}";
-            }
 
             string externalRouterUrl = this.DenConfig.DenServerConfigObject.ExternalUrl;
             if(externalRouterUrl.StartsWith("https"))
@@ -67,14 +56,10 @@ namespace WaykDen.Models.Services
             this.Env.Add($"{LUCID_EXTERNAL_URL_ENV}={this.DenConfig.DenServerConfigObject.ExternalUrl}/lucid");
             this.Env.Add($"{DEN_LOGIN_REQUIRED_ENV}={this.DenConfig.DenServerConfigObject.LoginRequired.ToLower()}");
 
-            if(this.DenConfig.DenServerConfigObject.PrivateKey != null && this.DenConfig.DenServerConfigObject.PrivateKey.Length > 0)
+            if((this.DenConfig.DenServerConfigObject.PrivateKey != null && this.DenConfig.DenServerConfigObject.PrivateKey.Length > 0) &&
+            (this.DenConfig.DenRouterConfigObject.PublicKey != null && this.DenConfig.DenRouterConfigObject.PublicKey.Length > 0))
             {
-                this.Env.Add($"{DEN_PRIVATE_KEY_DATA_ENV}={RsaKeyutils.DerToPem(this.DenConfig.DenServerConfigObject.PrivateKey)}");
-            }
-
-            if(this.DenConfig.DenRouterConfigObject.PublicKey != null && this.DenConfig.DenRouterConfigObject.PublicKey.Length > 0)
-            {
-                this.Env.Add($"{DEN_PUBLIC_KEY_DATA_ENV}={RsaKeyutils.DerToPem(this.DenConfig.DenRouterConfigObject.PublicKey)}");
+                this.ImportKey();
             }
 
             if(!string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.LDAPUsername))
@@ -114,11 +99,29 @@ namespace WaykDen.Models.Services
 
             this.Env.Add($"{DEN_API_KEY_ENV}={this.DenConfig.DenServerConfigObject.ApiKey}");
             this.Cmd.Add("--db_url");
-            this.Cmd.Add(dburl);
+            this.Cmd.Add(this.DenConfig.DenMongoConfigObject.Url);
             this.Cmd.Add("-m");
             this.Cmd.Add("onprem");
             this.Cmd.Add("-l");
             this.Cmd.Add("trace");
+        }
+
+        private void ImportKey()
+        {
+            this.DenServicesController.Path = this.DenServicesController.Path.TrimEnd(System.IO.Path.DirectorySeparatorChar);
+            string path = $"{this.DenServicesController.Path}{System.IO.Path.DirectorySeparatorChar}den-server";
+
+            if(!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}den-server.key", RsaKeyutils.DerToPem(this.DenConfig.DenServerConfigObject.PrivateKey));
+            File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}den-router.key", RsaKeyutils.DerToPem(this.DenConfig.DenRouterConfigObject.PublicKey));
+            string mountPoint = this.DenConfig.DenDockerConfigObject.Platform == Platforms.Linux.ToString() ? DEN_SERVER_LINUX_PATH : DEN_SERVER_WINDOWS_PATH;
+            this.Volumes.Add($"den-server:{mountPoint}");
+            this.Env.Add($"{DEN_PRIVATE_KEY_FILE_ENV}={mountPoint}{System.IO.Path.DirectorySeparatorChar}den-server.key");
+            this.Env.Add($"{DEN_PUBLIC_KEY_FILE_ENV}={mountPoint}{System.IO.Path.DirectorySeparatorChar}den-router.key");
         }
     }
 }

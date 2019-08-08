@@ -7,7 +7,7 @@ namespace WaykDen.Utils
 {
     public static class DenServiceUtils
     {
-        public static string Generate(int length)
+        public static string GenerateRandom(int length)
         {
             string valid = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890--";
             StringBuilder builder = new StringBuilder();

@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
+using System.Linq;
 using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using WaykDen.Utils;
 using WaykDen.Models;
 using WaykDen.Models.Services;
-using WaykDen.Cmdlets;
 
 namespace WaykDen.Controllers
 {
@@ -45,8 +44,9 @@ namespace WaykDen.Controllers
         }
         private enum ContainerState
         {
-            Running,
-            Exited
+            Created = 0x0001,
+            Running = 0x0010,
+            Exited = 0x0100
         }
 
         private enum ContainerFilter
@@ -159,12 +159,11 @@ namespace WaykDen.Controllers
 
                 started = id != string.Empty? await service.StartContainer(id): false;
 
-                if(this.OnLog != null) this.OnLog($"{service.Name} started");
-
                 if(!started)
                 {
-                    if(this.OnLog != null) this.OnLog($"Error running {service.Name} container");
+                    if(this.OnError != null) this.OnError(new Exception($"Error running {service.Name} container"));
                 } else {
+                    if(this.OnLog != null) this.OnLog($"{service.Name} started");
                     this.RunningDenServices.Add(service);
                 }
                 
@@ -218,13 +217,13 @@ namespace WaykDen.Controllers
 
         public async Task RemoveWaykDenContainers()
         {
-                this.ContainersName.TryGetValue(Container.DenMongo, out var mongo);
-                this.ContainersName.TryGetValue(Container.DenPicky, out var picky);
-                this.ContainersName.TryGetValue(Container.DenLucid, out var lucid);
-                this.ContainersName.TryGetValue(Container.DenRouter, out var router);
-                this.ContainersName.TryGetValue(Container.DenServer, out var server);
-                this.ContainersName.TryGetValue(Container.Traefik, out var traefik);
-                this.ContainersName.TryGetValue(Container.DevolutionsJet, out var jet);
+            this.ContainersName.TryGetValue(Container.DenMongo, out var mongo);
+            this.ContainersName.TryGetValue(Container.DenPicky, out var picky);
+            this.ContainersName.TryGetValue(Container.DenLucid, out var lucid);
+            this.ContainersName.TryGetValue(Container.DenRouter, out var router);
+            this.ContainersName.TryGetValue(Container.DenServer, out var server);
+            this.ContainersName.TryGetValue(Container.Traefik, out var traefik);
+            this.ContainersName.TryGetValue(Container.DevolutionsJet, out var jet);
 
             string[] containersName = new string[]
             {
@@ -239,7 +238,7 @@ namespace WaykDen.Controllers
             
             foreach(string name in containersName)
             {
-                List<string> id = await this.ListContainers(ContainerState.Exited, ContainerFilter.Name, name);
+                List<string> id = await this.ListContainers(ContainerState.Exited | ContainerState.Created, ContainerFilter.Name, name);
                 if(id.Count > 0)
                 {
                     this.WriteLog($"Removing {name}");
@@ -261,10 +260,24 @@ namespace WaykDen.Controllers
 
             IDictionary<string, IDictionary<string, bool>> filter = new Dictionary<string, IDictionary<string, bool>>();
 
-            if(containerState == ContainerState.Exited)
+            if((containerState & ContainerState.Exited) == ContainerState.Exited)
             {
                 filter.Add("status", new Dictionary<string, bool>(){{"exited", true}});
                 filter.Add("name", new Dictionary<string, bool>(){{param, true}});
+            }
+            
+            if((containerState & ContainerState.Created) == ContainerState.Created)
+            {
+                bool ok = filter.TryGetValue("status", out IDictionary<string, bool> f);
+                if(ok)
+                {
+                    f.Add("created", true);
+                }
+                else
+                {
+                    filter.Add("status", new Dictionary<string, bool>(){{"created", true}});
+                    filter.Add("name", new Dictionary<string, bool>(){{param, true}});   
+                }
             }
             else
             {
@@ -339,27 +352,27 @@ namespace WaykDen.Controllers
 
             if(string.IsNullOrEmpty(this.DenConfig.DenLucidConfigObject.ApiKey))
             {
-                this.DenConfig.DenLucidConfigObject.ApiKey = DenServiceUtils.Generate(32);
+                this.DenConfig.DenLucidConfigObject.ApiKey = DenServiceUtils.GenerateRandom(32);
             }
 
             if(string.IsNullOrEmpty(this.DenConfig.DenLucidConfigObject.AdminSecret))
             {
-                this.DenConfig.DenLucidConfigObject.AdminSecret = DenServiceUtils.Generate(10);
+                this.DenConfig.DenLucidConfigObject.AdminSecret = DenServiceUtils.GenerateRandom(10);
             }
 
             if(string.IsNullOrEmpty(this.DenConfig.DenLucidConfigObject.AdminUsername))
             {
-                this.DenConfig.DenLucidConfigObject.AdminUsername = DenServiceUtils.Generate(16);
+                this.DenConfig.DenLucidConfigObject.AdminUsername = DenServiceUtils.GenerateRandom(16);
             }
 
             if(string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.ApiKey))
             {
-                this.DenConfig.DenServerConfigObject.ApiKey = DenServiceUtils.Generate(32);
+                this.DenConfig.DenServerConfigObject.ApiKey = DenServiceUtils.GenerateRandom(32);
             }
 
             if(string.IsNullOrEmpty(this.DenConfig.DenPickyConfigObject.ApiKey))
             {
-                this.DenConfig.DenPickyConfigObject.ApiKey = DenServiceUtils.Generate(32);
+                this.DenConfig.DenPickyConfigObject.ApiKey = DenServiceUtils.GenerateRandom(32);
             }
 
             bool started = await this.StartDenMongo();
@@ -414,6 +427,13 @@ namespace WaykDen.Controllers
         public string CreateTraefikToml()
         {
             return ExportDenConfigUtils.CreateTraefikToml(new DenTraefikService(this));
+        }
+
+        public string CreateScript(string exportPath, bool podman)
+        {
+            this.Path = exportPath;
+            string config = this.DenConfig.ConvertToPwshParameters();
+            return ExportDenConfigUtils.CreateScript(podman, this.GetDenServicesConfig(), exportPath, config);
         }
 
         private DenService[] GetDenServicesConfig()

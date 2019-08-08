@@ -20,6 +20,7 @@ namespace WaykDen.Models.Services
         public List<string> Env = new List<string>();
         public List<string> Cmd = new List<string>();
         public List<string> Volumes = new List<string>();
+        protected LogConfig LogConfig = new LogConfig();
         public string Name = string.Empty;
         protected string Container_ID = string.Empty;
         public string ImageName = string.Empty;
@@ -30,17 +31,14 @@ namespace WaykDen.Models.Services
         {
         }
 
-        public DenService(DenServicesController controller)
+        public DenService(DenServicesController controller, string name)
         {
+            this.Name = name;
             this.DenServicesController = controller;
-        }
 
-        public virtual async Task<CreateContainerResponse> CreateContainer(string image)
-        {
-            LogConfig logConfig = new LogConfig();
             if(!string.IsNullOrEmpty(this.DenConfig.DenDockerConfigObject.SyslogServer))
             {
-                logConfig = new LogConfig()
+                this.LogConfig  = new LogConfig()
                 {
                     Type = "syslog",
                     Config = new Dictionary<string, string>()
@@ -48,9 +46,19 @@ namespace WaykDen.Models.Services
                         {"syslog-address", $"{this.DenConfig.DenDockerConfigObject.SyslogServer}"},
                         {"syslog-facility", "daemon"},
                         {"syslog-format", "rfc5424"},
-                        {"tag", $"{this.Name}"}
+                        {"tag", this.Name}
                     }
                 };
+            }
+        }
+
+        public virtual async Task<CreateContainerResponse> CreateContainer(string image)
+        {
+            LogConfig logConfig = new LogConfig();
+            
+            for(int i = 0; i < this.Volumes.Count; i++)
+            {
+                this.Volumes[i] = $"{this.Path}{System.IO.Path.DirectorySeparatorChar}{this.Volumes[i]}";
             }
 
             return await this.DockerClient.Containers.CreateContainerAsync
@@ -75,7 +83,7 @@ namespace WaykDen.Models.Services
                         PortBindings = this.PortBindings,
                         AutoRemove = false,
                         Binds = this.Volumes,
-                        LogConfig = logConfig,
+                        LogConfig = this.LogConfig,
                         Isolation = this.DenConfig.DenDockerConfigObject.Platform == Platforms.Windows.ToString() ? "process" : string.Empty,
                     },
                     NetworkingConfig = new NetworkingConfig()
@@ -229,6 +237,21 @@ namespace WaykDen.Models.Services
                     p.Add($"{value.Key}:{value.Value.First().HostPort}");
                 });
 
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool GetLogConfigs(out Dictionary<string, string> logConfigs)
+        {
+            logConfigs  = this.LogConfig.Config as Dictionary<string, string>;
+            if(this.LogConfig.Type != null && this.LogConfig.Type.Equals("syslog"))
+            {
+                if(!logConfigs.ContainsKey("driver"))
+                {
+                    logConfigs.Add("driver", this.LogConfig.Type);
+                }
                 return true;
             }
 

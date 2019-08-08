@@ -17,26 +17,24 @@ namespace WaykDen.Models.Services
     {
         private const string TRAEFIK_NAME = "traefik";
         private const string TRAEFIK_FILE_CMD = "--file";
-        private const string TRAEFIK_FILE_PATH_CMD = "--configFile=/etc/traefik/traefik.toml";
+        private const string TRAEFIK_FILE_PATH_CMD_LINUX = "--configFile=/etc/traefik/traefik.toml";
+        private const string TRAEFIK_FILE_PATH_CMD_WINDOWS = "--configFile=c:\\etc\\traefik\\traefik.toml";
         private const string TRAEFIK_LINUX_PATH = "/etc/traefik";
-        private const string TRAEFIK_WINDOWS_PATH = "c:\\traefik";
+        private const string TRAEFIK_WINDOWS_PATH = "c:\\etc\\traefik";
         public string Tls = string.Empty;
         public string Entrypoints = "ws";
         public string WaykDenPort => this.DenConfig.DenTraefikConfigObject.WaykDenPort;
         public string Url => this.DenConfig.DenServerConfigObject.ExternalUrl;
-        public DenTraefikService(DenServicesController controller)
+        public DenTraefikService(DenServicesController controller):base(controller, TRAEFIK_NAME)
         {
-            this.DenServicesController = controller;
-            this.Name = TRAEFIK_NAME;
             this.ImageName = this.DenConfig.DenImageConfigObject.DenTraefikImage;
             this.ExposedPorts.Add(this.WaykDenPort, new EmptyStruct());
-            this.ExposedPorts.Add(this.DenConfig.DenTraefikConfigObject.ApiPort, new EmptyStruct());
             this.PortBindings.Add(this.WaykDenPort, new List<PortBinding>(){new PortBinding(){HostIP = "0.0.0.0", HostPort = this.WaykDenPort}});
-            this.PortBindings.Add(this.DenConfig.DenTraefikConfigObject.ApiPort, new List<PortBinding>(){new PortBinding(){HostIP = "0.0.0.0", HostPort = this.DenConfig.DenTraefikConfigObject.ApiPort}});
             
             string mountPoint = this.DenConfig.DenDockerConfigObject.Platform == Platforms.Linux.ToString() ? TRAEFIK_LINUX_PATH : TRAEFIK_WINDOWS_PATH;
-            string path = $"{this.DenServicesController.Path}traefik";
-            this.Volumes.Add($"{path}:{mountPoint}");
+            string configFile = this.DenConfig.DenDockerConfigObject.Platform == Platforms.Linux.ToString() ? TRAEFIK_FILE_PATH_CMD_LINUX : TRAEFIK_FILE_PATH_CMD_WINDOWS;
+            string path = $"{this.DenServicesController.Path}{System.IO.Path.DirectorySeparatorChar}traefik";
+            this.Volumes.Add($"traefik:{mountPoint}");
             if(Directory.Exists(path))
             {
               Directory.Delete(path, true);
@@ -51,10 +49,11 @@ namespace WaykDen.Models.Services
             }
 
             string traefikToml = ExportDenConfigUtils.CreateTraefikToml(this);
-            File.WriteAllText($"{path}/traefik.toml", traefikToml);
+            File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}traefik.toml", traefikToml);
+            
             
             this.Cmd.Add(TRAEFIK_FILE_CMD);
-            this.Cmd.Add(TRAEFIK_FILE_PATH_CMD);
+            this.Cmd.Add(configFile);
         }
 
         private string BuildTraefikToml(string externalUrl)
@@ -153,42 +152,20 @@ $@"
             return traefikConfig;
         }
 
-        public async Task<bool> CurlTraefikConfig()
-        {
-          try
-          {
-            using(var httpClient = new HttpClient())
-            {
-                string port =  this.DenConfig.DenTraefikConfigObject.ApiPort;
-                using (var request = new HttpRequestMessage(new HttpMethod("PUT"), $"http://127.0.0.1:{port}/api/providers/rest"))
-                {
-                    request.Content = new StringContent(this.BuildConfig(), Encoding.UTF8);
-                    var response = httpClient.SendAsync(request);
-                    response.Wait();
-                    return (await response).StatusCode == HttpStatusCode.OK;
-                }
-            }
-          }
-          catch(Exception)
-          {
-            throw new Exception("Problem with Traefik. Try to restart WaykDen.");
-          }
-        }
-
         private void ImportCertificate()
         {
           this.DenServicesController.Path.TrimEnd(System.IO.Path.DirectorySeparatorChar);
           string path = $"{this.DenServicesController.Path}{System.IO.Path.DirectorySeparatorChar}traefik";
-          File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}traefik.cert", this.DenConfig.DenTraefikConfigObject.Certificate);
-          File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}traefik.key", this.DenConfig.DenTraefikConfigObject.PrivateKey);
+          File.WriteAllText($"traefik{System.IO.Path.DirectorySeparatorChar}traefik.cert", this.DenConfig.DenTraefikConfigObject.Certificate);
+          File.WriteAllText($"traefik{System.IO.Path.DirectorySeparatorChar}traefik.key", this.DenConfig.DenTraefikConfigObject.PrivateKey);
           string https = 
 @"[entryPoints.https.tls]
     [[entryPoints.https.tls.certificates]]
-    certFile = ""{0}/traefik.cert""
-    keyFile = ""{0}/traefik.key""
+    certFile = ""{0}{1}traefik.cert""
+    keyFile = ""{0}{1}traefik.key""
     ";
               string mountPoint = this.DenConfig.DenDockerConfigObject.Platform == Platforms.Linux.ToString() ? TRAEFIK_LINUX_PATH : TRAEFIK_WINDOWS_PATH;
-              this.Tls = string.Format(https, mountPoint);
+              this.Tls = string.Format(https, mountPoint, System.IO.Path.DirectorySeparatorChar);
         }
     }
 }

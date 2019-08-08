@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Collections;
 using System.Management.Automation;
+using Newtonsoft.Json;
 
 namespace WaykDen.Models
 {
@@ -14,13 +15,16 @@ namespace WaykDen.Models
 
     public class DenMongoConfigObject
     {
+        [JsonIgnore]
         public int Id {get; set;}
         public string Url {get; set;}
-        public string Port {get; set;}
+        [JsonIgnore]
+        public bool IsExternal {get; set;}
     }
 
     public class DenPickyConfigObject
     {
+        [JsonIgnore]
         public int Id {get; set;}
         public string ApiKey {get; set;}
         public string Realm {get; set;}
@@ -29,6 +33,7 @@ namespace WaykDen.Models
 
     public class DenLucidConfigObject
     {
+        [JsonIgnore]
         public int Id {get; set;}
         public string ApiKey {get; set;}
         public string AdminSecret {get; set;}
@@ -37,15 +42,19 @@ namespace WaykDen.Models
 
     public class DenRouterConfigObject
     {
+        [JsonIgnore]
         public int Id {get; set;}
+        [JsonIgnore]
         public byte[] PublicKey {get; set;}
     }
 
     public class DenServerConfigObject
     {
+        [JsonIgnore]
         public int Id {get; set;}
         public string AuditTrails {get; set;}
         public string ApiKey {get; set;}
+        [JsonIgnore]
         public byte[] PrivateKey {get; set;}
         public string ExternalUrl {get; set;}
         public string LDAPServerUrl {get; set;}
@@ -60,10 +69,13 @@ namespace WaykDen.Models
 
     public class DenTraefikConfigObject
     {
+        [JsonIgnore]
         public int Id {get; set;}
-        public string ApiPort {get; set;}
+        [JsonIgnore]
         public string WaykDenPort {get; set;}
+        [JsonIgnore]
         public string Certificate {get; set;}
+        [JsonIgnore]
         public string PrivateKey {get; set;}
     }
     
@@ -76,10 +88,10 @@ namespace WaykDen.Models
     public class DenImageConfigObject
     {
         private const string LinuxMongoImage = "library/mongo:4.1-bionic";
-        private const string LinuxDenLucidImage = "devolutions/den-lucid:3.3.3-stretch-dev";
-        private const string LinuxPickyImage = "devolutions/picky:3.0.0-stretch-dev";
-        private const string LinuxDenRouterImage = "devolutions/den-router:0.5.0-stretch-dev";
-        private const string LinuxDenServerImage = "devolutions/den-server:1.2.0-stretch-dev";
+        private const string LinuxDenLucidImage = "devolutions/den-lucid:3.3.3-buster";
+        private const string LinuxPickyImage = "devolutions/picky:3.0.0-buster";
+        private const string LinuxDenRouterImage = "devolutions/den-router:0.5.0-buster";
+        private const string LinuxDenServerImage = "devolutions/den-server:1.2.0-buster";
         private const string LinuxDenTraefikImage = "library/traefik:1.7";
         private const string LinuxDevolutionsJetImage = "devolutions/devolutions-jet:0.4.0-stretch";
         private const string WindowsMongoImage = "library/mongo:4.2.0-rc3-windowsservercore-ltsc2016";
@@ -89,6 +101,7 @@ namespace WaykDen.Models
         private const string WindowsDenServerImage = "devolutions/den-server:1.2.0-servercore-ltsc2019-dev";
         private const string WindowsDenTraefikImage = "sixeyed/traefik:v1.7.8-windowsservercore-ltsc2019";
         private const string WindowsDevolutionsJetImage = "devolutions/devolutions-jet:0.4.0-servercore-ltsc2019-dev";
+        [JsonIgnore]
         public int Id {get; set;}
         public string DenMongoImage {get; set;}
         public string DenPickyImage {get; set;}
@@ -127,8 +140,11 @@ namespace WaykDen.Models
 
     public class DenDockerConfigObject
     {
+        [JsonIgnore]
         public int Id {get; set;}
+        [JsonIgnore]
         public string DockerClientUri {get; set;}
+        [JsonIgnore]
         public string Platform {get; set;}
         public string SyslogServer {get; set;}
     }

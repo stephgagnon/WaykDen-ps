@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
 using WaykDen.Controllers;
+using Newtonsoft.Json;
 
 namespace WaykDen.Cmdlets
 {
@@ -11,6 +12,7 @@ namespace WaykDen.Cmdlets
     public class ExportWaykDenConfig : WaykDenConfigCmdlet
     {
         private const string DOCKER_COMPOSE_FILENAME = "docker-compose.yml";
+        private const string DOCKER_SCRIPT_FILENAME = "wayk-den.ps1";
         private const string TRAEFIK_TOML_FILENAME = "traefik.toml";
         [Parameter(HelpMessage = "Path where to export WaykDen configuration.")]
         public string ExportPath {get; set;} = string.Empty;
@@ -18,6 +20,10 @@ namespace WaykDen.Cmdlets
         public SwitchParameter DockerCompose {get; set;} = false;
         [Parameter(HelpMessage = "Export traefik.toml only for Traefik.")]
         public SwitchParameter TraefikToml {get; set;} = false;
+        [Parameter(HelpMessage = "Export in a script using Docker.")]
+        public SwitchParameter DockerScript {get; set;} = false;
+        [Parameter(HelpMessage = "Export in a script using Podman")]
+        public SwitchParameter PodmanScript {get; set;} = false;
         public ExportWaykDenConfig()
         {
         }
@@ -35,7 +41,8 @@ namespace WaykDen.Cmdlets
                     this.ExportPath = this.SessionState.Path.CurrentLocation.Path;
                 }
 
-                this.ExportPath.TrimEnd(System.IO.Path.DirectorySeparatorChar);
+                this.ExportPath = this.ExportPath.TrimEnd(System.IO.Path.DirectorySeparatorChar);
+
                 if(DockerCompose)
                 {
                     string traefikExportPath = $"{this.Path}{System.IO.Path.DirectorySeparatorChar}traefik/";
@@ -44,9 +51,24 @@ namespace WaykDen.Cmdlets
                     File.WriteAllText($"{this.ExportPath}{System.IO.Path.DirectorySeparatorChar}{DOCKER_COMPOSE_FILENAME}", exports[0]);
                     File.WriteAllText($"{traefikExportPath}{TRAEFIK_TOML_FILENAME}", exports[1]);
                 }
-                else if(TraefikToml)
+                else if(this.TraefikToml)
                 {
-                    File.WriteAllText($"{this.Path}{System.IO.Path.DirectorySeparatorChar}traefik{System.IO.Path.DirectorySeparatorChar}{TRAEFIK_TOML_FILENAME}", denServicesController.CreateTraefikToml());
+                    File.WriteAllText($"{this.ExportPath}{System.IO.Path.DirectorySeparatorChar}traefik{System.IO.Path.DirectorySeparatorChar}{TRAEFIK_TOML_FILENAME}", denServicesController.CreateTraefikToml());
+                }
+                else if(this.DockerScript || this.PodmanScript)
+                {
+                    this.ExportPath = $"{this.ExportPath}{System.IO.Path.DirectorySeparatorChar}WaykDen";
+                    
+                    if(!Directory.Exists(this.ExportPath))
+                    {
+                        Directory.CreateDirectory(this.ExportPath);
+                    }
+
+                    if(this.DockerScript)
+                    {
+                        File.WriteAllText($"{this.ExportPath}{System.IO.Path.DirectorySeparatorChar}{DOCKER_SCRIPT_FILENAME}", denServicesController.CreateScript(this.ExportPath, false));
+                    }
+                    else File.WriteAllText($"{this.ExportPath}{System.IO.Path.DirectorySeparatorChar}{DOCKER_SCRIPT_FILENAME}", denServicesController.CreateScript(this.ExportPath, true));
                 }
             }
             catch(Exception e)

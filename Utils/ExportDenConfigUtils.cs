@@ -168,6 +168,38 @@ services:";
                 }
             }
 
+            if(service.GetLogConfigs(out Dictionary<string, string> logConfigs))
+            {
+                if(logConfigs.TryGetValue("driver", out string driver))
+                {
+                    sb.AppendLine("    logging:");
+                    sb.AppendLine($"      driver: \"{driver}\"");
+                }
+
+                string logOptionsFormat = "        {0}: {1}";
+                sb.AppendLine($"      options:");
+
+                if(logConfigs.TryGetValue("syslog-address", out string address))
+                {
+                    sb.AppendLine(string.Format(logOptionsFormat, "syslog-address", address));
+                }
+
+                if(logConfigs.TryGetValue("syslog-facility", out string facility))
+                {
+                    sb.AppendLine(string.Format(logOptionsFormat, "syslog-facility", facility));
+                }
+
+                if(logConfigs.TryGetValue("syslog-format", out string format))
+                {
+                    sb.AppendLine(string.Format(logOptionsFormat, "syslog-format", format));
+                }
+
+                if(logConfigs.TryGetValue("tag", out string tag))
+                {
+                    sb.AppendLine(string.Format(logOptionsFormat, "tag", tag));
+                }
+            }
+
             return sb.ToString();
         }
 
@@ -236,5 +268,294 @@ services:";
 
             return string.Format(toml, traefik.Entrypoints, traefik.WaykDenPort, traefik.Tls);
         }
+
+        public static string CreateScript(bool podman, DenService[] services, string exportPath, string config)
+        {
+            string engine = podman ? "podman" : "docker";
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(@"param(
+[string] $Action
+)
+
+if([string]::IsNullOrEmpty($Action)){
+    $Action = 'Start'
+}");
+            sb.AppendLine(config);
+
+            List<string> servicesName = new List<string>();
+            List<string> servicesCmd = new List<string>();
+            List<string> servicesImage = new List<string>();
+            foreach(DenService service in services)
+            {
+                if(service is DenMongoService denMongo)
+                {
+                    if(denMongo.IsExternal)
+                    {
+                        Console.WriteLine("External");
+                        continue;
+                    }
+                }
+
+                servicesName.Add(service.Name);
+                servicesCmd.Add(service.Name.Replace("-", ""));
+                servicesImage.Add(service.ImageName);
+            }
+
+            sb.AppendLine("$currentPath = Get-Location");
+            sb.AppendLine($"$servicesName = @(\'{string.Join("\',\'", servicesName)}\')");
+            if(podman)
+            {
+                sb.AppendLine($"$servicesImage = @(\"docker.io/{string.Join("\",\"docker.io/", servicesImage)}\")");
+            } else sb.AppendLine($"$servicesImage = @(\"{string.Join("\",\"", servicesImage)}\")");
+            sb.AppendLine($"$baseRun = \"{GetBaseDockerRunCmd(podman)}\"");
+
+            if(podman)
+            {
+                sb.AppendLine("$servicesIP = 2..7 | ForEach-Object {\"10.88.123.$_\"}");
+            }
+
+            foreach(DenService service in services)
+            {
+                sb.AppendLine();
+                sb.Append(GetServiceArgs(podman, service));
+            }
+
+            sb.AppendLine($"$commands = @(\'{string.Join("\',\'", servicesCmd)}\')");
+            string createNetworkString = podman ? string.Empty : CreateNetworkFunction;
+            string ipFunction = podman ? IPFunction : string.Empty;
+            string createNetwork = podman ? string.Empty : "CreateNetwork";
+            sb.AppendLine(string.Format(script, engine, createNetworkString, ipFunction, createNetwork));
+            sb.AppendLine("waykden($Action)");
+            return sb.ToString();
+        }
+
+        private static string GetBaseDockerRunCmd(bool podman)
+        {
+            List<string> baseCmd = new List<string>();
+            if(podman)
+            {
+                baseCmd.AddRange(new string[]{"podman run --privileged -d"});
+            }
+            else baseCmd.AddRange(new string[]{"docker", "run", "-d", "--network=den-network"});
+            return string.Join(" ", baseCmd);
+        }
+        
+        private static string GetServiceArgs(bool podman, DenService service)
+        {
+            StringBuilder sb = new StringBuilder();
+            string variablesPrefix = service.Name.Replace("-", "");
+
+            /*if(service is DenServerService denServer)
+            {
+                List<string> health = new List<string>();
+                health.Add("--health-cmd=\'curl -sS http://den-router:10254/healtz && curl -sS http://den-lucid:4242/health\'");
+                health.Add("--health-interval=30s");
+                health.Add("--health-timeout=10s");
+                health.Add("--health-retries=5");
+                health.Add("--health-start-period=40s");
+            }*/
+
+            if(service.GetEnvironment(out List<string> envs))
+            {
+                sb.AppendLine($"${variablesPrefix}Envs = @(\"{string.Join("\",`\n   \"", envs)}\")");
+            }
+
+            if(service.GetVolumes(out List<string> volumes))
+            {
+                List<string> updatedVolumes = new List<string>();
+                if(service is DenMongoService denMongo)
+                {
+                    foreach(string volume in volumes)
+                    {
+                        updatedVolumes.Add(volume);
+                    }
+                }
+                else
+                {
+                    foreach(string volume in volumes)
+                    {
+                        updatedVolumes.Add($"$($currentPath){System.IO.Path.DirectorySeparatorChar}{volume}");
+                    }
+                }
+
+                sb.AppendLine($"${variablesPrefix}Volumes = @(\"{string.Join("\",`\n    \"", updatedVolumes)}\")");
+            }
+
+            if(service.GetPorts(out List<string> ports))
+            {
+                sb.AppendLine($"${variablesPrefix}Ports = @(\'{string.Join("\',`\n  \'", ports)}\')");
+            }
+
+            if(service.GetCmd(out List<string> commands))
+            {
+                sb.AppendLine($"${variablesPrefix}Cmd = @(\'{string.Join("\',`\n    \'", commands)}\')");
+            }
+
+            return sb.ToString();
+        }
+
+        public static string script =
+@"function WaykDen{{
+param(
+    [Parameter(Mandatory=$true)]
+    [ValidateSet('Start','Stop')]
+    [string]$Action
+)
+
+    function PullImage{{
+        foreach($image in $servicesImage){{
+            {0} pull $image
+        }}
+    }}
+
+    function CheckMongoVolume{{
+        $exists = $({0} volume ls -qf ""name=den-mongodata"")
+
+        if([string]::IsNullOrEmpty($exists)){{
+            {0} volume create den-mongodata
+        }}
+    }}
+
+    function StartContainer{{
+        foreach($container in $servicesName){{
+            $exists = $({0} ps -aqf ""name=$container"")
+
+            if([string]::IsNullOrEmpty($exists)){{
+                continue
+            }}
+
+            $running = {0} inspect -f '{{{{.State.Running}}}}' $container
+            
+            if ($running -and ($running -match 'false')){{
+                $removed = {0} rm $container
+
+                if($removed){{
+                    Write-Host ""Removed $($container)""
+                }} else {{
+                    Write-Error -Message ""Error removing $($container)""
+                }}
+            }} elseif ($running -match 'true'){{
+                Write-Warning -Message ""$container is running. Restart WaykDen""
+                return
+            }}
+        }}
+
+        CheckMongoVolume
+
+        for($i = 0; $i -le $commands.Count - 1; $i++){{
+            ${0}Run = ""$($baseRun)""
+            {2}
+            $var = Get-Variable ""$($commands[$i] + 'Envs')"" -ErrorAction SilentlyContinue | Select-Object *
+            if($var){{
+                $envs = $var.Value.split("" "")
+                foreach($env in $envs){{
+                    ${0}Run = ""$(${0}Run) -e $($env)""
+                }}
+            }}
+
+            $var = Get-Variable ""$($commands[$i] + 'Volumes')"" -ErrorAction SilentlyContinue | Select-Object *
+            if($var){{
+                $volumes = $var.Value.split("" "")
+                foreach($volume in $volumes){{
+                    ${0}Run = ""$(${0}Run) -v $($volume)""
+                }}
+            }}
+
+            $var = Get-Variable ""$($commands[$i] + 'Ports')"" -ErrorAction SilentlyContinue | Select-Object *
+            if($var){{
+                $ports = $var.Value.split("" "")
+                foreach($port in $ports){{
+                    ${0}Run = ""$(${0}Run) -p $($port)""
+                }}
+            }}
+
+            if($logDriver){{
+                $driver = $logDriver.split("" "")
+                if($syslogOptions -and $driver) {{
+                    $options = $syslogOptions.split("" "")
+                    $options += ""tag=$($servicesName[$i])""
+                    ${0}Run = ""$(${0}Run) --log-driver $($driver)""
+                    foreach($syslogOption in $options){{
+                        ${0}Run = ""$(${0}Run) --log-opt $($syslogOption)""
+                    }}
+                }}
+            }}
+
+            ${0}Run = ""$(${0}Run) --name $($servicesName[$i]) $($servicesImage[$i])""           
+
+            $var = Get-Variable ""$($commands[$i] + 'Cmd')"" -ErrorAction SilentlyContinue | Select-Object *
+            if($var){{
+                $cmds = $var.Value.split("" "")
+                foreach($cmd in $cmds){{
+                    ${0}Run = ""$(${0}Run) $($cmd)""
+                }}
+            }}
+
+            Write-Host ""Starting $($servicesName[$i])""
+            $id = Invoke-Expression ${0}Run
+            $health = {0} inspect -f '{{{{.State.Running}}}}' $id
+            if($health -match 'true'){{
+                Start-Sleep -Seconds 2
+                Write-Host ""$($servicesName[$i]) succesfully started""
+            }} else {{
+                Write-Warning -Message ""Error starting $servicesName[$i]""
+            }}
+        }}
+    }}
+    {1}
+    function StopContainer{{
+        foreach($container in $servicesName){{
+            $exists = $({0} ps -qf ""name=$container"")
+
+            if([string]::IsNullOrEmpty($exists)){{
+                continue
+            }}
+
+            $stopped = {0} stop $container
+
+            if($stopped){{
+                Write-Host ""$($stopped) stopped""
+            }} else {{
+                Write-Warning -Message ""Error stopping $($container)""
+            }}
+        }}
+    }}
+
+    function StartWaykDen{{
+        Write-Host 'Starting WaykDen'
+        {3}
+        PullImage
+        StartContainer
+    }}
+
+    function StopWaykDen{{
+        Write-Host 'Stopping WaykDen'
+        StopContainer
+    }}
+
+    if ($Action -match 'Start') {{
+        StartWaykDen        
+    }} else {{
+        StopWaykDen
+    }}
+}}
+";
+
+        public static string CreateNetworkFunction = @"
+    function CreateNetwork{
+        $network = $(docker network ls -qf ""name=den-network"")
+        if([string]::IsNullOrEmpty($network)){
+            docker network create den-network
+        }
+    }
+";
+
+        public static string IPFunction = @"
+            for($j = 0; $j -le $servicesIP.Count - 1; $j++){
+                $podmanRun = ""$($podmanRun) --add-host=$($servicesName[$j]):$($servicesIP[$j])""
+            }
+
+            $podmanRun = ""$($podmanRun) --ip=$($servicesIP[$i])""
+        ";
     }
 }

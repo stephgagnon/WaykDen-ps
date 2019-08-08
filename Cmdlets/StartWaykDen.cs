@@ -9,6 +9,7 @@ namespace WaykDen.Cmdlets
     [Cmdlet("Start", "WaykDen")]
     public class StartWaykDen : WaykDenConfigCmdlet
     {
+        private Exception error;
         private DenServicesController denServicesController;
         protected override void ProcessRecord()
         {
@@ -24,7 +25,17 @@ namespace WaykDen.Cmdlets
                     mre.WaitOne();
                     lock(this.mutex)
                     {
-                        this.WriteProgress(this.record);
+                        if(this.record != null)
+                        {
+                            this.WriteProgress(this.record);
+                            this.record = null;
+                        }
+
+                        if(this.error != null)
+                        {
+                            this.WriteWarning(this.error.Message);
+                            this.error = null;
+                        }
                     }
                 }
             }
@@ -42,6 +53,15 @@ namespace WaykDen.Cmdlets
             lock(this.mutex)
             {
                 this.record = r;
+                this.mre.Set();
+            }
+        }
+
+        protected override void OnError(Exception e)
+        {
+            this.error = e;
+            lock(this.mutex)
+            {
                 this.mre.Set();
             }
         }

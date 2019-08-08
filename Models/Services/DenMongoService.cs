@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Docker.DotNet.Models;
 using WaykDen.Controllers;
@@ -10,15 +12,13 @@ namespace WaykDen.Models.Services
         private const string MONGO_IMAGE = "mongo";
         private const string MONGO_LINUX_PATH = "/data/db";
         private const string MONGO_WINDOWS_PATH = "c:\\data\\db";
-        private const string DEFAULT_MONGO_URL = "mongodb://den-mongo";
+        private const string DEFAULT_MONGO_URL = "mongodb://den-mongo:27017";
         public DenMongoService()
         {
         }
 
-        public DenMongoService(DenServicesController controller) : base()
+        public DenMongoService(DenServicesController controller):base(controller, MONGO_NAME)
         {
-            this.DenServicesController = controller;
-            this.Name = MONGO_NAME;
             this.ImageName = this.DenConfig.DenImageConfigObject.DenMongoImage;
             Task.Run(async delegate
             {
@@ -33,6 +33,50 @@ namespace WaykDen.Models.Services
             this.Volumes.Add($"{this.Name}data:{mountPoint}");
         }
 
-        public bool IsExternal => this.DenConfig.DenMongoConfigObject.Url != DEFAULT_MONGO_URL && !string.IsNullOrEmpty(this.DenConfig.DenMongoConfigObject.Url);
+        public override async Task<CreateContainerResponse> CreateContainer(string image)
+        {
+            LogConfig logConfig = new LogConfig();
+
+            return await this.DockerClient.Containers.CreateContainerAsync
+            (
+                new CreateContainerParameters
+                (
+                    new Docker.DotNet.Models.Config()
+                    {
+                        Image = image,
+                        Env = this.Env,
+                        Cmd = this.Cmd,
+                        ExposedPorts = this.ExposedPorts,
+                        AttachStderr = false,
+                        AttachStdin = false,
+                        AttachStdout = true,
+                    }
+                )
+                {
+                    Name = this.Name,
+                    HostConfig = new HostConfig()
+                    {
+                        PortBindings = this.PortBindings,
+                        AutoRemove = false,
+                        Binds = this.Volumes,
+                        LogConfig = this.LogConfig,
+                        Isolation = this.DenConfig.DenDockerConfigObject.Platform == Platforms.Windows.ToString() ? "process" : string.Empty,
+                    },
+                    NetworkingConfig = new NetworkingConfig()
+                    {
+                        EndpointsConfig = new Dictionary<string, EndpointSettings>
+                        {
+                            {"den-network", new EndpointSettings()
+                                {
+                                    NetworkID = this.DenServicesController.DenNetwork.NetworkId
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+        }
+
+        public bool IsExternal => this.DenConfig.DenMongoConfigObject.IsExternal;
     }
 }
