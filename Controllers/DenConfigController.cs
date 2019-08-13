@@ -246,8 +246,8 @@ namespace WaykDen.Controllers
             return new DenTraefikConfigObject
             {
                 WaykDenPort = waykDenPortOk ? waykDenPort.ToString().Trim('\"') : "4000",
-                Certificate = certificate,
-                PrivateKey = privateKey
+                Certificate = certificateOk ? (string)certificate : string.Empty,
+                PrivateKey = privateKeyOk ? (string)privateKey : string.Empty
             };
         }
 

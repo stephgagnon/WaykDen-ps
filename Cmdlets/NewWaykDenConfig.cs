@@ -41,9 +41,9 @@ namespace WaykDen.Cmdlets
         public string DockerClientUri {get; set;} = string.Empty;
         [Parameter(HelpMessage = "Port where WaykDen server will be listening.")]
         public string WaykDenPort {get; set;} = "4000";
-        [Parameter(HelpMessage = "Path to a x509 certificate to use https with Traefik.")]
+        [Parameter(HelpMessage = "Path to a x509 certificate or chain in PEM format to use https with Traefik.")]
         public string CertificatePath {get; set;} = string.Empty;
-        [Parameter(HelpMessage = "Path to the private key of the given certificate for Traefik.")]
+        [Parameter(HelpMessage = "Path to the private key of the given certificate for Traefik. In a case of a chain, the leaf certicate private key")]
         public string PrivateKeyPath {get; set;} = string.Empty;
         [Parameter(HelpMessage = "Use Linux or Windows  container."), ValidateSet(new string[]{"Linux", "Windows"})]
         public string Platform {get; set;} = string.Empty;

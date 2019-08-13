@@ -9,9 +9,9 @@ namespace WaykDen.Cmdlets
     [Cmdlet(VerbsCommon.Set, "WaykDenWebCertificate")]
     public class SetWaykDenWebCertificate : WaykDenConfigCmdlet
     {
-        [Parameter(Mandatory = true, HelpMessage = "Path to a certificate with its extension.")]
+        [Parameter(Mandatory = true, HelpMessage = "Path to a x509 certificate or chain in PEM format.")]
         public string CertificatePath {get; set;} = string.Empty;
-        [Parameter(Mandatory = true, HelpMessage = "Path to a private key with its extension.")]
+        [Parameter(Mandatory = true, HelpMessage = "Path to the private key of the given certificate for Traefik. In a case of a chain, the leaf certicate private key")]
         public string PrivateKeyPath {get; set;} = string.Empty;
 
         public SetWaykDenWebCertificate()

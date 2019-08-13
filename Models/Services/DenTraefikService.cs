@@ -156,12 +156,12 @@ $@"
         {
           this.DenServicesController.Path.TrimEnd(System.IO.Path.DirectorySeparatorChar);
           string path = $"{this.DenServicesController.Path}{System.IO.Path.DirectorySeparatorChar}traefik";
-          File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}traefik.cert", this.DenConfig.DenTraefikConfigObject.Certificate);
+          File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}traefik.pem", this.DenConfig.DenTraefikConfigObject.Certificate);
           File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}traefik.key", this.DenConfig.DenTraefikConfigObject.PrivateKey);
           string https = 
 @"[entryPoints.https.tls]
           [entryPoints.https.tls.defaultCertificate]
-          certFile = ""{0}{1}traefik.cert""
+          certFile = ""{0}{1}traefik.pem""
           keyFile = ""{0}{1}traefik.key""
     ";
               string mountPoint = this.DenConfig.DenDockerConfigObject.Platform == Platforms.Linux.ToString() ? TRAEFIK_LINUX_PATH : TRAEFIK_WINDOWS_PATH;

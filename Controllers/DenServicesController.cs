@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
@@ -338,63 +337,77 @@ namespace WaykDen.Controllers
 
         public async Task<bool> StartWaykDen()
         {
-            Task t = this.RemoveWaykDenContainers();
-            t.Wait();
-
-            List<string> networks = await this.GetDenNetwork();
-
-            if(networks.Count == 0)
+            try
             {
-                await this.DenNetwork.CreateNetwork();
-            } else {
-                this.DenNetwork.SetNetworkId(networks[0]);
-            }
+                Task t = this.RemoveWaykDenContainers();
+                t.Wait();
 
-            if(string.IsNullOrEmpty(this.DenConfig.DenLucidConfigObject.ApiKey))
-            {
-                this.DenConfig.DenLucidConfigObject.ApiKey = DenServiceUtils.GenerateRandom(32);
-            }
+                List<string> networks = await this.GetDenNetwork();
 
-            if(string.IsNullOrEmpty(this.DenConfig.DenLucidConfigObject.AdminSecret))
-            {
-                this.DenConfig.DenLucidConfigObject.AdminSecret = DenServiceUtils.GenerateRandom(10);
-            }
-
-            if(string.IsNullOrEmpty(this.DenConfig.DenLucidConfigObject.AdminUsername))
-            {
-                this.DenConfig.DenLucidConfigObject.AdminUsername = DenServiceUtils.GenerateRandom(16);
-            }
-
-            if(string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.ApiKey))
-            {
-                this.DenConfig.DenServerConfigObject.ApiKey = DenServiceUtils.GenerateRandom(32);
-            }
-
-            if(string.IsNullOrEmpty(this.DenConfig.DenPickyConfigObject.ApiKey))
-            {
-                this.DenConfig.DenPickyConfigObject.ApiKey = DenServiceUtils.GenerateRandom(32);
-            }
-
-            bool started = await this.StartDenMongo();
-            started = started ? await this.StartDenPicky(): false;
-            started = started ? await this.StartDenLucid(): false;
-            started = started ? await this.StartDenRouter(): false;
-            started = started ? await this.StartDenServer(): false;
-
-            if(started)
-            {
-                Task<bool> traefikStarted = this.StartTraefikService();
-                traefikStarted.Wait();
-                started = await traefikStarted;
-                if(!started)
+                if(networks.Count == 0)
                 {
-                    this.WriteError(new Exception("Error starting Traefik service. Make sure Traefik API port is free in WaykDen Configuration or switch API port using Set-WaykDenConfig."));
+                    await this.DenNetwork.CreateNetwork();
+                } else {
+                    this.DenNetwork.SetNetworkId(networks[0]);
                 }
+
+                if(string.IsNullOrEmpty(this.DenConfig.DenLucidConfigObject.ApiKey))
+                {
+                    this.DenConfig.DenLucidConfigObject.ApiKey = DenServiceUtils.GenerateRandom(32);
+                }
+
+                if(string.IsNullOrEmpty(this.DenConfig.DenLucidConfigObject.AdminSecret))
+                {
+                    this.DenConfig.DenLucidConfigObject.AdminSecret = DenServiceUtils.GenerateRandom(10);
+                }
+
+                if(string.IsNullOrEmpty(this.DenConfig.DenLucidConfigObject.AdminUsername))
+                {
+                    this.DenConfig.DenLucidConfigObject.AdminUsername = DenServiceUtils.GenerateRandom(16);
+                }
+
+                if(string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.ApiKey))
+                {
+                    this.DenConfig.DenServerConfigObject.ApiKey = DenServiceUtils.GenerateRandom(32);
+                }
+
+                if(string.IsNullOrEmpty(this.DenConfig.DenPickyConfigObject.ApiKey))
+                {
+                    this.DenConfig.DenPickyConfigObject.ApiKey = DenServiceUtils.GenerateRandom(32);
+                }
+
+                if(!string.IsNullOrEmpty(this.DenConfig.DenTraefikConfigObject.Certificate) && (string.IsNullOrEmpty(this.DenConfig.DenTraefikConfigObject.PrivateKey)))
+                {
+                    this.WriteError(new Exception("No private key found for certificate. Add private key or remove certificate"));
+                    return false;
+                }
+
+                bool started = await this.StartDenMongo();
+                started = started ? await this.StartDenPicky(): false;
+                started = started ? await this.StartDenLucid(): false;
+                started = started ? await this.StartDenRouter(): false;
+                started = started ? await this.StartDenServer(): false;
+
+                if(started)
+                {
+                    Task<bool> traefikStarted = this.StartTraefikService();
+                    traefikStarted.Wait();
+                    started = await traefikStarted;
+                    if(!started)
+                    {
+                        this.WriteError(new Exception("Error starting Traefik service. Make sure External URL is well configured."));
+                    }
+                }
+                
+                
+                this.denConfigController.StoreConfig(this.DenConfig);
+                return started;
             }
-            
-            
-            this.denConfigController.StoreConfig(this.DenConfig);
-            return started;
+            catch(Exception e)
+            {
+                this.WriteError(e);
+                return false;
+            }
         }
 
         public async Task StopWaykDen(List<string> containerIds)

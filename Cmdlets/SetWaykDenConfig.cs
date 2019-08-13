@@ -35,9 +35,7 @@ namespace WaykDen.Cmdlets
         public string DockerClientUri {get; set;}= string.Empty;
         [Parameter(HelpMessage = "Port where WaykDen server will be listening.")]
         public string WaykDenPort {get; set;}= string.Empty;
-        [Parameter(HelpMessage = "Path to a x509 certificate to use https with Traefik.")]
         public string Certificate {get; set;} = string.Empty;
-        [Parameter(HelpMessage = "Path to the private key of the given certificate for Traefik.")]
         public string PrivateKey {get; set;} = string.Empty;
         [Parameter(HelpMessage = "Force the Wayk client to be logged and authenticated. WaykDen will give an ID only if the user is authenticated."), ValidateSet(new string[]{"True", "False"})]
         public string LoginRequired {get; set;} = string.Empty;
@@ -147,8 +145,6 @@ namespace WaykDen.Cmdlets
                     (nameof(this.JetServerUrl), !string.IsNullOrEmpty(this.JetServerUrl)),
                     (nameof(this.LoginRequired), !string.IsNullOrEmpty(this.LoginRequired)),
                     (nameof(this.WaykDenPort), !string.IsNullOrEmpty(this.WaykDenPort)),
-                    (nameof(this.Certificate), !string.IsNullOrEmpty(this.Certificate)),
-                    (nameof(this.PrivateKey), !string.IsNullOrEmpty(this.PrivateKey)),
                     (nameof(this.MongoImage), !string.IsNullOrEmpty(this.MongoImage)),
                     (nameof(this.PickyImage), !string.IsNullOrEmpty(this.PickyImage)),
                     (nameof(this.DenLucidImage), !string.IsNullOrEmpty(this.DenLucidImage)),
