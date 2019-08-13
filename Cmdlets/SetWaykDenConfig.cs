@@ -36,9 +36,9 @@ namespace WaykDen.Cmdlets
         [Parameter(HelpMessage = "Port where WaykDen server will be listening.")]
         public string WaykDenPort {get; set;}= string.Empty;
         [Parameter(HelpMessage = "Path to a x509 certificate to use https with Traefik.")]
-        public string CertificatePath {get; set;} = string.Empty;
+        public string Certificate {get; set;} = string.Empty;
         [Parameter(HelpMessage = "Path to the private key of the given certificate for Traefik.")]
-        public string KeyPath {get; set;} = string.Empty;
+        public string PrivateKey {get; set;} = string.Empty;
         [Parameter(HelpMessage = "Force the Wayk client to be logged and authenticated. WaykDen will give an ID only if the user is authenticated."), ValidateSet(new string[]{"True", "False"})]
         public string LoginRequired {get; set;} = string.Empty;
         [Parameter(HelpMessage = "Use Linux or Windows  container."), ValidateSet(new string[]{"Linux", "Windows"})]
@@ -59,8 +59,8 @@ namespace WaykDen.Cmdlets
                 "LDAPBaseDN",
                 "DockerClientUri",
                 "WaykDenPort",
-                "CertificatePath",
-                "KeyPath",
+                "Certificate",
+                "PrivateKey",
                 "SyslogServer",
                 "JetServerUrl"
             }
@@ -99,8 +99,8 @@ namespace WaykDen.Cmdlets
                 {nameof(this.JetServerUrl), (typeof(DenServerConfigObject), "JetServerUrl")},
                 {nameof(this.LoginRequired), (typeof(DenServerConfigObject), "LoginRequired")},
                 {nameof(this.WaykDenPort), (typeof(DenTraefikConfigObject), "WaykDenPort")},
-                {nameof(this.CertificatePath), (typeof(DenTraefikConfigObject), "CertificatePath")},
-                {nameof(this.KeyPath), (typeof(DenTraefikConfigObject), "KeyPath")},
+                {nameof(this.Certificate), (typeof(DenTraefikConfigObject), "Certificate")},
+                {nameof(this.PrivateKey), (typeof(DenTraefikConfigObject), "PrivateKey")},
                 {nameof(this.MongoImage), (typeof(DenImageConfigObject), "DenMongoImage")},
                 {nameof(this.PickyImage), (typeof(DenImageConfigObject), "DenPickyImage")},
                 {nameof(this.DenLucidImage), (typeof(DenImageConfigObject), "DenLucidImage")},
@@ -147,8 +147,8 @@ namespace WaykDen.Cmdlets
                     (nameof(this.JetServerUrl), !string.IsNullOrEmpty(this.JetServerUrl)),
                     (nameof(this.LoginRequired), !string.IsNullOrEmpty(this.LoginRequired)),
                     (nameof(this.WaykDenPort), !string.IsNullOrEmpty(this.WaykDenPort)),
-                    (nameof(this.CertificatePath), !string.IsNullOrEmpty(this.CertificatePath)),
-                    (nameof(this.KeyPath), !string.IsNullOrEmpty(this.KeyPath)),
+                    (nameof(this.Certificate), !string.IsNullOrEmpty(this.Certificate)),
+                    (nameof(this.PrivateKey), !string.IsNullOrEmpty(this.PrivateKey)),
                     (nameof(this.MongoImage), !string.IsNullOrEmpty(this.MongoImage)),
                     (nameof(this.PickyImage), !string.IsNullOrEmpty(this.PickyImage)),
                     (nameof(this.DenLucidImage), !string.IsNullOrEmpty(this.DenLucidImage)),

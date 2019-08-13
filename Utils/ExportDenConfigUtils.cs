@@ -211,9 +211,9 @@ services:";
 [file]
 
 [entryPoints]
-    [EntryPoints.{0}]
+    [entryPoints.{0}]
     address = "":{1}""
-    {2}
+        {2}
 
 [frontends]
     [frontends.lucid]
@@ -308,6 +308,22 @@ if([string]::IsNullOrEmpty($Action)){
                 sb.AppendLine($"$servicesImage = @(\"docker.io/{string.Join("\",\"docker.io/", servicesImage)}\")");
             } else sb.AppendLine($"$servicesImage = @(\"{string.Join("\",\"", servicesImage)}\")");
             sb.AppendLine($"$baseRun = \"{GetBaseDockerRunCmd(podman)}\"");
+            List<string> health = new List<string>();
+            if(podman)
+            {
+                health.Add("--healthcheck-interval=5s");
+                health.Add("--healthcheck-timeout=2s");
+                health.Add("--healthcheck-retries=5");
+                health.Add("--healthcheck-start-period=1s");
+            }
+            else
+            {
+                health.Add("--health-interval=5s");
+                health.Add("--health-timeout=2s");
+                health.Add("--health-retries=5");
+                health.Add("--health-start-period=1s");
+            }
+            sb.AppendLine($"$baseHealthCheck  = @(\'{string.Join("\',\'",health)}\')");
 
             if(podman)
             {
@@ -324,7 +340,8 @@ if([string]::IsNullOrEmpty($Action)){
             string createNetworkString = podman ? string.Empty : CreateNetworkFunction;
             string ipFunction = podman ? IPFunction : string.Empty;
             string createNetwork = podman ? string.Empty : "CreateNetwork";
-            sb.AppendLine(string.Format(script, engine, createNetworkString, ipFunction, createNetwork));
+            string healthCheck = podman ? "Healthcheck" : "Health";
+            sb.AppendLine(string.Format(script, engine, createNetworkString, ipFunction, createNetwork, healthCheck));
             sb.AppendLine("waykden($Action)");
             return sb.ToString();
         }
@@ -345,15 +362,24 @@ if([string]::IsNullOrEmpty($Action)){
             StringBuilder sb = new StringBuilder();
             string variablesPrefix = service.Name.Replace("-", "");
 
-            /*if(service is DenServerService denServer)
+            string cmd;
+            switch(service)
             {
-                List<string> health = new List<string>();
-                health.Add("--health-cmd=\'curl -sS http://den-router:10254/healtz && curl -sS http://den-lucid:4242/health\'");
-                health.Add("--health-interval=30s");
-                health.Add("--health-timeout=10s");
-                health.Add("--health-retries=5");
-                health.Add("--health-start-period=40s");
-            }*/
+                case DenLucidService denLucid:
+                    cmd = podman ? "--healthcheck-command=\'curl -sS http://den-lucid:4242/health\'" : "--health-cmd=\'curl -sS http://den-lucid:4242/health\'";
+                    sb.AppendLine($"${variablesPrefix}HealthCheck = \"{cmd}\"");
+                    break;
+
+                case DenRouterService denRouter:
+                    cmd = podman ? "--healthcheck-command=\'curl -sS http://den-router:10254/healtz\'" : "--health-cmd=\'curl -sS http://den-router:10254/healtz\'";
+                    sb.AppendLine($"${variablesPrefix}HealthCheck = \"{cmd}\"");
+                    break;
+
+                case DenServerService denServer1:
+                    cmd = podman ? "--healthcheck-command=\'curl -sS http://den-server:10255/health\'" : "--health-cmd=\'curl -sS http://den-server:10255/health\'";
+                    sb.AppendLine($"${variablesPrefix}HealthCheck = \"{cmd}\"");
+                    break;
+            }
 
             if(service.GetEnvironment(out List<string> envs))
             {
@@ -416,6 +442,24 @@ param(
         }}
     }}
 
+    function IsContainerHealthy{{
+        param(
+            [string]$containerId
+        )
+
+        $s = 0
+        $running = {0} inspect -f '{{{{.State.Running}}}}' $containerId
+        $healthy = {0} inspect -f '{{{{.State.{4}.Status}}}}' $containerId
+        while(($s -lt 30) -and !($healthy -like 'healthy') -and ($running -like 'true')){{
+            Start-Sleep -Seconds 2
+            $running = {0} inspect -f '{{{{.State.Running}}}}' $containerId
+            $healthy = {0} inspect -f '{{{{.State.{4}.Status}}}}' $containerId
+            $s = $s + 2
+        }}
+
+        return $healthy -like 'healthy'
+    }}
+
     function StartContainer{{
         foreach($container in $servicesName){{
             $exists = $({0} ps -aqf ""name=$container"")
@@ -469,6 +513,16 @@ param(
                 }}
             }}
 
+            $var = Get-Variable ""$($commands[$i] + 'HealthCheck')"" -ErrorAction SilentlyContinue | Select-Object *
+            if($var){{
+                $healthCmds = $var.Value.split("" "")
+                foreach($healthCmd in $healthCmds){{
+                    ${0}Run = ""$(${0}Run) $($healthCmd)""
+                }}
+
+                ${0}Run = ""${0}Run $($baseHealthCheck)""
+            }}
+
             if($logDriver){{
                 $driver = $logDriver.split("" "")
                 if($syslogOptions -and $driver) {{
@@ -493,12 +547,21 @@ param(
 
             Write-Host ""Starting $($servicesName[$i])""
             $id = Invoke-Expression ${0}Run
-            $health = {0} inspect -f '{{{{.State.Running}}}}' $id
-            if($health -match 'true'){{
-                Start-Sleep -Seconds 2
-                Write-Host ""$($servicesName[$i]) succesfully started""
+            $running = {0} inspect -f '{{{{.State.Running}}}}' $id
+            if($running -like 'true'){{
+                if(($servicesName[$i] -match 'den-lucid') -or ($servicesName[$i] -match 'den-router') -or ($servicesName[$i] -match 'den-server')){{
+                    $healthy = IsContainerHealthy($id)
+
+                    if($healthy -like 'true'){{
+                        Write-Host ""$($servicesName[$i]) succesfully started""
+                    }} else {{
+                        Write-Error -Message ""Error starting $($servicesName[$i])""
+                    }}
+                }} else {{
+                    Write-Host ""$($servicesName[$i]) succesfully started""
+                }}
             }} else {{
-                Write-Warning -Message ""Error starting $servicesName[$i]""
+                Write-Error -Message ""Error starting $($servicesName[$i])""
             }}
         }}
     }}
@@ -516,7 +579,7 @@ param(
             if($stopped){{
                 Write-Host ""$($stopped) stopped""
             }} else {{
-                Write-Warning -Message ""Error stopping $($container)""
+                Write-Error -Message ""Error stopping $($container)""
             }}
         }}
     }}
