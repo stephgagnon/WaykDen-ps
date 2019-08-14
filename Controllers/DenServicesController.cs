@@ -72,6 +72,9 @@ namespace WaykDen.Controllers
             {
                 throw new Exception("Could not found WaykDen configuration in given path. Make sure WaykDen configuration is in current folder or set WAYK_DEN_HOME to the path of WaykDen configuration");
             }
+
+            Platforms p = string.Equals(this.DenConfig.DenDockerConfigObject.Platform, "Linux") ? Platforms.Linux : Platforms.Windows;
+            this.DenConfig.DenImageConfigObject = new DenImageConfigObject(p);
         
             this.DockerClient = new DockerClientConfiguration(new Uri(this.DenConfig.DenDockerConfigObject.DockerClientUri)).CreateClient();
         }

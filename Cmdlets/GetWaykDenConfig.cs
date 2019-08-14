@@ -60,12 +60,6 @@ namespace WaykDen.Cmdlets
             this.WriteObject(new DenObject {Property = $"Den-Server : {nameof(this.DenServerConfigObject.JetServerUrl)}", Value = this.DenServerConfigObject.JetServerUrl});
             this.WriteObject(new DenObject {Property = $"Den-Server : {nameof(this.DenServerConfigObject.LoginRequired)}", Value = this.DenServerConfigObject.LoginRequired});
             this.WriteObject(new DenObject {Property = $"Traefik : {nameof(this.DenTraefikConfigObject.WaykDenPort)}", Value = this.DenTraefikConfigObject.WaykDenPort});
-            this.WriteObject(new DenObject {Property = $"Image : {nameof(this.DenImageConfigObject.DenMongoImage)}", Value = this.DenImageConfigObject.DenMongoImage});
-            this.WriteObject(new DenObject {Property = $"Image : {nameof(this.DenImageConfigObject.DenPickyImage)}", Value = this.DenImageConfigObject.DenPickyImage});
-            this.WriteObject(new DenObject {Property = $"Image : {nameof(this.DenImageConfigObject.DenLucidImage)}", Value = this.DenImageConfigObject.DenLucidImage});
-            this.WriteObject(new DenObject {Property = $"Image : {nameof(this.DenImageConfigObject.DenRouterImage)}", Value = this.DenImageConfigObject.DenRouterImage});
-            this.WriteObject(new DenObject {Property = $"Image : {nameof(this.DenImageConfigObject.DenServerImage)}", Value = this.DenImageConfigObject.DenServerImage});
-            this.WriteObject(new DenObject {Property = $"Image : {nameof(this.DenImageConfigObject.DevolutionsJetImage)}", Value = this.DenImageConfigObject.DevolutionsJetImage});
             base.ProcessRecord();
         }
     }

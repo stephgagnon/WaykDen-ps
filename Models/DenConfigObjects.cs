@@ -87,20 +87,27 @@ namespace WaykDen.Models
 
     public class DenImageConfigObject
     {
-        private const string LinuxMongoImage = "library/mongo:4.1-bionic";
+        private const string MONGO = "mongo";
+        private const string PICKY = "picky";
+        private const string LUCID = "lucid";
+        private const string ROUTER = "router";
+        private const string SERVER = "server";
+        private const string TRAEFIK = "traefik";
+        private const string JET = "jet";
+        private const string LinuxDenMongoImage = "library/mongo:4.1-bionic";
         private const string LinuxDenLucidImage = "devolutions/den-lucid:3.3.3-buster";
-        private const string LinuxPickyImage = "devolutions/picky:3.0.0-buster";
+        private const string LinuxDenPickyImage = "devolutions/picky:3.0.0-buster";
         private const string LinuxDenRouterImage = "devolutions/den-router:0.5.0-buster";
         private const string LinuxDenServerImage = "devolutions/den-server:1.2.0-buster";
         private const string LinuxDenTraefikImage = "library/traefik:1.7";
         private const string LinuxDevolutionsJetImage = "devolutions/devolutions-jet:0.4.0-stretch";
-        private const string WindowsMongoImage = "library/mongo:4.2.0-rc3-windowsservercore-ltsc2016";
-        private const string WindowsDenLucidImage = "devolutions/den-lucid:3.3.3-servercore-ltsc2019-dev";
-        private const string WindowsPickyImage = "devolutions/picky:3.0.0-servercore-ltsc2019-dev";
-        private const string WindowsDenRouterImage = "devolutions/den-router:0.5.0-servercore-ltsc2019-dev";
-        private const string WindowsDenServerImage = "devolutions/den-server:1.2.0-servercore-ltsc2019-dev";
+        private const string WindowsDenMongoImage = "library/mongo:4.2.0-rc3-windowsservercore-ltsc2016";
+        private const string WindowsDenLucidImage = "devolutions/den-lucid:3.3.3-servercore-ltsc2019";
+        private const string WindowsDenPickyImage = "devolutions/picky:3.0.0-servercore-ltsc2019";
+        private const string WindowsDenRouterImage = "devolutions/den-router:0.5.0-servercore-ltsc2019";
+        private const string WindowsDenServerImage = "devolutions/den-server:1.2.0-servercore-ltsc2019";
         private const string WindowsDenTraefikImage = "sixeyed/traefik:v1.7.8-windowsservercore-ltsc2019";
-        private const string WindowsDevolutionsJetImage = "devolutions/devolutions-jet:0.4.0-servercore-ltsc2019-dev";
+        private const string WindowsDevolutionsJetImage = "devolutions/devolutions-jet:0.4.0-servercore-ltsc2019";
         [JsonIgnore]
         public int Id {get; set;}
         public string DenMongoImage {get; set;}
@@ -110,32 +117,45 @@ namespace WaykDen.Models
         public string DenServerImage {get; set;}
         public string DenTraefikImage {get; set;}
         public string DevolutionsJetImage {get; set;}
+        private Dictionary<Platforms, Dictionary<string, string>> images = new Dictionary<Platforms, Dictionary<string, string>>()
+        {
+            {
+                Platforms.Linux, new Dictionary<string, string>()
+                {
+                    {MONGO, LinuxDenMongoImage},
+                    {PICKY, LinuxDenPickyImage},
+                    {LUCID, LinuxDenLucidImage},
+                    {ROUTER, LinuxDenRouterImage},
+                    {SERVER, LinuxDenServerImage},
+                    {TRAEFIK, LinuxDenTraefikImage},
+                    {JET, LinuxDevolutionsJetImage}
+                }
+            },
+
+            {
+                Platforms.Windows, new Dictionary<string, string>()
+                {
+                    {MONGO, WindowsDenMongoImage},
+                    {PICKY, WindowsDenPickyImage},
+                    {LUCID, WindowsDenLucidImage},
+                    {ROUTER, WindowsDenRouterImage},
+                    {SERVER, WindowsDenServerImage},
+                    {TRAEFIK, WindowsDenTraefikImage},
+                    {JET, WindowsDevolutionsJetImage}
+                }
+            }
+        };
         public DenImageConfigObject(Platforms platform)
         {
-            if(platform == Platforms.Windows)
-            {
-                this.DenMongoImage = WindowsMongoImage;
-                this.DenPickyImage = WindowsPickyImage;
-                this.DenLucidImage = WindowsDenLucidImage;
-                this.DenRouterImage = WindowsDenRouterImage;
-                this.DenServerImage = WindowsDenServerImage;
-                this.DenTraefikImage = WindowsDenTraefikImage;
-                this.DevolutionsJetImage = WindowsDevolutionsJetImage;
-            }
-            else
-            {
-                this.DenMongoImage = LinuxMongoImage;
-                this.DenPickyImage = LinuxPickyImage;
-                this.DenLucidImage = LinuxDenLucidImage;
-                this.DenRouterImage = LinuxDenRouterImage;
-                this.DenServerImage = LinuxDenServerImage;
-                this.DenTraefikImage = LinuxDenTraefikImage;
-                this.DevolutionsJetImage = LinuxDevolutionsJetImage;
-            }
+            Dictionary<string, string> images = this.images.GetValueOrDefault(platform);
+            this.DenMongoImage = images.TryGetValue(MONGO, out string mongo) ? mongo : throw new Exception("Could not find image for Mongodb");
+            this.DenPickyImage = images.TryGetValue(PICKY, out string picky) ? picky : throw new Exception("Could not find image for Den-picky");
+            this.DenLucidImage = images.TryGetValue(LUCID, out string lucid) ? lucid : throw new Exception("Could not find image for Den-lucid");
+            this.DenRouterImage = images.TryGetValue(ROUTER, out string router) ? router : throw new Exception("Could not find image for Den-router");
+            this.DenServerImage = images.TryGetValue(SERVER, out string server) ? server : throw new Exception("Could not find image for Den-server");
+            this.DenTraefikImage = images.TryGetValue(TRAEFIK, out string traefik) ? traefik : throw new Exception("Could not find image for Traefik");
+            this.DevolutionsJetImage = images.TryGetValue(JET, out string jet) ? jet : throw new Exception("Could not find image for DevolutionsJet");
         }
-
-        public DenImageConfigObject()
-        {}
     }
 
     public class DenDockerConfigObject

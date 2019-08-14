@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using LiteDB;
@@ -12,7 +13,6 @@ namespace WaykDen.Controllers
     {
         private const string DEFAULT_MONGO_URL = "mongodb://den-mongo:27017";
         private const string DEFAULT_JET_URL = "jet.wayk.net:8080";
-        private const string DEN_IMAGE_CONFIG_COLLECTION = "DenImageConfig";
         private const string DEN_MONGO_CONFIG_COLLECTION = "DenMongoConfig";
         private const string DEN_PICKY_CONFIG_COLLECTION = "DenPickyConfig";
         private const string DEN_LUCID_CONFIG_COLLECTION = "DenLucidConfig";
@@ -72,7 +72,7 @@ namespace WaykDen.Controllers
         {
             using(var db = new LiteDatabase(this.connString))
             {
-                if(db.CollectionExists(DEN_IMAGE_CONFIG_COLLECTION))
+                if(db.CollectionExists(DEN_MONGO_CONFIG_COLLECTION))
                 {
                     this.Update(db, config);
                 } else this.Store(db ,config);
@@ -81,7 +81,6 @@ namespace WaykDen.Controllers
 
         private void Store(LiteDatabase db, DenConfig config)
         {
-            this.StoreImage(db, config.DenImageConfigObject);
             this.StoreMongo(db, config.DenMongoConfigObject);
             this.StorePicky(db,config.DenPickyConfigObject);
             this.StoreLucid(db, config.DenLucidConfigObject);
@@ -93,7 +92,6 @@ namespace WaykDen.Controllers
 
         private void Update(LiteDatabase db, DenConfig config)
         {
-            this.UpdateImage(db, config.DenImageConfigObject);
             this.UpdateMongo(db, config.DenMongoConfigObject);
             this.UpdatePicky(db, config.DenPickyConfigObject);
             this.UpdateLucid(db, config.DenLucidConfigObject);
@@ -114,7 +112,6 @@ namespace WaykDen.Controllers
             {
                 return new DenConfig()
                 {
-                    DenImageConfigObject = this.GetImage(db),
                     DenLucidConfigObject = this.GetLucid(db),
                     DenPickyConfigObject = this.GetPicky(db),
                     DenMongoConfigObject = this.GetMongo(db),
@@ -124,29 +121,6 @@ namespace WaykDen.Controllers
                     DenDockerConfigObject = this.GetDocker(db)
                 };
             }
-        }
-
-        private DenImageConfigObject GetImage(LiteDatabase db)
-        {
-            var coll = db.GetCollection(DEN_IMAGE_CONFIG_COLLECTION);
-            var values = coll.FindById(DB_ID);
-            bool mongoOk = values.TryGetValue(nameof(DenImageConfigObject.DenMongoImage), out var mongo);
-            bool lucidOk = values.TryGetValue(nameof(DenImageConfigObject.DenLucidImage), out var lucid);
-            bool pickyOk = values.TryGetValue(nameof(DenImageConfigObject.DenPickyImage), out var picky);
-            bool routerOk = values.TryGetValue(nameof(DenImageConfigObject.DenRouterImage), out var router);
-            bool serverOk = values.TryGetValue(nameof(DenImageConfigObject.DenServerImage), out var server);
-            bool traefikOk = values.TryGetValue(nameof(DenImageConfigObject.DenTraefikImage), out var traefik);
-            bool jetOk = values.TryGetValue(nameof(DenImageConfigObject.DevolutionsJetImage), out var jet);
-            return new DenImageConfigObject()
-            {
-                DenMongoImage = mongoOk ? mongo?.ToString().Trim('\"') : string.Empty,
-                DenLucidImage = lucidOk ? lucid?.ToString().Trim('\"') : string.Empty,
-                DenPickyImage = pickyOk ? picky?.ToString().Trim('\"') : string.Empty,
-                DenRouterImage = routerOk ? router?.ToString().Trim('\"') : string.Empty,
-                DenServerImage = serverOk ? server?.ToString().Trim('\"') : string.Empty,
-                DenTraefikImage = traefikOk ? traefik?.ToString().Trim('\"') : string.Empty,
-                DevolutionsJetImage = jetOk ? jet?.ToString().Trim('\"') : string.Empty
-            };
         }
 
         private DenMongoConfigObject GetMongo(LiteDatabase db)
@@ -266,12 +240,6 @@ namespace WaykDen.Controllers
             };
         }
 
-        private void StoreImage(LiteDatabase db, DenImageConfigObject images)
-        {
-            var col = db.GetCollection<DenImageConfigObject>(DEN_IMAGE_CONFIG_COLLECTION);
-            col.Insert(DB_ID, images);
-        }
-
         private void StoreMongo(LiteDatabase db, DenMongoConfigObject mongo)
         {
             var col = db.GetCollection<DenMongoConfigObject>(DEN_MONGO_CONFIG_COLLECTION);
@@ -312,12 +280,6 @@ namespace WaykDen.Controllers
         {
             var col = db.GetCollection<DenDockerConfigObject>(DEN_DOCKER_CONFIG_COLLECTION);
             col.Insert(DB_ID, docker);
-        }
-
-        private void UpdateImage(LiteDatabase db, DenImageConfigObject images)
-        {
-            var col = db.GetCollection<DenImageConfigObject>(DEN_IMAGE_CONFIG_COLLECTION);
-            col.Update(DB_ID, images);
         }
 
         private void UpdateMongo(LiteDatabase db, DenMongoConfigObject mongo)

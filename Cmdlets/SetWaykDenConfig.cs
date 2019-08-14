@@ -64,19 +64,6 @@ namespace WaykDen.Cmdlets
             }
         )]
         public string[] Remove {get; set;} = null;
-        public string MongoImage {get; set;} = string.Empty;
-        [Parameter]
-        public string PickyImage {get; set;} = string.Empty;
-        [Parameter]
-        public string DenLucidImage {get; set;} = string.Empty;
-        [Parameter]
-        public string DenRouterImage {get; set;} = string.Empty;
-        [Parameter]
-        public string DenServerImage {get; set;} = string.Empty;
-        [Parameter]
-        public string TraefikImage {get; set;} = string.Empty;
-        [Parameter]
-        public string DevolutionsJetImage {get; set;} = string.Empty;
         private Dictionary<string, (Type, string)> dictionary;
         public SetWaykDenConfig()
         {
@@ -99,13 +86,6 @@ namespace WaykDen.Cmdlets
                 {nameof(this.WaykDenPort), (typeof(DenTraefikConfigObject), "WaykDenPort")},
                 {nameof(this.Certificate), (typeof(DenTraefikConfigObject), "Certificate")},
                 {nameof(this.PrivateKey), (typeof(DenTraefikConfigObject), "PrivateKey")},
-                {nameof(this.MongoImage), (typeof(DenImageConfigObject), "DenMongoImage")},
-                {nameof(this.PickyImage), (typeof(DenImageConfigObject), "DenPickyImage")},
-                {nameof(this.DenLucidImage), (typeof(DenImageConfigObject), "DenLucidImage")},
-                {nameof(this.DenRouterImage), (typeof(DenImageConfigObject), "DenRouterImage")},
-                {nameof(this.DenServerImage), (typeof(DenImageConfigObject), "DenServerImage")},
-                {nameof(this.TraefikImage), (typeof(DenImageConfigObject), "DenTraefikImage")},
-                {nameof(this.DevolutionsJetImage), (typeof(DenImageConfigObject), "DevolutionsJetImage")}
             };
         }
 
@@ -113,21 +93,6 @@ namespace WaykDen.Cmdlets
         {
             try
             { 
-                DenImageConfigObject denImages = null;
-                if(!string.IsNullOrEmpty(this.Platform))
-                {
-                    Platforms platform = this.Platform.Equals("Linux") ? Platforms.Linux : Platforms.Windows;
-                    denImages = new DenImageConfigObject(platform);
-                    this.MongoImage = denImages.DenMongoImage;
-                    this.PickyImage = denImages.DenPickyImage;
-                    this.DenLucidImage = denImages.DenLucidImage;
-                    this.DenRouterImage = denImages.DenRouterImage;
-                    this.DenServerImage = denImages.DenServerImage;
-                    this.TraefikImage = denImages.DenTraefikImage;
-                    this.DevolutionsJetImage = denImages.DevolutionsJetImage;
-                }
-
-
                 (string, bool)[] values = new (string, bool)[]
                 {
                     (nameof(this.DockerClientUri), !string.IsNullOrEmpty(this.DockerClientUri)),
@@ -145,13 +110,6 @@ namespace WaykDen.Cmdlets
                     (nameof(this.JetServerUrl), !string.IsNullOrEmpty(this.JetServerUrl)),
                     (nameof(this.LoginRequired), !string.IsNullOrEmpty(this.LoginRequired)),
                     (nameof(this.WaykDenPort), !string.IsNullOrEmpty(this.WaykDenPort)),
-                    (nameof(this.MongoImage), !string.IsNullOrEmpty(this.MongoImage)),
-                    (nameof(this.PickyImage), !string.IsNullOrEmpty(this.PickyImage)),
-                    (nameof(this.DenLucidImage), !string.IsNullOrEmpty(this.DenLucidImage)),
-                    (nameof(this.DenRouterImage), !string.IsNullOrEmpty(this.DenRouterImage)),
-                    (nameof(this.DenServerImage), !string.IsNullOrEmpty(this.DenServerImage)),
-                    (nameof(this.TraefikImage), !string.IsNullOrEmpty(this.TraefikImage)),
-                    (nameof(this.DevolutionsJetImage), !string.IsNullOrEmpty(this.DevolutionsJetImage))
                 };
 
                 (string, bool)[] names = values.Where(x => x.Item2.Equals(true)).ToArray();

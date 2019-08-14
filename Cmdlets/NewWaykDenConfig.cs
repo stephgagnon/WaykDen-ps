@@ -180,13 +180,6 @@ namespace WaykDen.Cmdlets
             this.DenConfig.DenServerConfigObject.LoginRequired = this.LoginRequired ? "True" : "False";
             this.DenConfig.DenServerConfigObject.LDAPServerUrl = !string.IsNullOrEmpty(this.LDAPServerUrl) ? this.LDAPServerUrl : this.DenConfig.DenServerConfigObject.LDAPServerUrl;
             this.DenConfig.DenTraefikConfigObject.WaykDenPort = !string.IsNullOrEmpty(this.WaykDenPort) ? this.WaykDenPort : this.DenConfig.DenTraefikConfigObject.WaykDenPort;
-
-            if(!string.IsNullOrEmpty(this.Platform) && !this.Platform.Equals(this.DenConfig.DenDockerConfigObject.Platform))
-            {
-                this.DenConfig.DenDockerConfigObject.Platform = this.Platform;
-                Platforms platform = this.Platform.Equals("Linux") ? Platforms.Linux : Platforms.Windows;
-                this.DenConfig.DenImageConfigObject = new DenImageConfigObject(platform);
-            }
         }
     }
 }
