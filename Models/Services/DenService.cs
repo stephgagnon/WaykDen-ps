@@ -21,6 +21,7 @@ namespace WaykDen.Models.Services
         public List<string> Cmd = new List<string>();
         public List<string> Volumes = new List<string>();
         protected LogConfig LogConfig = new LogConfig();
+        protected List<string> HealthCheck = new List<string>();
         public string Name = string.Empty;
         protected string Container_ID = string.Empty;
         public string ImageName = string.Empty;
@@ -61,6 +62,20 @@ namespace WaykDen.Models.Services
                 this.Volumes[i] = $"{this.Path}{System.IO.Path.DirectorySeparatorChar}{this.Volumes[i]}";
             }
 
+            HealthConfig healthConfig = null;
+
+            if(this.HealthCheck.Count > 0)
+            {
+                healthConfig = new HealthConfig()
+                {
+                    Interval = TimeSpan.FromSeconds(5),
+                    Retries = 5,
+                    //Bad JSON conversion for Timeout, value need to be in nanosecond.
+                    Timeout = TimeSpan.FromSeconds(2 * 1000000000),
+                    Test = this.HealthCheck,
+                };
+            }
+
             return await this.DockerClient.Containers.CreateContainerAsync
             (
                 new CreateContainerParameters
@@ -74,6 +89,7 @@ namespace WaykDen.Models.Services
                         AttachStderr = false,
                         AttachStdin = false,
                         AttachStdout = true,
+                        Healthcheck = healthConfig
                     }
                 )
                 {
@@ -256,6 +272,17 @@ namespace WaykDen.Models.Services
             }
 
             return false;
+        }
+
+        public async virtual Task<bool> IsHealthy()
+        {
+            return await this.IsRunning();
+        }
+
+        protected async virtual Task<bool> IsRunning()
+        {
+            ContainerInspectResponse cir = await this.DockerClient.Containers.InspectContainerAsync(this.Container_ID);
+            return cir.State.Running;
         }
 
         private class Progress : IProgress<JSONMessage>

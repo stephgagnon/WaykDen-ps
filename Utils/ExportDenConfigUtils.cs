@@ -291,7 +291,6 @@ if([string]::IsNullOrEmpty($Action)){
                 {
                     if(denMongo.IsExternal)
                     {
-                        Console.WriteLine("External");
                         continue;
                     }
                 }

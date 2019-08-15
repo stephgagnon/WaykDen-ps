@@ -1,20 +1,21 @@
-using System;
 using System.IO;
 using WaykDen.Utils;
 using WaykDen.Controllers;
 
 namespace WaykDen.Models.Services
 {
-    public class DenRouterService : DenService
+    public class DenRouterService : DenHealthCheckService
     {
         public const string DENROUTER_NAME = "den-router";
         private const string DEN_PUBLIC_KEY_FILE_ENV = "DEN_PUBLIC_KEY_FILE";
         private const string DEN_ROUTER_LINUX_PATH = "/etc/den-router";
         private const string DEN_ROUTER_WINDOWS_PATH = "c:\\den-router";
+        private const string DEN_ROUTER_HEALTHCHECK = "curl -sS http://den-router:10254/healtz";
 
         public DenRouterService(DenServicesController controller):base(controller, DENROUTER_NAME)
         {
             this.ImageName = this.DenConfig.DenImageConfigObject.DenRouterImage;
+            this.HealthCheck.Add(DEN_ROUTER_HEALTHCHECK);
 
             if(this.DenConfig.DenRouterConfigObject.PublicKey != null && this.DenConfig.DenRouterConfigObject.PublicKey.Length > 0)
             {

@@ -1,11 +1,10 @@
-using System;
 using System.IO;
 using WaykDen.Utils;
 using WaykDen.Controllers;
 
 namespace WaykDen.Models.Services
 {
-    public class DenServerService : DenService
+    public class DenServerService : DenHealthCheckService
     {
         public const string DENSERVER_NAME = "den-server";
         private const string DENSERVER_IMAGE = "devolutions/waykden-rs:1.1.0-dev";
@@ -34,9 +33,11 @@ namespace WaykDen.Models.Services
         private const string DEN_LOGIN_REQUIRED_ENV = "DEN_LOGIN_REQUIRED";
         private const string DEN_SERVER_LINUX_PATH = "/etc/den-server";
         private const string DEN_SERVER_WINDOWS_PATH = "c:\\den-server";
+        private const string DEN_SERVER_HEALTHCHECK = "curl -sS http://den-server:10255/health";
         public DenServerService(DenServicesController controller):base(controller, DENSERVER_NAME)
         {
             this.ImageName = this.DenConfig.DenImageConfigObject.DenServerImage;
+            this.HealthCheck.Add(DEN_SERVER_HEALTHCHECK);
 
             string externalRouterUrl = this.DenConfig.DenServerConfigObject.ExternalUrl;
             if(externalRouterUrl.StartsWith("https"))

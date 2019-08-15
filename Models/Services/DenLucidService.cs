@@ -2,7 +2,7 @@ using WaykDen.Controllers;
 
 namespace WaykDen.Models.Services
 {
-    public class DenLucidService : DenService
+    public class DenLucidService : DenHealthCheckService
     {
         private const string DENLUCID_NAME = "den-lucid";
         private const string LUCID_TOKEN_ISSUER_ENV = "LUCID_TOKEN__ISSUER";
@@ -16,11 +16,13 @@ namespace WaykDen.Models.Services
         private const string LUCID_ACCOUNT_LOGIN_URL_ENV =  "LUCID_ACCOUNT__LOGIN_URL";
         private const string LUCID_ACCOUNT_FORGOT_PASSWORD_URL_ENV = "LUCID_ACCOUNT__FORGOT_PASSWORD_URL";
         private const string LUCID_ACCOUNT_SEND_ACTIVATION_EMAIL_URL_ENV = "LUCID_ACCOUNT__SEND_ACTIVATION_EMAIL_URL";
+        private const string LUCID_HEALTHCHECK = "curl -sS http://den-lucid:4242/health";
         private string ApiKey => this.DenConfig.DenLucidConfigObject.ApiKey;
 
         public DenLucidService(DenServicesController controller):base(controller, DENLUCID_NAME)
         {
             this.ImageName = this.DenConfig.DenImageConfigObject.DenLucidImage;
+            this.HealthCheck.Add(LUCID_HEALTHCHECK);
 
             string[] environment = new string[]
             {

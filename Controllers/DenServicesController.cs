@@ -164,11 +164,25 @@ namespace WaykDen.Controllers
                 if(!started)
                 {
                     if(this.OnError != null) this.OnError(new Exception($"Error running {service.Name} container"));
-                } else {
+                } 
+                else
+                {
                     if(this.OnLog != null) this.OnLog($"{service.Name} started");
+                    
+                    if(service is DenHealthCheckService denHealthCheckService)
+                    {
+                        if(this.OnLog != null) this.OnLog($"Waiting for {service.Name} health status");
+
+                        started = await service.IsHealthy();
+
+                        if(started)
+                        {
+                            if(this.OnLog != null) this.OnLog($"{service.Name} is healthy");
+                        }
+                    }
+
                     this.RunningDenServices.Add(service);
                 }
-                
             }
             catch(DockerImageNotFoundException e)
             {
