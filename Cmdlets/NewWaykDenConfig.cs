@@ -18,7 +18,7 @@ namespace WaykDen.Cmdlets
         public string MongoUrl {get; set;} = string.Empty;
         [Parameter(Mandatory=true, HelpMessage = "Name of domain for WaykDen. (Not a DNS domain)")]
         public string Realm {get; set;} = string.Empty;
-        [Parameter(Mandatory=true, HelpMessage = "WaykDen server external URL.")]
+        [Parameter(Mandatory=true, HelpMessage = "WaykDen server external URL."), ValidatePattern("^(?:http(s)?:\\/\\/).*")]
         public string ExternalUrl {get; set;} = string.Empty;
         [Parameter(HelpMessage = "LDAP or AD server URL")]
         public string LDAPServerUrl {get; set;} = string.Empty;

@@ -31,7 +31,7 @@ namespace WaykDen.Cmdlets
                 }
                 else
                 {
-                    throw new Exception("Could not found WaykDen configuration in given path. Use New-WaykDenConfig or make sure WaykDen configuration is in current folder or set WAYK_DEN_HOME to the path of WaykDen configuration");
+                    throw new Exception("Could not find WaykDen configuration in given path. Use New-WaykDenConfig or make sure WaykDen configuration is in current folder or set WAYK_DEN_HOME to the path of WaykDen configuration");
                 }
             }
             catch(Exception e)
