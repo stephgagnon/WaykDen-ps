@@ -11,18 +11,20 @@ namespace WaykDen.Cmdlets
     {
         private Exception error;
         private DenServicesController denServicesController;
+        private bool started = false;
         protected override void ProcessRecord()
         {
             try
             {
-                this.denServicesController = new DenServicesController(this.Path, this.Key);
+                this.denServicesController = new DenServicesController(this.Path, this.DenConfigController);
                 this.denServicesController.OnLog += this.OnLog;
                 this.denServicesController.OnError += this.OnError;
                 Task<bool> start = this.denServicesController.StartWaykDen();
+                this.started = true;
 
                 while(!start.IsCompleted && !start.IsCanceled)
                 {
-                    mre.WaitOne();
+                    this.mre.WaitOne();
                     lock(this.mutex)
                     {
                         if(this.record != null)
@@ -33,7 +35,7 @@ namespace WaykDen.Cmdlets
 
                         if(this.error != null)
                         {
-                            this.WriteWarning(this.error.Message);
+                            this.WriteError(new ErrorRecord(this.error, this.error.StackTrace, ErrorCategory.InvalidData, this.error.Data));
                             this.error = null;
                         }
                     }
@@ -60,6 +62,12 @@ namespace WaykDen.Cmdlets
         protected override void OnError(Exception e)
         {
             this.error = e;
+
+            if(!started)
+            {
+                this.WriteError(new ErrorRecord(e, e.StackTrace, ErrorCategory.InvalidData, e.Data));
+            }
+
             lock(this.mutex)
             {
                 this.mre.Set();

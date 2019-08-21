@@ -56,6 +56,11 @@ namespace WaykDen.Controllers
         {
             get
             {
+                if(!File.Exists(this.path))
+                {
+                    return false;
+                }
+
                 using(var db = new LiteDatabase(this.connString))
                 {
                     var collections = db.GetCollectionNames().ToArray();

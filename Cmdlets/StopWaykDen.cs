@@ -17,7 +17,7 @@ namespace WaykDen.Cmdlets
         {
             try
             {
-                this.denServicesController = new DenServicesController(this.Path, this.Key);
+                this.denServicesController = new DenServicesController(this.Path, this.DenConfigController);
                 this.denServicesController.OnLog += this.OnLog;
                 this.denServicesController.OnError += this.OnError;
                 List<string> runningContainers = await this.denServicesController.GetRunningContainers();

@@ -32,7 +32,7 @@ namespace WaykDen.Cmdlets
         {
             try
             {
-                DenServicesController denServicesController = new DenServicesController(this.Path, this.Key);
+                DenServicesController denServicesController = new DenServicesController(this.Path, this.DenConfigController);
                 denServicesController.OnLog += this.OnLog;
                 denServicesController.OnError += this.OnError;
 

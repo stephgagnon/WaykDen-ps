@@ -12,7 +12,6 @@ namespace WaykDen.Cmdlets
         protected virtual void OnError(Exception e)
         {
             ErrorRecord error = new ErrorRecord(e, e.StackTrace, ErrorCategory.InvalidData, e.Data);
-            this.WriteWarning(e.Message);
             this.WriteError(error);
         }
 

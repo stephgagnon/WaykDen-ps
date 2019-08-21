@@ -24,7 +24,6 @@ namespace WaykDen.Cmdlets
         {
             try
             {
-                this.DenConfigController = new DenConfigController(this.Path, this.Key);
                 if(this.DenConfigController.DbExists)
                 {
                     this.DenConfig = this.DenConfigController.GetConfig();

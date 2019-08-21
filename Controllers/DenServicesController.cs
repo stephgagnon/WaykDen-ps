@@ -54,7 +54,12 @@ namespace WaykDen.Controllers
             Network
         }
 
-        public DenServicesController(string path, string configKey = null)
+        public DenServicesController(DenConfigController denConfigController)
+        {
+            this.denConfigController = denConfigController;   
+        }
+
+        public DenServicesController(string path, DenConfigController denConfigController = null) : this(denConfigController)
         {
             this.Path = Environment.GetEnvironmentVariable(WAYK_DEN_HOME);
             if(string.IsNullOrEmpty(this.Path))
@@ -63,8 +68,6 @@ namespace WaykDen.Controllers
             }
 
             this.Path = this.Path.EndsWith($"{System.IO.Path.DirectorySeparatorChar}") ? this.Path : $"{this.Path}{System.IO.Path.DirectorySeparatorChar}";
-            
-            this.denConfigController = new DenConfigController(this.Path, configKey);
             this.DenConfig = this.denConfigController.GetConfig();
             this.DenNetwork = new DenNetwork(this);
 
@@ -123,7 +126,6 @@ namespace WaykDen.Controllers
         {
             DevolutionsJetService jet = new DevolutionsJetService(this);
             bool started = await this.StartService(jet);
-            this.denConfigController.StoreConfig(this.DenConfig);
             return started;
         }
 
@@ -416,8 +418,6 @@ namespace WaykDen.Controllers
                     }
                 }
                 
-                
-                this.denConfigController.StoreConfig(this.DenConfig);
                 return started;
             }
             catch(Exception e)

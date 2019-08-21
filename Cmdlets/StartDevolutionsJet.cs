@@ -11,7 +11,7 @@ namespace WaykDen.Cmdlets
         private DenServicesController denServicesController;
         protected async override void ProcessRecord()
         {
-            this.denServicesController = new DenServicesController(this.Path, this.Key);
+            this.denServicesController = new DenServicesController(this.Path, this.DenConfigController);
             this.denServicesController.OnError += this.OnError;
             this.denServicesController.OnLog += this.OnLog;
 
