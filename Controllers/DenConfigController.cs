@@ -202,7 +202,7 @@ namespace WaykDen.Controllers
             {
                 ApiKey = apiKeyOk ? apikey.ToString().Trim('\"') : string.Empty,
                 AuditTrails = auditTrailsOK ?  auditTrails.ToString().Trim('\"') : string.Empty,
-                ExternalUrl = externalUrlOk ?  externalUrl.ToString().Trim('\"') : string.Empty,
+                ExternalUrl = externalUrlOk ?  externalUrl.ToString().Trim('\"').TrimEnd('/') : string.Empty,
                 LDAPServerType = ldapServerTypeOk ?  ldapservertype.ToString().Trim('\"') : string.Empty,
                 LDAPBaseDN = ldapBaseDnOk?  ldapbasedn.ToString().Trim('\"') : string.Empty,
                 LDAPPassword = ldapPasswordOk ?  ldappassword.ToString().Trim('\"') : string.Empty,
