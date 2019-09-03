@@ -33,7 +33,7 @@ namespace WaykDen.Models.Services
                 Directory.CreateDirectory(path);
             }
 
-            File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}den-router.key", RsaKeyutils.DerToPem(this.DenConfig.DenRouterConfigObject.PublicKey));
+            File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}den-router.key", KeyCertUtils.DerToPem(this.DenConfig.DenRouterConfigObject.PublicKey));
             string mountPoint = this.DenConfig.DenDockerConfigObject.Platform == Platforms.Linux.ToString() ? DEN_ROUTER_LINUX_PATH : DEN_ROUTER_WINDOWS_PATH;
             this.Volumes.Add($"den-router:{mountPoint}:ro");
             this.Env.Add($"{DEN_PUBLIC_KEY_FILE_ENV}={mountPoint}/den-router.key");

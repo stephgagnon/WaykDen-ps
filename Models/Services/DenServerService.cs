@@ -117,8 +117,8 @@ namespace WaykDen.Models.Services
                 Directory.CreateDirectory(path);
             }
 
-            File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}den-server.key", RsaKeyutils.DerToPem(this.DenConfig.DenServerConfigObject.PrivateKey));
-            File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}den-router.key", RsaKeyutils.DerToPem(this.DenConfig.DenRouterConfigObject.PublicKey));
+            File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}den-server.key", KeyCertUtils.DerToPem(this.DenConfig.DenServerConfigObject.PrivateKey));
+            File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}den-router.key", KeyCertUtils.DerToPem(this.DenConfig.DenRouterConfigObject.PublicKey));
             string mountPoint = this.DenConfig.DenDockerConfigObject.Platform == Platforms.Linux.ToString() ? DEN_SERVER_LINUX_PATH : DEN_SERVER_WINDOWS_PATH;
             this.Volumes.Add($"den-server:{mountPoint}:ro");
             this.Env.Add($"{DEN_PRIVATE_KEY_FILE_ENV}={mountPoint}/den-server.key");

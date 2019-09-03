@@ -118,7 +118,7 @@ namespace WaykDen.Cmdlets
 
                         DenRouterConfigObject = new DenRouterConfigObject
                         {
-                            PublicKey = RsaKeyutils.PemToDer(rsaKeyGenerator.PublicKey)
+                            PublicKey = KeyCertUtils.PemToDer(rsaKeyGenerator.PublicKey)
                         },
 
                         DenServerConfigObject = new DenServerConfigObject
@@ -132,7 +132,7 @@ namespace WaykDen.Cmdlets
                             LDAPUsername = this.LDAPUsername != null ? this.LDAPUsername : string.Empty,
                             LDAPServerType = this.LDAPServerType != null ? this.LDAPServerType : string.Empty,
                             LDAPBaseDN = this.LDAPBaseDN != null ? this.LDAPBaseDN : string.Empty,
-                            PrivateKey = RsaKeyutils.PemToDer(rsaKeyGenerator.PrivateKey),
+                            PrivateKey = KeyCertUtils.PemToDer(rsaKeyGenerator.PrivateKey),
                             JetServerUrl = this.JetServerUrl != null ? this.JetServerUrl : string.Empty,
                             LoginRequired = this.LoginRequired ? "True": "False"
                         },
