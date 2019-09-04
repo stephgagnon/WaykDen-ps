@@ -34,7 +34,7 @@ namespace WaykDen.Cmdlets
 
                 if(this.ParameterSetName == PKCS12)
                 {
-                    CertificateObject cert = KeyCertUtils.GetPkcs12CertificateInfo(CertificatePath, this.Pkcs12ImportPassword);
+                    CertificateObject cert = KeyCertUtils.GetPkcs12CertificateInfo(CertificatePath, this.KeyPassword);
                     config.DenTraefikConfigObject.Certificate = cert.Certificate;
                     config.DenTraefikConfigObject.PrivateKey = cert.Privatekey;
                 }

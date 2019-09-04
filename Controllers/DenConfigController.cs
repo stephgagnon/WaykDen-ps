@@ -133,11 +133,11 @@ namespace WaykDen.Controllers
             var coll = db.GetCollection(DEN_MONGO_CONFIG_COLLECTION);
             var values = coll.FindById(DB_ID);
             bool urlOk = values.TryGetValue(nameof(DenMongoConfigObject.Url), out var url);
-            url = string.IsNullOrEmpty(url?.ToString()) ? DEFAULT_MONGO_URL : url?.ToString().Trim('\"');
+            url = string.IsNullOrEmpty((string)url) ? DEFAULT_MONGO_URL : ((string)url);
             return new DenMongoConfigObject()
             {
                 Url = url,
-                IsExternal = url?.ToString().Trim('\"') != DEFAULT_MONGO_URL
+                IsExternal = (string)url != DEFAULT_MONGO_URL
             };
         }
 
@@ -150,9 +150,9 @@ namespace WaykDen.Controllers
             bool backendOk = values.TryGetValue(nameof(DenPickyConfigObject.Backend), out var backend);
             return new DenPickyConfigObject()
             {
-                Realm = realmOk ? realm.ToString().Trim('\"') : string.Empty,
-                ApiKey = apiKeyOk ? apikey.ToString().Trim('\"') : string.Empty,
-                Backend = backendOk ? backend.ToString().Trim('\"') : string.Empty
+                Realm = realmOk ? ((string)realm) : string.Empty,
+                ApiKey = apiKeyOk ? ((string)apikey) : string.Empty,
+                Backend = backendOk ? ((string)backend) : string.Empty
             };
         }
 
@@ -165,9 +165,9 @@ namespace WaykDen.Controllers
             bool adminUsernameOk = values.TryGetValue(nameof(DenLucidConfigObject.AdminUsername), out var adminusername);
             return new DenLucidConfigObject()
             {
-                ApiKey = apiKeyOk ? apikey.ToString().Trim('\"') : string.Empty,
-                AdminSecret = adminSecretOk ? adminsecret.ToString().Trim('\"') : string.Empty,
-                AdminUsername = adminUsernameOk ? adminusername.ToString().Trim('\"') : string.Empty
+                ApiKey = apiKeyOk ? ((string)apikey) : string.Empty,
+                AdminSecret = adminSecretOk ? ((string)adminsecret) : string.Empty,
+                AdminUsername = adminUsernameOk ? ((string)adminusername) : string.Empty
             };
         }
 
@@ -200,18 +200,18 @@ namespace WaykDen.Controllers
             bool loginRequiredOk = values.TryGetValue(nameof(DenServerConfigObject.LoginRequired), out var loginRequired);
             return new DenServerConfigObject()
             {
-                ApiKey = apiKeyOk ? apikey.ToString().Trim('\"') : string.Empty,
-                AuditTrails = auditTrailsOK ?  auditTrails.ToString().Trim('\"') : string.Empty,
-                ExternalUrl = externalUrlOk ?  externalUrl.ToString().Trim('\"').TrimEnd('/') : string.Empty,
-                LDAPServerType = ldapServerTypeOk ?  ldapservertype.ToString().Trim('\"') : string.Empty,
-                LDAPBaseDN = ldapBaseDnOk?  ldapbasedn.ToString().Trim('\"') : string.Empty,
-                LDAPPassword = ldapPasswordOk ?  ldappassword.ToString().Trim('\"') : string.Empty,
-                LDAPServerUrl = ldapServerUrlOk ?  ldapserverurl.ToString().Trim('\"') : string.Empty,
-                LDAPUserGroup = ldapUserGroupOk ?  ldapusergroup.ToString().Trim('\"') : string.Empty,
-                LDAPUsername = ldapUsernameOk ?  ldapusername.ToString().Trim('\"') : string.Empty,
+                ApiKey = apiKeyOk ? ((string)apikey) : string.Empty,
+                AuditTrails = auditTrailsOK ? ((string) auditTrails) : string.Empty,
+                ExternalUrl = externalUrlOk ? ((string) externalUrl).TrimEnd('/') : string.Empty,
+                LDAPServerType = ldapServerTypeOk ? ((string) ldapservertype) : string.Empty,
+                LDAPBaseDN = ldapBaseDnOk? ((string) ldapbasedn) : string.Empty,
+                LDAPPassword = ldapPasswordOk ? ((string) ldappassword) : string.Empty,
+                LDAPServerUrl = ldapServerUrlOk ? ((string) ldapserverurl) : string.Empty,
+                LDAPUserGroup = ldapUserGroupOk ? ((string) ldapusergroup) : string.Empty,
+                LDAPUsername = ldapUsernameOk ? ((string) ldapusername) : string.Empty,
                 PrivateKey = privatekey,
-                JetServerUrl = jetServerUrlOk ?  jetServerUrl.ToString().Trim('\"') : DEFAULT_JET_URL,
-                LoginRequired = loginRequiredOk ?  loginRequired.ToString().Trim('\"') : "false"
+                JetServerUrl = jetServerUrlOk ? ((string) jetServerUrl) : DEFAULT_JET_URL,
+                LoginRequired = loginRequiredOk ? ((string) loginRequired) : "false"
             };
         }
 
@@ -224,7 +224,7 @@ namespace WaykDen.Controllers
             bool privateKeyOk = values.TryGetValue(nameof(DenTraefikConfigObject.PrivateKey), out var privateKey);
             return new DenTraefikConfigObject
             {
-                WaykDenPort = waykDenPortOk ? waykDenPort.ToString().Trim('\"') : "4000",
+                WaykDenPort = waykDenPortOk ? ((string)waykDenPort) : "4000",
                 Certificate = certificateOk ? (string)certificate : string.Empty,
                 PrivateKey = privateKeyOk ? (string)privateKey : string.Empty
             };
@@ -239,9 +239,9 @@ namespace WaykDen.Controllers
             bool syslogOk = values.TryGetValue(nameof(DenDockerConfigObject.SyslogServer), out var syslog);
             return new DenDockerConfigObject()
             {
-                DockerClientUri = dockerclientUriOk ?  dockerclienturi.ToString().Trim('\"') : string.Empty,
-                Platform = platformOk ? platform.ToString().Trim('\"') : "Linux",
-                SyslogServer = syslogOk ? syslog.ToString().Trim('\"') : string.Empty
+                DockerClientUri = dockerclientUriOk ? ((string) dockerclienturi) : string.Empty,
+                Platform = platformOk ? ((string)platform) : "Linux",
+                SyslogServer = syslogOk ? ((string)syslog) : string.Empty
             };
         }
 
