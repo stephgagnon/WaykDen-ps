@@ -41,10 +41,10 @@ If you have installed the module from PSGallery, this section is not useful for 
 
 To build the Cmdlet, you will need the .NET Core 2.2 SDK and the .NET Framework 4.7.2 SDK. The latter is only needed if you want to support PowerShell for Windows.
 
-&#x002E;NET Core 2.2 SDK::
+ .NET Core 2.2 SDK::
 https://dotnet.microsoft.com/download
 
-&#x002E;NET Framework 4.7.2 SDK::
+ .NET Framework 4.7.2 SDK::
 https://dotnet.microsoft.com/download/dotnet-framework/net472
 
 From PowerShell, run the build.ps1 script, and then load the resulting PowerShell module:
@@ -85,6 +85,34 @@ Create a new Wayk Den configuration file, using "contoso.net" as realm and "http
 ----
 PS > New-WaykDenConfig -Realm contoso.net -ExternalUrl https://den.contoso.net
 ----
+
+=== Certificate configuration
+
+To expose Wayk Den to the external world, you will need a TLS certificate from a trusted certificate authority such as https://letsencrypt.org/[Let's Encrypt]. Wayk Now will validate certificates in the same way as a browser does for a website.
+
+If you wish to make your own certificate authority, the Root CA certificate will need to be installed in each machine's certificate trust store. If the system browser can validate it, Wayk Now should be able to validate it as well, it's just a lot more work.
+
+Before going any further, check the following points:
+
+1. The certificate name matches your configured external URL. This means that if your external URL is "https://den.contoso.com" then your certificate name should be "den.contoso.com" or "*.contoso.com" if you have a wildcard certificate.
+
+2. The certificate is either in pem + key or pfx (PKCS#12) format. The private key password is only supported for the pfx format.
+
+3. The certificate file contains the certificate *chain* excluding the Root CA. This means that in most cases, you should have a leaf certificate, followed by one or more intermediate certificates. If validation works in a browser but not in Wayk Now, the intermediate certificate is likely missing.
+
+The PEM format is the simplest to work with, since it is the Base64 representation of the DER-encoded certificate in between "-----BEGIN CERTIFICATE-----" and "-----END CERTIFICATE-----" tags. To add the intermediate certificate to the certificate file, just append it after your leaf certificate in a text editor.
+
+[source, sh]
+----
+PS > Set-WaykDenWebCertificate -CertificatePath /path/to/certificate.pem -PrivateKeyPath /path/to/private_key.key
+----
+
+[source, sh]
+----
+PS > Set-WaykDenWebCertificate -CertificatePath /path/to/certificate.pfx -KeyPassword <password>
+----
+
+== Running
 
 Start Wayk Den, and wait for all microservices to start:
 
@@ -444,16 +472,17 @@ Any session between two users can be stopped at any moment. It is as simple as u
 PS > Disconnect-WaykDenSession -SessionID a99170f6-5895-4a4a-93e7-03321868e516
 ----
 
-== Devolutions-Jet
-Devolutions-Jet is a relay server for peer-to-peer connections. By default, jet.wayk.net:8080 is used by Wayk Den. But it is possible to use your own relay server and this section explains how. 
+== Devolutions Jet
 
-The Devolutions-Jet service is not deployed with other Wayk Den services because it makes more sense for that service to be directly exposed in the cloud to get better performance.
+Devolutions Jet is a relay server for peer-to-peer connections. By default, jet.wayk.net:8080 is used by Wayk Den. But it is possible to use your own relay server and this section explains how. 
+
+The Devolutions Jet service is not deployed with other Wayk Den services because it makes more sense for that service to be directly exposed in the cloud to get better performance.
 
 That service is also available in a docker container. To launch that service, here is a docker command template that has to be used. 
 
 [source, sh, subs="quotes"]
 ----
-docker run -d --name devolutions-jet -e RUST_LOG=_log_level_ -e JET-INSTANCE=_jet_instance_ -p _port_:8080 devolutions/devolutions-jet: _jet_version_
+docker run -d --name devolutions-jet -e RUST_LOG=_log_level_ -e JET_INSTANCE=_jet_instance_ -p _port_:8080 devolutions/devolutions-jet: _jet_version_
 ----
 
 In that command, a few parameters have to be set
@@ -466,14 +495,14 @@ In that command, a few parameters have to be set
 
 - _jet_instance_: The JET_INSTANCE environment variable is used to specified the external URL for that specific Jet server. This address will be used by the WaykNow client to reach the relay server. If you have only one Jet server, the Devolutions Jet Server Url specified in the Wayk Den configuration will be the same as the jet instance value. However, if you want to deploy many jet servers, you can deployed a DNS load balancer who will forward requests to one of the jet server. In a such case, each jet server will specify their external address. It is needed because both peers in a connection has to reach the same jet server. So the WaykNow server will reach one server of the pool and send the jet instance information to the WaykNow client and the client will be able to reach the same Jet server.
 
-Here is a command example to launch Devolutions-Jet service
+Here is a command example to launch Devolutions Jet service
 
 [source, sh]
 ----
-docker run -d --name devolutions-jet -e RUST_LOG=info -e JET-INSTANCE=jet.wayk.net -p 8080:8080 devolutions/devolutions-jet: 1.0.0-buster
+docker run -d --name devolutions jet -e RUST_LOG=info -e JET_INSTANCE=jet.wayk.net -p 8080:8080 devolutions/devolutions-jet: 1.0.0-buster
 ----
 
-To be sure that your Devolutions-Jet server is running, you can run the command `docker logs devolutions-jet` where you should be able to see that your server is listening on the right port
+To be sure that your Devolutions Jet server is running, you can run the command `docker logs devolutions-jet` where you should be able to see that your server is listening on the right port
 
 [source, sh]
 ----
