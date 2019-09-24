@@ -4,6 +4,7 @@ using System.Management.Automation;
 using System.Threading.Tasks;
 using WaykDen.Controllers;
 using WaykDen.Models;
+using WaykDen.Utils;
 
 namespace WaykDen.Cmdlets
 {
@@ -20,11 +21,16 @@ namespace WaykDen.Cmdlets
             ByID
         }
 
+        [Parameter(HelpMessage = "Wayk Den group ID.")]
+        public string GroupID { get; set; }
+
         [Parameter]
-        public string Username {get; set;}
+        public string Username { get; set; }
+
         [Parameter(HelpMessage = "User ID.")]
-        public string ID {get; set;}
-        protected async override void ProcessRecord()
+        public string ID { get; set; }
+
+        protected override void ProcessRecord()
         {
             try
             {
@@ -32,19 +38,25 @@ namespace WaykDen.Cmdlets
             
                 if(!string.IsNullOrEmpty(this.ID))
                 {
-                    parameter = this.ParameterBuilder(UserGetOption.ByID);
+                    parameter = this.ParameterBuilder(UserGetOption.ByID, !string.IsNullOrEmpty(this.GroupID));
                 }
                 else if(!string.IsNullOrEmpty(this.Username))
                 {
-                    parameter = this.ParameterBuilder(UserGetOption.ByUsername);
+                    parameter = this.ParameterBuilder(UserGetOption.ByUsername, !string.IsNullOrEmpty(this.GroupID));
                 }
 
-                Task<string> usersString = this.DenRestAPIController.GetUsers(parameter);
-                usersString.Wait();
+                string res;
 
-                string res = await usersString;
+                if (!string.IsNullOrEmpty(this.GroupID))
+                {
+                    res = this.DenRestAPIController.GetUserFromGroup(this.GroupID, parameter).Result;
+                }
+                else
+                {
+                    res = this.DenRestAPIController.GetUsers(parameter).Result;
+                }
 
-                if(res.StartsWith("["))
+                if(JsonUtils.IsArrayJsonObject(res))
                 {
                     var users = this.DenRestAPIController.DeserializeString<User[]>(res);
                     
@@ -53,7 +65,7 @@ namespace WaykDen.Cmdlets
                         this.WriteObject(user.ToUserObject(), true);
                     }
                 }
-                else if (res.StartsWith("{"))
+                else if(JsonUtils.IsSingleJsonObject(res))
                 {
                     var user = this.DenRestAPIController.DeserializeString<User>(res);
                     this.WriteObject(user?.ToUserObject());
@@ -66,16 +78,17 @@ namespace WaykDen.Cmdlets
             }
         }
 
-        private string ParameterBuilder(UserGetOption getOption)
+        private string ParameterBuilder(UserGetOption getOption, bool groupSearch = false)
         {
-            if(getOption == UserGetOption.ByID)
+            if (getOption == UserGetOption.ByID)
             {
-                return $"/{this.ID}";
+                return groupSearch ? $"?userid={this.ID}" : $"/{this.ID}";
             }
             else
             {
-                return $"?username={this.Username}";
+                return groupSearch ? string.Empty : $"?username={this.Username}";
             }
         }
     }
 }
+ 

@@ -81,12 +81,14 @@ CmdletsToExport = 'New-WaykDenConfig', 'Set-WaykDenConfig', 'Get-WaykDenConfig',
     'Start-WaykDen', 'Stop-WaykDen', 'Restart-WaykDen',
     'Add-WaykDenLicense', 'Get-WaykDenLicense', 'Remove-WaykDenLicense',
     'Set-WaykDenUserLicense', 'Clear-WaykDenUserLicense',
-    'Get-WaykDenUser', 'Sync-WaykDenUser',
+    'Get-WaykDenUser', 'Sync-WaykDenUser','Add-WaykDenUser', 'Remove-WaykDenUser', 'Set-WaykDenUser',
     'Get-WaykDenSession', 'Disconnect-WaykDenSession',
     'Get-WaykDenConnection',
     'Set-WaykDenWebCertificate',
     'Add-WaykDenConfigKey', 'Remove-WaykDenConfigKey', 'Edit-WaykDenConfigKey',
-    'Connect-WaykDen'
+    'Connect-WaykDen',
+    'Get-WaykDenGroup','Add-WaykDenGroup', 'Remove-WaykDenGroup', 'Set-WaykDenGroupMember', 'Remove-WaykDenGroupMember', 'Set-WaykDenRoleGroup',
+    'Get-WaykDenRole','Add-WaykDenRole', 'Remove-WaykDenRole', 'Set-WaykDenRoleMember'
 
 # Variables to export from this module
 # VariablesToExport = @()

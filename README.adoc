@@ -193,9 +193,36 @@ The following command will set LDAP property value for JumpCloud.
 Set-WaykDenConfig -LDAPServerType JumpCloud -LDAPUsername "uid=ldap-user,ou=Users,o=YOUR_ORG_ID,dc=jumpcloud,dc=com" -LDAPPassword ldap-password -LDAPServerUrl ldaps://ldap.jumpcloud.com:636 -LDAPBaseDn "ou=Users,o=YOUR_ORG_ID,dc=jumpcloud,dc=com -LDAPUserGroup wayk-users"
 ----
 
-==== Listing users
+==== Adding User/Removing Users
+You can use `Add-WaykDenUser` to add users.
+The required field are the Username and the Password and optionally you can set the Name and the Email of the user.
 
-Once you have configured the server to integrate an LDAP server, you can use `Get-WaykDenUser` to get users information.
+[source, sh]
+----
+ PS > Add-WaykDenUser -Username David - Password psw -Email david@devolutions.net -Name Jack
+----
+
+The use will be returned as a result.
+[source, sh]
+ID        : 5d83d2973766610100edd9ef
+Username  : David
+Name      : Jack
+Email     : david@devolutions.net
+LicenseID : 
+
+If you want to remove that user, you can execute the command `Remove-WaykDenUser`, you have to specify the User Id to remove.
+
+[source, sh]
+ PS > Remove-WaykDenUser -ID 5d83d2973766610100edd9ef
+
+==== Set User
+Updates an existing WaykDen User with the command `Set-WaykDenUser`, the User Id is needed for this one, you can modify the Password, the Name and the Email
+
+[source, sh]
+PS > Set-WaykDenUser -UserID 5d851bc6373735010078cd8d -Password qwerty -Name NewName -Email newName@mail.net
+
+==== Listing users
+Once you have configured the server to integrate an LDAP server, it is possible to list all users, you can use `Get-WaykDenUser` to get users information.
 
 [source, sh]
 ----
@@ -227,9 +254,113 @@ Email     :
 LicenseID :
 ----
 
+You can also get user from a group  if you set the Group ID and optionnaly the User ID
+
+[source, sh]
+PS > Get-WaykDenUser -GroupID 5d83cca93766610100edd9ec
+
+The result is the same thant the listing of users:
+
+[source, sh]
+ID        : 5d83c85b3766610100edd9e8
+Username  : david
+Name      : 
+Email     : 
+LicenseID : 
+===
+ID        : 5d83d4d93766610100edd9f0
+Username  : Jdufaud
+Name      : 
+Email     : 
+LicenseID 
+
 ==== Users synchronization
 
 If a user is added to the LDAP server (Active Directory or JumpCloud), it will not be available in Wayk Den right away. A synchronization has to be done. Wayk Den will synchronized users on a regular basis, every 30 minutes. If you want to force a synchronisation, you can run `Sync-WaykDenUser`. After that command, the command `Get-WaykDenUser` can be run and all changes should be available. Note that if you have removed users in the LDAP server, those users will not be deleted from Wayk Den server because we want to keep user information of sessions.
+
+==== Assigning User to Group
+You can add a user to a group with the command `Set-WaykDenGroupMember`, this command need the Group ID and the User ID.
+
+[source, sh]
+PS > Set-WaykDenGroupMember -GroupID 5d83cca93766610100edd9ec -UserID 5d83d4d93766610100edd9f0
+
+==== Remove User from group
+You have the possibility to remove a user from a group with the command `Remove-WaykDenUserFromGroup` the Group ID and the User Id are needed for this one.
+
+[source, sh]
+PS > Remove-WaykDenUserFromGroup -GroupID 5d83cca93766610100edd9ec -UserID 5d83d4d93766610100edd9f0
+
+==== Assigning Role to User
+You can assign Role to User with the following command `Set-WaykDenRoleMember`, you need to give the ID of the User and the Role Name.
+
+[source, sh]
+PS >  Set-WaykDenRoleMember -UserID 5d83d4d93766610100edd9f0 -RoleName GuestRole
+
+=== Group Management
+==== Adding/Removing Groups
+You can add group with the command `Add-WaykDenGroup` and the variable Group Name is needed for the name of the group.
+
+[source, sh]
+PS >  Add-WaykDenGroup -GroupName GuestGroup
+
+The result will be the group previously created
+[source, sh]
+ID                       Name       RoleID
+--                       ----       ------
+5d83e0d13766610100edd9f2 GuestGroup 
+
+You can also delete a group by the command
+`Remove-WaykDenGroup`, The Group ID will be needed.
+
+[source, sh]
+PS >  Remove-WaykDenGroup -GroupID 5d83e0d13766610100edd9f2
+
+==== Listing Groups
+It is possible to list all groups, you can use `Get-WaykDenGroup` to get groups information.
+
+[source, sh]
+----
+PS > Get-WaykDenGroup
+
+ID                       Name           RoleID
+--                       ----           ------
+5d83cca93766610100edd9ec GuestGroup
+----
+
+==== Assigning Role to Groups
+You can assign role to groups with the following command `Set-WaykDenRoleGroup`, you need to give the ID of the group and the Role Name to execute this one.
+
+[source, sh]
+PS >  Set-WaykDenRoleGroup -GroupID 5d83cca93766610100edd9ec -RoleName GuestRole
+
+=== Role Management
+==== Adding/Removing Roles
+To Add Roles use the command `Add-WaykDenRole`, the Role Name is needed for this one.
+
+[source, sh]
+PS >  Add-WaykDenRole -RoleName GuestRole
+
+The result is the created role:
+
+[source, sh]
+ID                       Name
+--                       ----
+5d83e2cc3766610100edd9f3 GuestRole
+
+To Delete a role the command `Remove-WaykDenRole` is available with the parameter Role ID.
+
+[source, sh]
+PS >  Remove-WaykDenRole -RoleID 5d83e2cc3766610100edd9f3
+
+==== Listing Roles
+Use the command `Get-WaykDenRole` to list all the roles
+
+[source, sh]
+PS >  Get-WaykDenRole
+ID                       Name
+--                       ----
+000000000000000000000000 admin
+5d83e2cc3766610100edd9f3 GuestRole
 
 === License Management
 Users need a license to do some operations. For instance, a license is required for a user who wants to open a session on a server. So you have to add licenses and assign them to your users if you want them to able to do operation requesting a license. There is one exception for site, country or global license and the last section describe the small difference for that kind of license. 

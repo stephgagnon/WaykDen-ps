@@ -54,7 +54,7 @@ namespace WaykDen.Controllers
             {
                 if(!string.IsNullOrEmpty(value))
                 {
-                    var byteData = Encoding.ASCII.GetBytes(value);
+                    var byteData = Encoding.UTF8.GetBytes(value);
                     using(var stream = request.GetRequestStream())
                     {
                         stream.Write(byteData, 0, byteData.Length);
@@ -89,7 +89,7 @@ namespace WaykDen.Controllers
             {
                 if(!string.IsNullOrEmpty(value))
                 {
-                    var byteData = Encoding.ASCII.GetBytes(value);
+                    var byteData = Encoding.UTF8.GetBytes(value);
                     using(var stream = request.GetRequestStream())
                     {
                         stream.Write(byteData, 0, byteData.Length);
@@ -111,21 +111,38 @@ namespace WaykDen.Controllers
             }
         }
 
-        private async Task<string> Delete(string url)
+        private async Task<string> Delete(string url, string value = null)
         {
             this.ValidateUrl(url);
-            using(var httpClient = new HttpClient())
+            var request = WebRequest.Create(url);
+            request.PreAuthenticate = true;
+            request.Headers.Add("Authorization", "Bearer " + this.apiKey);
+            request.ContentType = "application/json";
+            request.Method = "DELETE";
+
+            try
             {
-                using (var request = new HttpRequestMessage(new HttpMethod("DELETE"), url))
+                if (!string.IsNullOrEmpty(value))
                 {
-                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", this.apiKey);
-                    var response = await httpClient.DeleteAsync(url);
-                    if(response.StatusCode != HttpStatusCode.OK)
+                    var byteData = Encoding.UTF8.GetBytes(value);
+                    using (var stream = request.GetRequestStream())
                     {
-                        throw new Exception($"Error response is {response.StatusCode}");
+                        stream.Write(byteData, 0, byteData.Length);
                     }
-                    return await response.Content.ReadAsStringAsync();
                 }
+
+                var response = (HttpWebResponse) await request.GetResponseAsync();
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    throw new Exception($"Error response is {response.StatusCode}");
+                }
+                var responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
+                return responseString;
+            }
+            catch (WebException e)
+            {
+                this.OnError(e);
+                return string.Empty;
             }
         }
 
@@ -139,6 +156,21 @@ namespace WaykDen.Controllers
             return await this.Get($"{this.serverUrl}/user{parameter}");
         }
 
+        public async Task<string> GetGroups(string parameter = null)
+        {
+            return await this.Get($"{this.serverUrl}/group/{parameter}");
+        }
+
+        public async Task<string> GetUserFromGroup(string groupID, string parameter = null)
+        {
+            return await this.Get($"{this.serverUrl}/group/{groupID}/user{parameter}");
+        }
+
+        public async Task<string> GetRoles(string parameter = null)
+        {
+            return await this.Get($"{this.serverUrl}/role/{parameter}");
+        }
+
         public async Task<string> GetLicenses(string parameter = null)
         {
             return await this.Get($"{this.serverUrl}/license/{parameter}");
@@ -147,6 +179,21 @@ namespace WaykDen.Controllers
         public async Task<string> GetConnections(string parameter = null)
         {
             return await this.Get($"{this.serverUrl}/connection{parameter}");
+        }
+
+        public string PostCreateUser(string content)
+        {
+            return this.Post($"{this.serverUrl}/user", content);
+        }
+
+        public string PostCreateGroup(string content)
+        {
+            return this.Post($"{this.serverUrl}/group", content);
+        }
+
+        public string PostCreateRole(string content)
+        {
+            return this.Post($"{this.serverUrl}/role", content);
         }
 
         public string PostLicense(string parameter = null, string content = null)
@@ -167,6 +214,51 @@ namespace WaykDen.Controllers
         public string PutUser(string content)
         {
             return this.Put($"{this.serverUrl}/user/license", content);
+        }
+
+        public string PutUserToGroup(string content, string groupID)
+        {
+            return this.Put($"{this.serverUrl}/group/{groupID}/user", content);
+        }
+
+        public string PutRoleToGroup(string content, string groupID)
+        {
+            return this.Put($"{this.serverUrl}/group/{groupID}/role", content);
+        }
+
+        public string PutSetUserUpdate(string content)
+        {
+            return this.Put($"{this.serverUrl}/user/", content);
+        }
+
+        public string PutSetUserPassword(string content, string UserId)
+        {
+            return this.Put($"{this.serverUrl}/user/{UserId}/password", content);
+        }
+
+        public string PutRoleMember(string content, string userID)
+        {
+            return this.Put($"{this.serverUrl}/user/{userID}/role", content);
+        }
+
+        public async Task<string> DeleteGroup(string parameter)
+        {
+            return await this.Delete($"{this.serverUrl}/group/{parameter}");
+        }
+
+        public async Task<string> DeleteUserFromGroup(string groupID, string content)
+        {
+            return await this.Delete($"{this.serverUrl}/group/{groupID}/user", content);
+        }
+
+        public async Task<string> DeleteRole(string parameter)
+        {
+            return await this.Delete($"{this.serverUrl}/role/{parameter}");
+        }
+
+        public async Task<string> DeleteUser(string parameter)
+        {
+            return await this.Delete($"{this.serverUrl}/user/{parameter}");
         }
 
         public async Task<string> DeleteUserLicense(string parameter)

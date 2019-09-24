@@ -270,6 +270,25 @@ namespace WaykDen.Models
         public string serial_number {get; set;} = string.Empty;
     }
 
+    public class BySerialUserObject
+    {
+        public string user_id { get; set; }
+        public string username { get; set; }
+        public string password { get; set; }
+        public string name { get; set; }
+        public string email { get; set; }
+    }
+
+    public class ByNameObject
+    {
+        public string name { get; set; } = string.Empty;
+    }
+
+    public class ByPasswordObject
+    {
+        public string password { get; set; } = string.Empty;
+    }
+
     public class ByUsernameObject
     {
         public string username {get; set;} = string.Empty;
@@ -297,6 +316,16 @@ namespace WaykDen.Models
     {
         public string user_id {get; set;} = string.Empty;
         public string serial_number {get; set;} = string.Empty;
+    }
+
+    public class ByUserIDObject
+    {
+        public string user_id { get; set; } = string.Empty;
+    }
+
+    public class ByRoleName
+    {
+        public string role_name { get; set; } = string.Empty;
     }
 
     public class ConnectionObject
@@ -338,6 +367,41 @@ namespace WaykDen.Models
                 LastSeen = RestAPIUtils.GetDateTime(this.last_seen)
             };
         }
+    }
+
+    public class GroupObject
+    {
+        public string ID { get; set; }
+        public string Name { get; set; }
+        public string RoleID { get; set; }
+    }
+
+    public class Group
+    {
+        public Oid _id { get; set; } = new Oid();
+        public string name { get; set; } = string.Empty;
+        public Oid role_id { get; set; } = new Oid();
+
+        public GroupObject ToGroupObject => new GroupObject { ID = _id.oid, Name = name, RoleID = role_id?.oid };
+    }
+
+    public class UserGroupObject
+    {
+        public string UserGroupID { get; set; }
+    }
+
+    public class RoleObject
+    {
+        public string ID { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class Role
+    {
+        public Oid _id { get; set; } = new Oid();
+        public string name { get; set; } = string.Empty;
+
+        public RoleObject ToRoleObject => new RoleObject { ID = _id.oid, Name = name };
     }
 
     public enum ConnectionState
