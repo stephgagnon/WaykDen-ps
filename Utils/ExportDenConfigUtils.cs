@@ -214,6 +214,9 @@ services:";
     [entryPoints.{0}]
     address = "":{1}""
         {2}
+        [entryPoints.{0}.redirect]
+	    regex = ""^http(s)?://([^/]+)/?$""
+	    replacement = ""http$1://$2/web""
 
 [frontends]
     [frontends.lucid]
