@@ -1,12 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using Docker.DotNet.Models;
 using WaykDen.Controllers;
 using WaykDen.Utils;
@@ -54,102 +47,6 @@ namespace WaykDen.Models.Services
             
             this.Cmd.Add(TRAEFIK_FILE_CMD);
             this.Cmd.Add(configFile);
-        }
-
-        private string BuildTraefikToml(string externalUrl)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(this.BuildConfig());
-            return sb.ToString();
-        }
-
-        private string BuildConfig()
-        {
-            string traefikConfig = 
-$@"
-{{
-  ""frontends"": {{
-    ""lucid"": {{
-      ""backend"": ""lucid"",
-      ""passHostHeader"": true,
-      ""entrypoints"": [
-        ""{this.Entrypoints}""
-      ],
-      ""routes"": {{
-        ""lucid"": {{
-          ""rule"": ""PathPrefixStripRegex:/lucid""
-        }}
-      }}
-    }},
-    ""lucidop"": {{
-      ""backend"": ""lucid"",
-      ""passHostHeader"": true,
-      ""entrypoints"": [
-        ""{this.Entrypoints}""
-      ],
-      ""routes"": {{
-        ""lucidop"": {{
-          ""rule"": ""PathPrefix:/op""
-        }}
-      }}
-    }},
-    ""lucidauth"": {{
-      ""backend"": ""lucid"",
-      ""passHostHeader"": true,
-      ""entrypoints"": [
-        ""{this.Entrypoints}""
-      ],
-      ""routes"": {{
-        ""lucidauth"": {{
-          ""rule"": ""PathPrefix:/auth""
-        }}
-      }}
-    }},
-    ""router"": {{
-      ""backend"": ""router"",
-      ""passHostHeader"": true,
-      ""entrypoints"": [
-        ""{this.Entrypoints}""
-      ],
-      ""routes"": {{
-        ""router"": {{
-          ""rule"": ""PathPrefixStripRegex:/cow""
-        }}
-      }}
-    }},""server"": {{
-      ""backend"": ""server"",
-      ""passHostHeader"": true,
-      ""entrypoints"": [
-        ""{this.Entrypoints}""
-      ]
-    }}
-  }},
-  ""backends"": {{
-    ""lucid"": {{
-      ""servers"": {{
-        ""lucid"": {{
-          ""url"": ""http://den-lucid:4242""
-        }}
-      }}
-    }},
-    ""router"": {{
-      ""servers"": {{
-        ""router"": {{
-	        ""url"": ""http://den-router:4491""
-        }}
-      }}
-    }},
-    ""server"": {{
-      ""servers"": {{
-        ""server"": {{
-	        ""url"": ""http://den-server:10255""
-        }}
-      }}
-    }}
-  }}
-}}
-";
-            return traefikConfig;
         }
 
         private void ImportCertificate()
