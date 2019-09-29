@@ -114,10 +114,10 @@ PrivateData = @{
         Tags = 'Wayk', 'WaykNow', 'WaykDen', 'Windows', 'macOS', 'Linux', 'RemoteDesktop'
 
         # A URL to the license for this module.
-        # LicenseUri = ''
+        LicenseUri = 'https://github.com/Devolutions/WaykDen-ps/blob/master/LICENSE-MIT'
 
         # A URL to the main website for this project.
-        ProjectUri = 'https://wayk.devolutions.net/'
+        ProjectUri = 'https://github.com/Devolutions/WaykDen-ps'
 
         # A URL to an icon representing this module.
         IconUri = 'https://webdevolutions.blob.core.windows.net/images/projects/wayk-now/logos/wayk-now-icon-ps.png'
