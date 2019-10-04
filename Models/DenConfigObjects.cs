@@ -98,14 +98,14 @@ namespace WaykDen.Models
         private const string LinuxDenLucidImage = "devolutions/den-lucid:3.3.3-buster";
         private const string LinuxDenPickyImage = "devolutions/picky:3.0.0-buster";
         private const string LinuxDenRouterImage = "devolutions/den-router:0.5.0-buster";
-        private const string LinuxDenServerImage = "devolutions/den-server:1.4.0-buster";
+        private const string LinuxDenServerImage = "devolutions/den-server:1.5.0-buster";
         private const string LinuxDenTraefikImage = "library/traefik:1.7";
         private const string LinuxDevolutionsJetImage = "devolutions/devolutions-jet:0.4.0-stretch";
         private const string WindowsDenMongoImage = "library/mongo:4.2.0-rc3-windowsservercore-ltsc2016";
         private const string WindowsDenLucidImage = "devolutions/den-lucid:3.3.3-servercore-ltsc2019";
         private const string WindowsDenPickyImage = "devolutions/picky:3.0.0-servercore-ltsc2019";
         private const string WindowsDenRouterImage = "devolutions/den-router:0.5.0-servercore-ltsc2019";
-        private const string WindowsDenServerImage = "devolutions/den-server:1.4.0-servercore-ltsc2019";
+        private const string WindowsDenServerImage = "devolutions/den-server:1.5.0-servercore-ltsc2019";
         private const string WindowsDenTraefikImage = "sixeyed/traefik:v1.7.8-windowsservercore-ltsc2019";
         private const string WindowsDevolutionsJetImage = "devolutions/devolutions-jet:0.4.0-servercore-ltsc2019";
         [JsonIgnore]
