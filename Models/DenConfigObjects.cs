@@ -64,6 +64,7 @@ namespace WaykDen.Models
         public string LDAPServerType {get; set;}
         public string LDAPBaseDN {get; set;}
         public string JetServerUrl {get; set;}
+        public string JetRelayUrl {get; set;}
         public string LoginRequired {get; set;}
     }
 

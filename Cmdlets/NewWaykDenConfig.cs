@@ -33,8 +33,10 @@ namespace WaykDen.Cmdlets
         public string LDAPServerType {get; set;} = string.Empty;
         [Parameter(HelpMessage = "Base DN is the Distinguished Named (DN) where all users and groups can be found. Example: Exemple : ou=Users,o=YOUR_ORG_ID,dc=jumpcloud,dc=com")]
         public string LDAPBaseDN {get; set;} = string.Empty;
-        [Parameter(HelpMessage = "URL where Devolutions Jet will be listening.")]
+        [Parameter(HelpMessage = "URL where Devolutions Jet will be listening (tcp listener).")]
         public string JetServerUrl {get; set;} = string.Empty;
+        [Parameter(HelpMessage = "URL where Devolutions Jet will be listening (http listener).")]
+        public string JetRelayUrl {get; set;} = string.Empty;
         [Parameter(HelpMessage = "Force the Wayk client to be logged and authenticated. WaykDen will give an ID only if the user is authenticated.")]
         public SwitchParameter LoginRequired {get; set;} = false;
         [Parameter(HelpMessage = "Docker client endpoint URI.")]
@@ -134,6 +136,7 @@ namespace WaykDen.Cmdlets
                             LDAPBaseDN = this.LDAPBaseDN != null ? this.LDAPBaseDN : string.Empty,
                             PrivateKey = KeyCertUtils.PemToDer(rsaKeyGenerator.PrivateKey),
                             JetServerUrl = this.JetServerUrl != null ? this.JetServerUrl : string.Empty,
+                            JetRelayUrl = this.JetRelayUrl != null ? this.JetRelayUrl : string.Empty,
                             LoginRequired = this.LoginRequired ? "True": "False"
                         },
 
@@ -177,6 +180,7 @@ namespace WaykDen.Cmdlets
             this.DenConfig.DenServerConfigObject.LDAPPassword = !string.IsNullOrEmpty(this.LDAPPassword) ? this.LDAPPassword : this.DenConfig.DenServerConfigObject.LDAPPassword;
             this.DenConfig.DenServerConfigObject.LDAPUserGroup = !string.IsNullOrEmpty(this.LDAPUserGroup) ? this.LDAPUserGroup : this.DenConfig.DenServerConfigObject.LDAPUserGroup;
             this.DenConfig.DenServerConfigObject.JetServerUrl = !string.IsNullOrEmpty(this.JetServerUrl) ? this.JetServerUrl : this.DenConfig.DenServerConfigObject.JetServerUrl;
+            this.DenConfig.DenServerConfigObject.JetRelayUrl = !string.IsNullOrEmpty(this.JetRelayUrl) ? this.JetRelayUrl : this.DenConfig.DenServerConfigObject.JetRelayUrl;
             this.DenConfig.DenServerConfigObject.LoginRequired = this.LoginRequired ? "True" : "False";
             this.DenConfig.DenServerConfigObject.LDAPServerUrl = !string.IsNullOrEmpty(this.LDAPServerUrl) ? this.LDAPServerUrl : this.DenConfig.DenServerConfigObject.LDAPServerUrl;
             this.DenConfig.DenTraefikConfigObject.WaykDenPort = !string.IsNullOrEmpty(this.WaykDenPort) ? this.WaykDenPort : this.DenConfig.DenTraefikConfigObject.WaykDenPort;

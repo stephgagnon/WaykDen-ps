@@ -20,6 +20,7 @@ namespace WaykDen.Models.Services
         private const string LUCID_INTERNAL_URL_ENV = "LUCID_INTERNAL_URL";
         private const string LUCID_EXTERNAL_URL_ENV = "LUCID_EXTERNAL_URL";
         private const string JET_SERVER_URL_ENV = "JET_SERVER_URL";
+        private const string JET_RELAY_URL_ENV = "JET_RELAY_URL";
         private const string LDAP_SERVER_URL_ENV = "LDAP_SERVER_URL";
         private const string LDAP_USERNAME_ENV = "LDAP_USERNAME";
         private const string LDAP_PASSWORD_ENV = "LDAP_PASSWORD";
@@ -86,6 +87,11 @@ namespace WaykDen.Models.Services
             if(!string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.JetServerUrl))
             {
                 this.Env.Add($"{JET_SERVER_URL_ENV}={this.DenConfig.DenServerConfigObject.JetServerUrl}");
+            }
+
+            if(!string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.JetRelayUrl))
+            {
+                this.Env.Add($"{JET_RELAY_URL_ENV}={this.DenConfig.DenServerConfigObject.JetRelayUrl}");
             }
 
             if(!string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.LDAPBaseDN))
