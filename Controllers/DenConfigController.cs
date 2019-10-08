@@ -12,7 +12,8 @@ namespace WaykDen.Controllers
     public class DenConfigController
     {
         private const string DEFAULT_MONGO_URL = "mongodb://den-mongo:27017";
-        private const string DEFAULT_JET_URL = "jet.wayk.net:8080";
+        private const string DEFAULT_JET_SERVER_URL = "jet.wayk.net:8080";
+        private const string DEFAULT_JET_RELAY_URL = "https://jet.wayk.net";
         private const string DEN_MONGO_CONFIG_COLLECTION = "DenMongoConfig";
         private const string DEN_PICKY_CONFIG_COLLECTION = "DenPickyConfig";
         private const string DEN_LUCID_CONFIG_COLLECTION = "DenLucidConfig";
@@ -197,6 +198,7 @@ namespace WaykDen.Controllers
             bool ldapBaseDnOk = values.TryGetValue(nameof(DenServerConfigObject.LDAPBaseDN), out var ldapbasedn);
             values.TryGetValue(nameof(DenServerConfigObject.PrivateKey), out var privatekey);
             bool jetServerUrlOk = values.TryGetValue(nameof(DenServerConfigObject.JetServerUrl), out var jetServerUrl);
+            bool jetRelayUrlOk = values.TryGetValue(nameof(DenServerConfigObject.JetRelayUrl), out var jetRelayUrl);
             bool loginRequiredOk = values.TryGetValue(nameof(DenServerConfigObject.LoginRequired), out var loginRequired);
             return new DenServerConfigObject()
             {
@@ -210,7 +212,8 @@ namespace WaykDen.Controllers
                 LDAPUserGroup = ldapUserGroupOk ? ((string) ldapusergroup) : string.Empty,
                 LDAPUsername = ldapUsernameOk ? ((string) ldapusername) : string.Empty,
                 PrivateKey = privatekey,
-                JetServerUrl = jetServerUrlOk ? ((string) jetServerUrl) : DEFAULT_JET_URL,
+                JetServerUrl = jetServerUrlOk && !string.IsNullOrEmpty((string) jetServerUrl) ? ((string) jetServerUrl) : DEFAULT_JET_SERVER_URL,
+                JetRelayUrl = jetRelayUrlOk && !string.IsNullOrEmpty((string) jetRelayUrl) ? ((string) jetRelayUrl) : DEFAULT_JET_RELAY_URL,
                 LoginRequired = loginRequiredOk ? ((string) loginRequired) : "false"
             };
         }
