@@ -13,21 +13,21 @@ namespace WaykDen.Utils
         public static string[] CreateDockerCompose(DenService[] services, Platforms platform)
         {
             string traefiktoml = string.Empty;
-            string dockercompose = 
+            string dockercompose =
 $@"version: '{DOCKER_COMPOSE_VERSION}'
 
 services:";
             StringBuilder sb = new StringBuilder();
             sb.Append(dockercompose);
 
-            foreach(DenService service in services)
+            foreach (DenService service in services)
             {
-                if(service is DenMongoService mongo && mongo.IsExternal)
+                if (service is DenMongoService mongo && mongo.IsExternal)
                 {
                     continue;
                 }
 
-                if(service is DenTraefikService traefik)
+                if (service is DenTraefikService traefik)
                 {
                     traefiktoml = CreateTraefikToml(traefik);
                 }
@@ -46,7 +46,7 @@ services:";
             string networkDriver = platform == Platforms.Linux ? "bridge" : "nat";
             sb.AppendLine($"    driver: {networkDriver}");
 
-            return new string[]{sb.ToString(), traefiktoml};
+            return new string[] { sb.ToString(), traefiktoml };
         }
 
         private static string CreateServiceDockerCompose(DenService service)
@@ -57,21 +57,21 @@ services:";
             sb.AppendLine(string.Format("    container_name: '{0}'", service.Name));
             string[] dependency = null;
             string[] dependencyPort = null;
-            switch(service)
+            switch (service)
             {
                 case DenLucidService denLucid:
                     sb.AppendLine("    depends_on:");
                     sb.AppendLine("      - den-picky");
                     break;
-                
+
                 case DenRouterService denRouter:
                     sb.AppendLine("    depends_on:");
                     sb.AppendLine("        - den-lucid");
                     break;
 
                 case DenServerService denServer:
-                    dependency = new string[]{"den-router", "den-lucid"};
-                    dependencyPort = new string[]{"10254/healtz", "4242/health"};
+                    dependency = new string[] { "den-router", "den-lucid" };
+                    dependencyPort = new string[] { "10254/healtz", "4242/health" };
                     sb.AppendLine("    depends_on:");
                     sb.AppendLine("        - traefik");
                     break;
@@ -82,12 +82,12 @@ services:";
                     break;
             }
 
-            if(dependency != null && dependencyPort != null && dependency.Length == dependencyPort.Length)
+            if (dependency != null && dependencyPort != null && dependency.Length == dependencyPort.Length)
             {
                 sb.AppendLine("    healthcheck:");
                 string curlString = "      test: {0}";
                 string d = string.Empty;
-                for(int i = 0; i < dependency.Length; i++)
+                for (int i = 0; i < dependency.Length; i++)
                 {
                     string join = i > 0 ? " && " : string.Empty;
                     d += $"{join}curl -sS http://{dependency[i]}:{dependencyPort[i]}";
@@ -101,27 +101,27 @@ services:";
 
             sb.AppendLine("    networks:");
             sb.AppendLine("      den-network:");
-            
-            if(service.GetEnvironment(out List<string> envs))
+
+            if (service.GetEnvironment(out List<string> envs))
             {
                 sb.AppendLine("    environment:");
-                foreach(string env in envs)
+                foreach (string env in envs)
                 {
-                    string[] splittedEnv = env.Split(new char[]{'='}, 2);
+                    string[] splittedEnv = env.Split(new char[] { '=' }, 2);
 
-                    if(splittedEnv.Length < 2)
+                    if (splittedEnv.Length < 2)
                     {
                         continue;
                     }
 
                     string envString = "      {0}: '{1}'";
 
-                    if(splittedEnv[1].Contains("\n"))
+                    if (splittedEnv[1].Contains("\n"))
                     {
                         string envKeyString = "      {0}: |";
                         sb.AppendLine(string.Format(envKeyString, splittedEnv[0]));
 
-                        foreach(string s in splittedEnv[1].Split('\n'))
+                        foreach (string s in splittedEnv[1].Split('\n'))
                         {
                             sb.AppendLine(string.Format("        {0}", s));
                         }
@@ -133,23 +133,23 @@ services:";
                 }
             }
 
-            if(service.GetVolumes(out List<string> volumes))
+            if (service.GetVolumes(out List<string> volumes))
             {
                 sb.AppendLine("    volumes:");
 
                 string volumeString = "       - '{0}'";
 
-                foreach(string volume in volumes)
+                foreach (string volume in volumes)
                 {
                     sb.AppendLine(string.Format(volumeString, volume));
                 }
             }
 
-            if(service.GetCmd(out List<string> commands))
+            if (service.GetCmd(out List<string> commands))
             {
                 sb.Append("    command:");
 
-                foreach(string command in commands)
+                foreach (string command in commands)
                 {
                     string adjustcmd = command.Contains(" ") ? command.Insert(command.IndexOf('=') + 1, "\'").Insert(command.Length + 1, "\'") : command;
                     sb.Append($" {adjustcmd}");
@@ -158,19 +158,19 @@ services:";
                 sb.AppendLine();
             }
 
-            if(service.GetPorts(out List<string> ports))
+            if (service.GetPorts(out List<string> ports))
             {
                 sb.AppendLine("    ports:");
 
-                foreach(string port in ports)
+                foreach (string port in ports)
                 {
                     sb.AppendLine(string.Format("      - \"{0}\"", port));
                 }
             }
 
-            if(service.GetLogConfigs(out Dictionary<string, string> logConfigs))
+            if (service.GetLogConfigs(out Dictionary<string, string> logConfigs))
             {
-                if(logConfigs.TryGetValue("driver", out string driver))
+                if (logConfigs.TryGetValue("driver", out string driver))
                 {
                     sb.AppendLine("    logging:");
                     sb.AppendLine($"      driver: \"{driver}\"");
@@ -179,22 +179,22 @@ services:";
                 string logOptionsFormat = "        {0}: {1}";
                 sb.AppendLine($"      options:");
 
-                if(logConfigs.TryGetValue("syslog-address", out string address))
+                if (logConfigs.TryGetValue("syslog-address", out string address))
                 {
                     sb.AppendLine(string.Format(logOptionsFormat, "syslog-address", address));
                 }
 
-                if(logConfigs.TryGetValue("syslog-facility", out string facility))
+                if (logConfigs.TryGetValue("syslog-facility", out string facility))
                 {
                     sb.AppendLine(string.Format(logOptionsFormat, "syslog-facility", facility));
                 }
 
-                if(logConfigs.TryGetValue("syslog-format", out string format))
+                if (logConfigs.TryGetValue("syslog-format", out string format))
                 {
                     sb.AppendLine(string.Format(logOptionsFormat, "syslog-format", format));
                 }
 
-                if(logConfigs.TryGetValue("tag", out string tag))
+                if (logConfigs.TryGetValue("tag", out string tag))
                 {
                     sb.AppendLine(string.Format(logOptionsFormat, "tag", tag));
                 }
@@ -288,11 +288,11 @@ if([string]::IsNullOrEmpty($Action)){
             List<string> servicesName = new List<string>();
             List<string> servicesCmd = new List<string>();
             List<string> servicesImage = new List<string>();
-            foreach(DenService service in services)
+            foreach (DenService service in services)
             {
-                if(service is DenMongoService denMongo)
+                if (service is DenMongoService denMongo)
                 {
-                    if(denMongo.IsExternal)
+                    if (denMongo.IsExternal)
                     {
                         continue;
                     }
@@ -305,13 +305,13 @@ if([string]::IsNullOrEmpty($Action)){
 
             sb.AppendLine("$currentPath = Get-Location");
             sb.AppendLine($"$servicesName = @(\'{string.Join("\',\'", servicesName)}\')");
-            if(podman)
+            if (podman)
             {
                 sb.AppendLine($"$servicesImage = @(\"docker.io/{string.Join("\",\"docker.io/", servicesImage)}\")");
             } else sb.AppendLine($"$servicesImage = @(\"{string.Join("\",\"", servicesImage)}\")");
             sb.AppendLine($"$baseRun = \"{GetBaseDockerRunCmd(podman)}\"");
             List<string> health = new List<string>();
-            if(podman)
+            if (podman)
             {
                 health.Add("--healthcheck-interval=5s");
                 health.Add("--healthcheck-timeout=2s");
@@ -325,14 +325,14 @@ if([string]::IsNullOrEmpty($Action)){
                 health.Add("--health-retries=5");
                 health.Add("--health-start-period=1s");
             }
-            sb.AppendLine($"$baseHealthCheck  = @(\'{string.Join("\',\'",health)}\')");
+            sb.AppendLine($"$baseHealthCheck  = @(\'{string.Join("\',\'", health)}\')");
 
-            if(podman)
+            if (podman)
             {
                 sb.AppendLine("$servicesIP = 2..7 | ForEach-Object {\"10.88.123.$_\"}");
             }
 
-            foreach(DenService service in services)
+            foreach (DenService service in services)
             {
                 sb.AppendLine();
                 sb.Append(GetServiceArgs(podman, service));
@@ -351,21 +351,21 @@ if([string]::IsNullOrEmpty($Action)){
         private static string GetBaseDockerRunCmd(bool podman)
         {
             List<string> baseCmd = new List<string>();
-            if(podman)
+            if (podman)
             {
-                baseCmd.AddRange(new string[]{"podman run --privileged -d"});
+                baseCmd.AddRange(new string[] { "podman run --privileged -d" });
             }
-            else baseCmd.AddRange(new string[]{"docker", "run", "-d", "--network=den-network"});
+            else baseCmd.AddRange(new string[] { "docker", "run", "-d", "--network=den-network" });
             return string.Join(" ", baseCmd);
         }
-        
+
         private static string GetServiceArgs(bool podman, DenService service)
         {
             StringBuilder sb = new StringBuilder();
             string variablesPrefix = service.Name.Replace("-", "");
 
             string cmd;
-            switch(service)
+            switch (service)
             {
                 case DenLucidService denLucid:
                     cmd = podman ? "--healthcheck-command=\'curl -sS http://den-lucid:4242/health\'" : "--health-cmd=\'curl -sS http://den-lucid:4242/health\'";
@@ -383,24 +383,24 @@ if([string]::IsNullOrEmpty($Action)){
                     break;
             }
 
-            if(service.GetEnvironment(out List<string> envs))
+            if (service.GetEnvironment(out List<string> envs))
             {
                 sb.AppendLine($"${variablesPrefix}Envs = @(\"{string.Join("\",`\n   \"", envs)}\")");
             }
 
-            if(service.GetVolumes(out List<string> volumes))
+            if (service.GetVolumes(out List<string> volumes))
             {
                 List<string> updatedVolumes = new List<string>();
-                if(service is DenMongoService denMongo)
+                if (service is DenMongoService denMongo)
                 {
-                    foreach(string volume in volumes)
+                    foreach (string volume in volumes)
                     {
                         updatedVolumes.Add(volume);
                     }
                 }
                 else
                 {
-                    foreach(string volume in volumes)
+                    foreach (string volume in volumes)
                     {
                         updatedVolumes.Add($"$($currentPath){System.IO.Path.DirectorySeparatorChar}{volume}");
                     }
@@ -409,12 +409,12 @@ if([string]::IsNullOrEmpty($Action)){
                 sb.AppendLine($"${variablesPrefix}Volumes = @(\"{string.Join("\",`\n    \"", updatedVolumes)}\")");
             }
 
-            if(service.GetPorts(out List<string> ports))
+            if (service.GetPorts(out List<string> ports))
             {
                 sb.AppendLine($"${variablesPrefix}Ports = @(\'{string.Join("\',`\n  \'", ports)}\')");
             }
 
-            if(service.GetCmd(out List<string> commands))
+            if (service.GetCmd(out List<string> commands))
             {
                 sb.AppendLine($"${variablesPrefix}Cmd = @(\'{string.Join("\',`\n    \'", commands)}\')");
             }
@@ -591,12 +591,44 @@ param(
         {3}
         PullImage
         StartContainer
+        CheckOverrideDockerImages
     }}
 
     function StopWaykDen{{
         Write-Host 'Stopping WaykDen'
         StopContainer
     }}
+
+    function CheckOverrideDockerImages{{
+        if(!($DenImageDenLucidImage -eq $DenOriginalImageLucid)){{
+            ShowDockerImageIsOverride $DenImageDenLucidImage $DenOriginalImageLucid
+        }}
+        if(!($DenImageDenMongoImage -eq $DenOriginalImagMongo)){{
+            ShowDockerImageIsOverride $DenImageDenMongoImage $DenOriginalImagMongo
+        }}
+        if(!($DenImageDenPickyImage -eq $DenOriginalImagePicky)){{
+            ShowDockerImageIsOverride $DenImageDenPickyImage $DenOriginalImagePicky
+        }}
+        if(!($DenImageDenRouterImage -eq $DenOriginalImageRouter)){{
+            ShowDockerImageIsOverride $DenImageDenRouterImage $DenOriginalImageRouter
+        }}
+        if(!($DenImageDenServerImage -eq $DenOriginalImageServer)){{
+            ShowDockerImageIsOverride $DenImageDenServerImage $DenOriginalImageServer
+        }}
+        if(!($DenImageDenTraefikImage -eq $DenOriginalImageTraefik)){{
+            ShowDockerImageIsOverride $DenImageDenTraefikImage $DenOriginalImageTraefik
+        }}
+        if(!($DenImageDevolutionsJetImage -eq $DenOriginalImageJetImage)){{
+            ShowDockerImageIsOverride $DenImageDevolutionsJetImage $DenOriginalImageJetImage
+        }}
+    }}
+
+function ShowDockerImageIsOverride(
+    [string] $stringOverride,
+    [string] $original
+){{
+    Write-Warning ""The original docker image: `""$original`"" is overridden by `""$stringOverride`""""
+}}
 
     if ($Action -match 'Start') {{
         StartWaykDen        

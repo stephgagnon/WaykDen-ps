@@ -5,6 +5,7 @@ using System.Linq;
 using System.Management.Automation;
 using WaykDen.Controllers;
 using Newtonsoft.Json;
+using WaykDen.Models;
 
 namespace WaykDen.Cmdlets
 {
@@ -66,9 +67,9 @@ namespace WaykDen.Cmdlets
 
                     if(this.DockerScript)
                     {
-                        File.WriteAllText($"{this.ExportPath}{System.IO.Path.DirectorySeparatorChar}{DOCKER_SCRIPT_FILENAME}", denServicesController.CreateScript(this.ExportPath, false));
+                        File.WriteAllText($"{this.ExportPath}{System.IO.Path.DirectorySeparatorChar}{DOCKER_SCRIPT_FILENAME}", denServicesController.CreateScript(this.ExportPath, false, string.Equals(denServicesController.DenConfig.DenDockerConfigObject.Platform, "Linux") ? Platforms.Linux : Platforms.Windows));
                     }
-                    else File.WriteAllText($"{this.ExportPath}{System.IO.Path.DirectorySeparatorChar}{DOCKER_SCRIPT_FILENAME}", denServicesController.CreateScript(this.ExportPath, true));
+                    else File.WriteAllText($"{this.ExportPath}{System.IO.Path.DirectorySeparatorChar}{DOCKER_SCRIPT_FILENAME}", denServicesController.CreateScript(this.ExportPath, true, string.Equals(denServicesController.DenConfig.DenDockerConfigObject.Platform, "Linux") ? Platforms.Linux : Platforms.Windows));
                 }
             }
             catch(Exception e)

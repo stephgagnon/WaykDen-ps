@@ -17,7 +17,7 @@ namespace WaykDen.Models
         public DenImageConfigObject DenImageConfigObject {get; set;}
         public DenDockerConfigObject DenDockerConfigObject {get; set;}
 
-        public string ConvertToPwshParameters()
+        public string ConvertToPwshParameters(Platforms platform)
         {
             StringBuilder sb = new StringBuilder();
             bool syslog = false;
@@ -39,13 +39,29 @@ namespace WaykDen.Models
                     }
                 }
 
-                if(!string.IsNullOrEmpty(this.DenDockerConfigObject.SyslogServer) && !syslog)
+                if (!string.IsNullOrEmpty(this.DenDockerConfigObject.SyslogServer) && !syslog)
                 {
                     syslog = true;    
                 }
             }
 
-            if(syslog)
+            string DenOriginalImageLucid = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenLucidImage : DenImageConfigObject.WindowsDenLucidImage;
+            string DenOriginalImagMongo = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenMongoImage : DenImageConfigObject.WindowsDenMongoImage;
+            string DenOriginalImagePicky = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenPickyImage : DenImageConfigObject.WindowsDenPickyImage;
+            string DenOriginalImageRouter = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenRouterImage : DenImageConfigObject.WindowsDenRouterImage;
+            string DenOriginalImageServer = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenServerImage : DenImageConfigObject.WindowsDenServerImage;
+            string DenOriginalImageTraefik = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenTraefikImage : DenImageConfigObject.WindowsDenTraefikImage;
+            string DenOriginalImageJetImage = platform == Platforms.Linux ? DenImageConfigObject.LinuxDevolutionsJetImage : DenImageConfigObject.WindowsDevolutionsJetImage;
+
+            sb.AppendLine($"$DenOriginalImageLucid = \'{DenOriginalImageLucid}\'");
+            sb.AppendLine($"$DenOriginalImagMongo = \'{DenOriginalImagMongo}\'");
+            sb.AppendLine($"$DenOriginalImagePicky = \'{DenOriginalImagePicky}\'");
+            sb.AppendLine($"$DenOriginalImageRouter = \'{DenOriginalImageRouter}\'");
+            sb.AppendLine($"$DenOriginalImageServer = \'{DenOriginalImageServer}\'");
+            sb.AppendLine($"$DenOriginalImageTraefik = \'{DenOriginalImageTraefik}\'");
+            sb.AppendLine($"$DenOriginalImageJetImage = \'{DenOriginalImageJetImage}\'");
+
+            if (syslog)
             {
                 sb.AppendLine("$logDriver = \'syslog\'");
                 sb.AppendLine($"$syslogOptions = @(\'syslog-address={this.DenDockerConfigObject.SyslogServer}\',\'syslog-format=rfc5424\',\'syslog-facility=daemon\')");
