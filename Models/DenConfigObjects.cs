@@ -97,7 +97,7 @@ namespace WaykDen.Models
         private const string JET = "jet";
 
         public const string LinuxDenMongoImage = "library/mongo:4.1-bionic";
-        public const string LinuxDenLucidImage = "devolutions/den-lucid:3.5.3-buster";
+        public const string LinuxDenLucidImage = "devolutions/den-lucid:3.3.3-buster";
         public const string LinuxDenPickyImage = "devolutions/picky:3.0.0-buster";
         public const string LinuxDenRouterImage = "devolutions/den-router:0.5.0-buster";
         public const string LinuxDenServerImage = "devolutions/den-server:1.5.0-buster";
