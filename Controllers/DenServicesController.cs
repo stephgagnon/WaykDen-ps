@@ -78,7 +78,7 @@ namespace WaykDen.Controllers
 
             Platforms p = string.Equals(this.DenConfig.DenDockerConfigObject.Platform, "Linux") ? Platforms.Linux : Platforms.Windows;
             this.DenConfig.DenImageConfigObject = new DenImageConfigObject(p);
-        
+                            
             this.DockerClient = new DockerClientConfiguration(new Uri(this.DenConfig.DenDockerConfigObject.DockerClientUri)).CreateClient();
         }
 
@@ -417,7 +417,7 @@ namespace WaykDen.Controllers
                         this.WriteError(new Exception("Error starting Traefik service. Make sure External URL is well configured."));
                     }
                 }
-                
+
                 return started;
             }
             catch(Exception e)
@@ -459,10 +459,10 @@ namespace WaykDen.Controllers
             return ExportDenConfigUtils.CreateTraefikToml(new DenTraefikService(this));
         }
 
-        public string CreateScript(string exportPath, bool podman)
+        public string CreateScript(string exportPath, bool podman, Platforms platform)
         {
             this.Path = exportPath;
-            string config = this.DenConfig.ConvertToPwshParameters();
+            string config = this.DenConfig.ConvertToPwshParameters(platform);
             return ExportDenConfigUtils.CreateScript(podman, this.GetDenServicesConfig(), exportPath, config);
         }
 

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Management.Automation;
 using WaykDen.Controllers;
+using WaykDen.Models;
 
 namespace WaykDen.Cmdlets
 {
@@ -40,6 +41,10 @@ namespace WaykDen.Cmdlets
                         }
                     }
                 }
+
+                Platforms p = string.Equals(this.denServicesController.DenConfig.DenDockerConfigObject.Platform, "Linux") ? Platforms.Linux : Platforms.Windows;
+                this.CheckOverrideDockerImages(p, this.denServicesController.DenConfig.DenImageConfigObject);
+
             }
             catch(Exception e)
             {
@@ -72,6 +77,51 @@ namespace WaykDen.Cmdlets
             {
                 this.mre.Set();
             }
+        }
+
+        private void CheckOverrideDockerImages(Platforms platform, DenImageConfigObject denImageConfig)
+        {
+            string originalLucid = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenLucidImage : DenImageConfigObject.WindowsDenLucidImage;
+            string originalMongo = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenMongoImage : DenImageConfigObject.WindowsDenMongoImage;
+            string originalPicky = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenPickyImage : DenImageConfigObject.WindowsDenPickyImage;
+            string originalRouter = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenRouterImage : DenImageConfigObject.WindowsDenRouterImage;
+            string originalServer = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenServerImage : DenImageConfigObject.WindowsDenServerImage;
+            string originalTraefik = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenTraefikImage : DenImageConfigObject.WindowsDenTraefikImage;
+            string originalJet = platform == Platforms.Linux ? DenImageConfigObject.LinuxDevolutionsJetImage : DenImageConfigObject.WindowsDevolutionsJetImage;
+
+            if (denImageConfig.DenLucidImage != originalLucid)
+            {
+                ShowDockerImageIsOverride(denImageConfig.DenLucidImage, originalLucid);
+            }
+            if (denImageConfig.DenMongoImage != originalMongo)
+            {
+                ShowDockerImageIsOverride(denImageConfig.DenMongoImage, originalMongo);
+            }
+            if (denImageConfig.DenPickyImage != originalPicky)
+            {
+                ShowDockerImageIsOverride(denImageConfig.DenPickyImage, originalPicky);
+            }
+            if (denImageConfig.DenRouterImage != originalRouter)
+            {
+                ShowDockerImageIsOverride(denImageConfig.DenRouterImage, originalRouter);
+            }
+            if (denImageConfig.DenServerImage != originalServer)
+            {
+                ShowDockerImageIsOverride(denImageConfig.DenServerImage, originalServer);
+            }
+            if (denImageConfig.DenTraefikImage != originalTraefik)
+            {
+                ShowDockerImageIsOverride(denImageConfig.DenTraefikImage, originalTraefik);
+            }
+            if (denImageConfig.DevolutionsJetImage != originalJet)
+            {
+                ShowDockerImageIsOverride(denImageConfig.DevolutionsJetImage, originalJet);
+            }
+        }
+
+        private void ShowDockerImageIsOverride(string stringOverride, string original)
+        {
+            this.WriteWarning($@"The original docker image: '{original}' is overridden by '{stringOverride}'");
         }
     }
 }
