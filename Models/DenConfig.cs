@@ -46,7 +46,7 @@ namespace WaykDen.Models
             }
 
             string DenOriginalImageLucid = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenLucidImage : DenImageConfigObject.WindowsDenLucidImage;
-            string DenOriginalImagMongo = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenMongoImage : DenImageConfigObject.WindowsDenMongoImage;
+            string DenOriginalImageMongo = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenMongoImage : DenImageConfigObject.WindowsDenMongoImage;
             string DenOriginalImagePicky = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenPickyImage : DenImageConfigObject.WindowsDenPickyImage;
             string DenOriginalImageRouter = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenRouterImage : DenImageConfigObject.WindowsDenRouterImage;
             string DenOriginalImageServer = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenServerImage : DenImageConfigObject.WindowsDenServerImage;
@@ -54,7 +54,7 @@ namespace WaykDen.Models
             string DenOriginalImageJetImage = platform == Platforms.Linux ? DenImageConfigObject.LinuxDevolutionsJetImage : DenImageConfigObject.WindowsDevolutionsJetImage;
 
             sb.AppendLine($"$DenOriginalImageLucid = \'{DenOriginalImageLucid}\'");
-            sb.AppendLine($"$DenOriginalImagMongo = \'{DenOriginalImagMongo}\'");
+            sb.AppendLine($"$DenOriginalImageMongo = \'{DenOriginalImageMongo}\'");
             sb.AppendLine($"$DenOriginalImagePicky = \'{DenOriginalImagePicky}\'");
             sb.AppendLine($"$DenOriginalImageRouter = \'{DenOriginalImageRouter}\'");
             sb.AppendLine($"$DenOriginalImageServer = \'{DenOriginalImageServer}\'");

@@ -82,40 +82,40 @@ namespace WaykDen.Cmdlets
         private void CheckOverrideDockerImages(Platforms platform, DenImageConfigObject denImageConfig)
         {
             string originalLucid = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenLucidImage : DenImageConfigObject.WindowsDenLucidImage;
-            string originaMongo = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenMongoImage : DenImageConfigObject.WindowsDenMongoImage;
-            string originaPicky = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenPickyImage : DenImageConfigObject.WindowsDenPickyImage;
-            string originaRouter = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenRouterImage : DenImageConfigObject.WindowsDenRouterImage;
-            string originaServer = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenServerImage : DenImageConfigObject.WindowsDenServerImage;
-            string originaTraefik = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenTraefikImage : DenImageConfigObject.WindowsDenTraefikImage;
-            string originaJet = platform == Platforms.Linux ? DenImageConfigObject.LinuxDevolutionsJetImage : DenImageConfigObject.WindowsDevolutionsJetImage;
+            string originalMongo = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenMongoImage : DenImageConfigObject.WindowsDenMongoImage;
+            string originalPicky = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenPickyImage : DenImageConfigObject.WindowsDenPickyImage;
+            string originalRouter = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenRouterImage : DenImageConfigObject.WindowsDenRouterImage;
+            string originalServer = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenServerImage : DenImageConfigObject.WindowsDenServerImage;
+            string originalTraefik = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenTraefikImage : DenImageConfigObject.WindowsDenTraefikImage;
+            string originalJet = platform == Platforms.Linux ? DenImageConfigObject.LinuxDevolutionsJetImage : DenImageConfigObject.WindowsDevolutionsJetImage;
 
             if (denImageConfig.DenLucidImage != originalLucid)
             {
                 ShowDockerImageIsOverride(denImageConfig.DenLucidImage, originalLucid);
             }
-            if (denImageConfig.DenMongoImage != originaMongo)
+            if (denImageConfig.DenMongoImage != originalMongo)
             {
-                ShowDockerImageIsOverride(denImageConfig.DenMongoImage, originaMongo);
+                ShowDockerImageIsOverride(denImageConfig.DenMongoImage, originalMongo);
             }
-            if (denImageConfig.DenPickyImage != originaPicky)
+            if (denImageConfig.DenPickyImage != originalPicky)
             {
-                ShowDockerImageIsOverride(denImageConfig.DenPickyImage, originaPicky);
+                ShowDockerImageIsOverride(denImageConfig.DenPickyImage, originalPicky);
             }
-            if (denImageConfig.DenRouterImage != originaRouter)
+            if (denImageConfig.DenRouterImage != originalRouter)
             {
-                ShowDockerImageIsOverride(denImageConfig.DenRouterImage, originaRouter);
+                ShowDockerImageIsOverride(denImageConfig.DenRouterImage, originalRouter);
             }
-            if (denImageConfig.DenServerImage != originaServer)
+            if (denImageConfig.DenServerImage != originalServer)
             {
-                ShowDockerImageIsOverride(denImageConfig.DenServerImage, originaServer);
+                ShowDockerImageIsOverride(denImageConfig.DenServerImage, originalServer);
             }
-            if (denImageConfig.DenTraefikImage != originaTraefik)
+            if (denImageConfig.DenTraefikImage != originalTraefik)
             {
-                ShowDockerImageIsOverride(denImageConfig.DenTraefikImage, originaTraefik);
+                ShowDockerImageIsOverride(denImageConfig.DenTraefikImage, originalTraefik);
             }
-            if (denImageConfig.DevolutionsJetImage != originaJet)
+            if (denImageConfig.DevolutionsJetImage != originalJet)
             {
-                ShowDockerImageIsOverride(denImageConfig.DevolutionsJetImage, originaJet);
+                ShowDockerImageIsOverride(denImageConfig.DevolutionsJetImage, originalJet);
             }
         }
 

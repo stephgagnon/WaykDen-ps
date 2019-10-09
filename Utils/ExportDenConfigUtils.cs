@@ -603,8 +603,8 @@ param(
         if(!($DenImageDenLucidImage -eq $DenOriginalImageLucid)){{
             ShowDockerImageIsOverride $DenImageDenLucidImage $DenOriginalImageLucid
         }}
-        if(!($DenImageDenMongoImage -eq $DenOriginalImagMongo)){{
-            ShowDockerImageIsOverride $DenImageDenMongoImage $DenOriginalImagMongo
+        if(!($DenImageDenMongoImage -eq $DenOriginalImageMongo)){{
+            ShowDockerImageIsOverride $DenImageDenMongoImage $DenOriginalImageMongo
         }}
         if(!($DenImageDenPickyImage -eq $DenOriginalImagePicky)){{
             ShowDockerImageIsOverride $DenImageDenPickyImage $DenOriginalImagePicky

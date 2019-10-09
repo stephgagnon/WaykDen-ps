@@ -152,40 +152,40 @@ namespace WaykDen.Models
         {
             if(this.images.TryGetValue(platform, out Dictionary<string, string> images))
             {
-                string mongoEnvironement = Environment.GetEnvironmentVariable("DEN_MONGO_IMAGE");
-                string pickyEnvironement = Environment.GetEnvironmentVariable("DEN_PICKY_IMAGE");
-                string lucidEnvironement = Environment.GetEnvironmentVariable("DEN_LUCID_IMAGE");
-                string routeurEnvironement = Environment.GetEnvironmentVariable("DEN_ROUTER_IMAGE");
-                string serverEnvironement = Environment.GetEnvironmentVariable("DEN_SERVER_IMAGE");
-                string traefikEnvironement = Environment.GetEnvironmentVariable("DEN_TRAEFIK_IMAGE");
-                string jetEnvironement = Environment.GetEnvironmentVariable("DEN_JET_IMAGE");
+                string mongoEnvironment = Environment.GetEnvironmentVariable("DEN_MONGO_IMAGE");
+                string pickyEnvironment = Environment.GetEnvironmentVariable("DEN_PICKY_IMAGE");
+                string lucidEnvironment = Environment.GetEnvironmentVariable("DEN_LUCID_IMAGE");
+                string routeurEnvironment = Environment.GetEnvironmentVariable("DEN_ROUTER_IMAGE");
+                string serverEnvironment = Environment.GetEnvironmentVariable("DEN_SERVER_IMAGE");
+                string traefikEnvironment = Environment.GetEnvironmentVariable("DEN_TRAEFIK_IMAGE");
+                string jetEnvironment = Environment.GetEnvironmentVariable("DEN_JET_IMAGE");
 
-                if (!string.IsNullOrEmpty(mongoEnvironement)){
-                    this.DenMongoImage = mongoEnvironement;
+                if (!string.IsNullOrEmpty(mongoEnvironment)){
+                    this.DenMongoImage = mongoEnvironment;
                 }else{
                     this.DenMongoImage = images.TryGetValue(MONGO, out string mongo) ? mongo : throw new Exception("Could not find image for Mongodb");
-                }if (!string.IsNullOrEmpty(pickyEnvironement)){
-                    this.DenPickyImage = pickyEnvironement;
+                }if (!string.IsNullOrEmpty(pickyEnvironment)){
+                    this.DenPickyImage = pickyEnvironment;
                 }else{
                     this.DenPickyImage = images.TryGetValue(PICKY, out string picky) ? picky : throw new Exception("Could not find image for Den-picky");
-                }if (!string.IsNullOrEmpty(lucidEnvironement)){
-                    this.DenLucidImage = lucidEnvironement;
+                }if (!string.IsNullOrEmpty(lucidEnvironment)){
+                    this.DenLucidImage = lucidEnvironment;
                 }else {
                     this.DenLucidImage = images.TryGetValue(LUCID, out string lucid) ? lucid : throw new Exception("Could not find image for Den-lucid");
-                }if (!string.IsNullOrEmpty(routeurEnvironement)) {
-                    this.DenRouterImage = routeurEnvironement;
+                }if (!string.IsNullOrEmpty(routeurEnvironment)) {
+                    this.DenRouterImage = routeurEnvironment;
                 }else{
                     this.DenRouterImage = images.TryGetValue(ROUTER, out string router) ? router : throw new Exception("Could not find image for Den-router");
-                }if (!string.IsNullOrEmpty(serverEnvironement)){
-                    this.DenServerImage = serverEnvironement;
+                }if (!string.IsNullOrEmpty(serverEnvironment)){
+                    this.DenServerImage = serverEnvironment;
                 }else {
                     this.DenServerImage = images.TryGetValue(SERVER, out string server) ? server : throw new Exception("Could not find image for Den-server");
-                }if (!string.IsNullOrEmpty(traefikEnvironement)){
-                    this.DenTraefikImage = traefikEnvironement;
+                }if (!string.IsNullOrEmpty(traefikEnvironment)){
+                    this.DenTraefikImage = traefikEnvironment;
                 }else{
                     this.DenTraefikImage = images.TryGetValue(TRAEFIK, out string traefik) ? traefik : throw new Exception("Could not find image for Traefik");
-                }if (!string.IsNullOrEmpty(jetEnvironement)){
-                    this.DevolutionsJetImage = jetEnvironement;
+                }if (!string.IsNullOrEmpty(jetEnvironment)){
+                    this.DevolutionsJetImage = jetEnvironment;
                 }else{
                     this.DevolutionsJetImage = images.TryGetValue(JET, out string jet) ? jet : throw new Exception("Could not find image for DevolutionsJet");
                 }
