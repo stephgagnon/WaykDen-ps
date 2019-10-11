@@ -49,10 +49,11 @@ https://dotnet.microsoft.com/download
  .NET Framework 4.7.2 SDK::
 https://dotnet.microsoft.com/download/dotnet-framework/net472
 
-From PowerShell, go into the folder WaykDen-ps, and then load the PowerShell module:
+From PowerShell, run the build.ps1 script, and then load the resulting PowerShell module:
 
 [source,sh]
 ----
+.\build.ps1
 Import-Module "./WaykDen" -Force
 ----
 

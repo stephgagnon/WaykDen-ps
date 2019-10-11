@@ -51,9 +51,9 @@
     
     # Modules that must be imported into the global environment prior to importing this module
     RequiredModules = if($PSEdition -eq 'Desktop') {
-        "$PSScriptRoot/../src/package/WaykDen/Desktop/WaykDen.dll"
+        "$PSScriptRoot/package/Desktop/WaykDen.dll"
     } else {
-        "$PSScriptRoot/../src/package/WaykDen/Core/WaykDen.dll"
+        "$PSScriptRoot/package/Core/WaykDen.dll"
     }
     
     # Assemblies that must be loaded prior to importing this module

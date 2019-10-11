@@ -1,8 +1,6 @@
 $Public = @( Get-ChildItem -Path "$PSScriptRoot/Public/*.ps1" -Recurse )
 $Private = @( Get-ChildItem -Path "$PSScriptRoot/Private/*.ps1" -Recurse)
 
-./$PSScriptRoot/../src/build.ps1
-
 Foreach ($Import in @($Public + $Private))
 {
     Try
