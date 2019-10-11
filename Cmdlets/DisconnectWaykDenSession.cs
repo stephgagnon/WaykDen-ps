@@ -11,7 +11,7 @@ namespace WaykDen.Cmdlets
 
         protected override void ProcessRecord()
         {
-            this.DenRestAPIController.PostSession($"{this.SessionID}/disconnect");
+            this.DenRestAPIController.PostSession($"{this.SessionID}/terminate");
         }
     }
 }
