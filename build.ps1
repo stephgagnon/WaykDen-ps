@@ -1,4 +1,4 @@
-Remove-Item -Path '.\WaykDen\package' -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path '.\package' -Recurse -Force -ErrorAction SilentlyContinue
 
 $version = dotnet --version
 
