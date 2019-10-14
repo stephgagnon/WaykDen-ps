@@ -1,18 +1,12 @@
-Remove-Item -Path '.\package' -Recurse -Force -ErrorAction SilentlyContinue
 
-$version = dotnet --version
+$module = 'WaykDen'
+Push-Location $PSScriptRoot
 
-$pathCore = '.\package\WaykDen\Core'
-$pathDesktop = '.\package\WaykDen\Desktop'
-if($version[0] -eq '2'){
-	$pathCore = '..\package\WaykDen\Core'
-	$pathDesktop = '..\package\WaykDen\Desktop'
-}
+Remove-Item -Path .\package -Recurse -Force -ErrorAction SilentlyContinue
+& dotnet publish "$PSScriptRoot\$module\src" -f netstandard2.0 -c Release -o "$PSScriptRoot\package\$module\bin"
 
-& dotnet publish '.\src\WaykDen.sln' -f netcoreapp2.2 -c Release -o "$pathCore"
+Copy-Item "$PSScriptRoot\$module\Private" -Destination "$PSScriptRoot\package\$module" -Recurse -Force
+Copy-Item "$PSScriptRoot\$module\Public" -Destination "$PSScriptRoot\package\$module" -Recurse -Force
 
-if (($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition -eq 'Desktop')) {
-	& dotnet publish '.\src\WaykDen.sln' -f net472 -c Release -o "$pathDesktop"
-}
-
-Copy-Item '.\src\WaykDen.psd1' -Destination '.\package\WaykDen'
+Copy-Item "$PSScriptRoot\$module\$module.psd1" -Destination "$PSScriptRoot\package\$module" -Force
+Copy-Item "$PSScriptRoot\$module\$module.psm1" -Destination "$PSScriptRoot\package\$module" -Force
