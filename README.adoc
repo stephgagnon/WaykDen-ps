@@ -54,7 +54,7 @@ From PowerShell, run the build.ps1 script, and then load the resulting PowerShel
 [source,sh]
 ----
 .\build.ps1
-Import-Module ./package/WaykDen/WaykDen.psd1
+Import-Module "./WaykDen" -Force
 ----
 
 === Docker Installation
@@ -603,6 +603,26 @@ Any session between two users can be stopped at any moment. It is as simple as u
 [source, sh]
 ----
 PS > Disconnect-WaykDenSession -SessionID a99170f6-5895-4a4a-93e7-03321868e516
+----
+
+=== User management
+==== Connect WaykDen User
+The command `Connect-WaykDenUser` will start a user connection to the WaykDen , you can use the parameter -Force to force reconnect the actual user.
+
+[source,sh]
+----
+PS ~/WaykNow-ps> Connect-WaykDenUser
+"name" is now connected
+----
+
+
+==== Disconnect WaykDen User
+The command `Disconnect-WaykDenUser` will logout your user on WaykDen.
+
+[source,sh]
+----
+PS ~/WaykNow-ps> Disconnect-WaykDenUser
+
 ----
 
 == Devolutions Jet
