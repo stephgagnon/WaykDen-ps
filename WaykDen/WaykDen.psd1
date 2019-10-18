@@ -83,7 +83,7 @@
     'Add-WaykDenConfigKey', 'Remove-WaykDenConfigKey', 'Edit-WaykDenConfigKey',
     'Connect-WaykDen',
     'Get-WaykDenGroup','Add-WaykDenGroup', 'Remove-WaykDenGroup', 'Set-WaykDenGroupMember', 'Remove-WaykDenGroupMember', 'Set-WaykDenRoleGroup',
-    'Get-WaykDenRole','Add-WaykDenRole', 'Remove-WaykDenRole', 'Set-WaykDenRoleMember')
+    'Get-WaykDenRole','Add-WaykDenRole', 'Remove-WaykDenRole', 'Set-WaykDenRoleMember', 'Remove-WaykDenRoleMember')
     
     # Variables to export from this module
     VariablesToExport = @()
