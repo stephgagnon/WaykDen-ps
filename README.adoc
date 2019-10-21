@@ -298,6 +298,13 @@ You can assign Role to User with the following command `Set-WaykDenRoleMember`, 
 [source, sh]
 PS >  Set-WaykDenRoleMember -UserID 5d83d4d93766610100edd9f0 -RoleName GuestRole
 
+==== Remove User from Role
+You can remove the Role of the User with the following command `Remove-WaykDenRoleMember`, you need to give the ID of the User.
+
+[source, sh]
+PS >  Remove-WaykDenRoleMember -UserID 5d83d4d93766610100edd9f0
+
+
 === Group Management
 ==== Adding/Removing Groups
 You can add group with the command `Add-WaykDenGroup` and the variable Group Name is needed for the name of the group.

@@ -137,6 +137,8 @@ namespace WaykDen.Models
         public string Name {get; set;}
         public string Email {get; set;}
         public string LicenseID {get; set;}
+        public string RoleID { get; set; }
+
     }
 
     public class User
@@ -154,6 +156,7 @@ namespace WaykDen.Models
         public string picture {get; set;} = string.Empty;
         public string locale {get; set;} = string.Empty;
         public Oid license_id {get; set;} = new Oid();
+        public Oid role_id { get; set; } = new Oid();
 
         public UserObject ToUserObject()
         {
@@ -163,7 +166,8 @@ namespace WaykDen.Models
                 Username = this.username,
                 Name = this.name,
                 Email = this.email,
-                LicenseID = license_id.oid
+                LicenseID = license_id.oid,
+                RoleID = role_id.oid
             };
         }
     }

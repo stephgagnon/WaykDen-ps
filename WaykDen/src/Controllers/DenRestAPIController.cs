@@ -251,6 +251,11 @@ namespace WaykDen.Controllers
             return await this.Delete($"{this.serverUrl}/group/{groupID}/user", content);
         }
 
+        public string DeleteUserFromRole(string userId)
+        {
+            return this.Put($"{this.serverUrl}/user/{userId}/role", string.Empty);
+        }
+
         public async Task<string> DeleteRole(string parameter)
         {
             return await this.Delete($"{this.serverUrl}/role/{parameter}");
