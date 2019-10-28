@@ -90,6 +90,8 @@ PS > New-WaykDenConfig -Realm contoso.net -ExternalUrl https://den.contoso.net
 
 === Certificate configuration
 
+==== Use certificates with Wayk Den
+
 To expose Wayk Den to the external world, you will need a TLS certificate from a trusted certificate authority such as https://letsencrypt.org/[Let's Encrypt]. Wayk Now will validate certificates in the same way as a browser does for a website.
 
 If you wish to make your own certificate authority, the Root CA certificate will need to be installed in each machine's certificate trust store. If the system browser can validate it, Wayk Now should be able to validate it as well, it's just a lot more work.
@@ -102,7 +104,7 @@ Before going any further, check the following points:
 
 3. The certificate file contains the certificate *chain* excluding the Root CA. This means that in most cases, you should have a leaf certificate, followed by one or more intermediate certificates. If validation works in a browser but not in Wayk Now, the intermediate certificate is likely missing.
 
-The PEM format is the simplest to work with, since it is the Base64 representation of the DER-encoded certificate in between "-----BEGIN CERTIFICATE-----" and "-----END CERTIFICATE-----" tags. To add the intermediate certificate to the certificate file, just append it after your leaf certificate in a text editor.
+[[certificate-command]]The PEM format is the simplest to work with, since it is the Base64 representation of the DER-encoded certificate in between "-----BEGIN CERTIFICATE-----" and "-----END CERTIFICATE-----" tags. To add the intermediate certificate to the certificate file, just append it after your leaf certificate in a text editor.
 
 [source, sh]
 ----
@@ -113,6 +115,44 @@ PS > Set-WaykDenWebCertificate -CertificatePath /path/to/certificate.pem -Privat
 ----
 PS > Set-WaykDenWebCertificate -CertificatePath /path/to/certificate.pfx -KeyPassword <password>
 ----
+
+==== SmallStep third-party can help you
+
+Step and Step-ca are command line tools to ease the process of authority and certificate creation and management. By using your own authority you will be able to use Wayk Den in https without the requirement of paying for a third party certificate. In other hand, managing his own certificate need more configuration for your infrastructure. 
+
+There, we will create an authority and a certificate more in a demonstration purpose, but, with the appropriate knowledge, you can extend that to a production environment.
+
+===== Step/Step-Ca Installation
+
+Unfortunately, Step can't be used on Windows but you can use it through a Linux system under WSL (Windows Subsystem for Linux).
+
+You can install Step on MacOs simply by executing `brew install step`
+
+For Linux you need to install https://github.com/smallstep/cli/releases[Step] and https://github.com/smallstep/certificates/releases[Step-ca] from release.
+
+For other Linux distribution (non Debian based) you can build from https://github.com/smallstep/cli[Step] and https://github.com/smallstep/certificates[Step-ca] sources
+
+===== Generate authority and sign certificate
+
+Simply run command `step ca init` and enter asked information. For demo purpose you don't need complex information you can use whatever name you want as PKI and Provisioner. For DNS you can use localhost and for Address you can use something like :8443. This information are used to identify your authority and to know on which address your authority will listen to.
+
+Then run the authority server with `step-ca $HOME/.step/config/ca.json`. In a standard installation, the folder where your CA is generated is  $HOME/.step/
+
+Whith your server running, start a new terminal and type `step ca certificate "DNS" "DNS.pem" "DNS.key"` where DNS is the External Url you provided to your Wayk Den. After that you will find both, the pem and the key, in the folder where you typed the command. Use both of them with the <<certificate-command, command provided before>>.
+
+===== Make your certificate works
+
+To make your certificate valid in browsers you need to import the root_ca  authority to them. You can do it manually by importing the root_ca generated generally under `$HOME/.step/certs`. 
+
+In Windows you can easily import your root_ca in the system store by just double-clicking it. In this case browsers will use it to check the validity of your certificate.
+
+This is true for almost all browsers but Firefox. Firefox use his own keystore so you need to import your root_ca manually. In Firefox type `about:preferences#privacy` in your url, then under `Security` click on `View Certificates...` button and in `Authorities` tab click on `Import`.
+
+On MacOs you can avoid all previous manual operation by typing `step certificate install $HOME/.step/certs/root_ca.crt`. 
+
+On Linux you need to do manual operations for all browsers. The system store is not used.
+
+Advanced users can do some script to ease the process of installing root_ca on there infrastructure or they can also use policies to install the root_ca on there domains. You can find more informations about this to this https://support.mozilla.org/en-US/kb/setting-certificate-authorities-firefox[link], this http://www.chromium.org/Home/chromium-security/root-ca-policy[link] and this https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/Tools[link]
 
 == Running
 
