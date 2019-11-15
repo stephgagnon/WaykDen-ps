@@ -62,7 +62,41 @@ namespace WaykDen.Controllers
                 }
 
                 var response = (HttpWebResponse)request.GetResponse();
-                if(response.StatusCode != HttpStatusCode.OK)
+                if(response.StatusCode != HttpStatusCode.OK && response.StatusCode != HttpStatusCode.Created)
+                {
+                    throw new Exception($"Error response is {response.StatusCode}");
+                }
+                var responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
+                return responseString;
+            }
+            catch(WebException e)
+            {
+                this.OnError(e);
+                return string.Empty;
+            }
+        }
+
+        private string Patch(string url, string value) {
+            this.ValidateUrl(url);
+            var request = HttpWebRequest.Create(url);
+            request.PreAuthenticate = true;
+            request.Headers.Add("Authorization", "Bearer " + this.apiKey);
+            request.ContentType = "application/json";
+            request.Method = "PATCH";
+
+            try
+            {
+                if(!string.IsNullOrEmpty(value))
+                {
+                    var byteData = Encoding.UTF8.GetBytes(value);
+                    using(var stream = request.GetRequestStream())
+                    {
+                        stream.Write(byteData, 0, byteData.Length);
+                    }
+                }
+
+                var response = (HttpWebResponse)request.GetResponse();
+                if(response.StatusCode != HttpStatusCode.OK && response.StatusCode != HttpStatusCode.NoContent)
                 {
                     throw new Exception($"Error response is {response.StatusCode}");
                 }
@@ -156,6 +190,15 @@ namespace WaykDen.Controllers
             return await this.Get($"{this.serverUrl}/user{parameter}");
         }
 
+        public async Task<User> GetUserByNameOrUsername(string value, bool isUsername) {
+            Task<string> usersString = this.GetUsers();
+            usersString.Wait();
+            string userResponse = await usersString;
+            var users = this.DeserializeString<User[]>(userResponse);
+            var findUser = Array.Find(users, user => isUsername ? user.username == value : user.id == value);
+            return findUser;
+        }
+
         public async Task<string> GetGroups(string parameter = null)
         {
             return await this.Get($"{this.serverUrl}/group/{parameter}");
@@ -171,9 +214,27 @@ namespace WaykDen.Controllers
             return await this.Get($"{this.serverUrl}/role/{parameter}");
         }
 
+        public async Task<Role> GetRoleByName(string name) {
+            Task<string> rolesString = this.GetRoles();
+            rolesString.Wait();
+            string rolesResponse = await rolesString;
+            var roles = this.DeserializeString<Role[]>(rolesResponse);
+            var findRole = Array.Find(roles, role => role.name == name);
+            return findRole;
+        }
+
         public async Task<string> GetLicenses(string parameter = null)
         {
             return await this.Get($"{this.serverUrl}/license/{parameter}");
+        }
+
+        public async Task<License> GetLicenseByIdOrSerial(string value, bool isSerial) {
+            Task<string> licensesString = this.GetLicenses();
+            licensesString.Wait();
+            string licenseResponse = await licensesString;
+            var licenses = this.DeserializeString<License[]>(licenseResponse);
+            var findLicense = Array.Find(licenses, license => isSerial ? license.serial_number == value : license._id.oid == value);
+            return findLicense;
         }
 
         public async Task<string> GetConnections(string parameter = null)
@@ -204,6 +265,10 @@ namespace WaykDen.Controllers
         public string PostUser(string parameter = null, string content = null)
         {
             return this.Post($"{this.serverUrl}/user/{parameter}", content);
+        }
+
+        public string PatchUser(string userID, string content) {
+            return this.Patch($"{this.serverUrl}/user/{userID}", content);
         }
 
         public string PostSession(string parameter = null, string content = null)

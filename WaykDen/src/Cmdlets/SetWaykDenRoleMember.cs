@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Management.Automation;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using WaykDen.Models;
 
@@ -14,12 +15,20 @@ namespace WaykDen.Cmdlets
         [Parameter(Mandatory = true, HelpMessage = "Wayk Den Role name from the group.")]
         public string RoleName { get; set; }
 
-        protected override void ProcessRecord()
+        protected async override void ProcessRecord()
         {
             try
             {
-                string data = JsonConvert.SerializeObject(new ByRoleName { role_name = this.RoleName });
-                this.DenRestAPIController.PutRoleMember(data, this.UserID);
+                Task<Role> findRole = this.DenRestAPIController.GetRoleByName(this.RoleName);
+                findRole.Wait();
+                Role role = await findRole;
+
+                if (role != null) {
+                    string data = JsonConvert.SerializeObject(new User { role_id = role._id.oid });
+                    this.DenRestAPIController.PatchUser(this.UserID, data);
+                } else {
+                    this.WriteWarning("Role not found");
+                }
             }
             catch (Exception e)
             {
