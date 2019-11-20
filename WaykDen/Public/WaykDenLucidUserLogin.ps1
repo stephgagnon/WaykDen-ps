@@ -2,11 +2,10 @@
 . "$PSScriptRoot/../Private/FileHelper.ps1"
 . "$PSScriptRoot/../Private/JsonHelper.ps1"
 
-function Connect-WaykDenUser(
+function Connect-WaykDenLucidUser(
     [switch]$Force,
-
     [Parameter(Mandatory=$true)]
-    [string]$DenUrl
+    [string]$DenUrl = $Env:DEN_SERVER_URL
 ){
     $WaykNowConfig = Get-WaykNowInfo
 
@@ -123,9 +122,12 @@ function Connect-WaykDenUser(
 }
 
 function Disconnect-WaykDenUser(
-    [Parameter(Mandatory=$true)]
-    [string]$DenUrl
+    [string]$DenUrl = $Env:DEN_SERVER_URL
 ){
+    if(!($DenUrl)){
+        $DenUrl = Read-Host -Prompt "DenUrl"
+    }
+
     $WaykNowConfig = Get-WaykNowInfo
 
     $val = (Invoke-RestMethod -Uri "$DenUrl/.well-known/configuration" -Method 'GET' -ContentType 'application/json')
@@ -149,6 +151,9 @@ function Disconnect-WaykDenUser(
         $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
         [System.IO.File]::WriteAllLines($oauthPath , $fileValue, $Utf8NoBomEncoding)
     }
+
+    $Env:DEN_ACCESS_TOKEN = ""
+    $Env:DEN_REFRESH_TOKEN = ""
 }
 
-Export-ModuleMember -Function Connect-WaykDenUser, Disconnect-WaykDenUser
+Export-ModuleMember -Function Disconnect-WaykDenUser

@@ -1,4 +1,4 @@
-function Connect-WaykDen(
+function Connect-WaykDenUser(
 [Parameter(Mandatory=$true)]
 [string] $DenUrl,
 [switch]$Force,
@@ -8,12 +8,15 @@ function Connect-WaykDen(
     if($result.StatusCode -EQ 200){
         if ($ApiKey) {
             $Env:DEN_API_KEY = $ApiKey
+            $Env:DEN_ACCESS_TOKEN = ""
+            $Env:DEN_REFRESH_TOKEN = ""
         }
         else{
+            $Env:DEN_API_KEY = ""
             if($Force){
-                Connect-WaykDenUser -Force $DenUrl
+                Connect-WaykDenLucidUser -Force $DenUrl
             }else{
-                Connect-WaykDenUser $DenUrl
+                Connect-WaykDenLucidUser $DenUrl
             }
         }
 
@@ -25,4 +28,4 @@ function Connect-WaykDen(
     }
 }
 
-Export-ModuleMember -Function Connect-WaykDen
+Export-ModuleMember -Function Connect-WaykDenUser
