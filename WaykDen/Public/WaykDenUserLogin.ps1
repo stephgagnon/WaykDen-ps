@@ -3,16 +3,17 @@
 . "$PSScriptRoot/../Private/JsonHelper.ps1"
 
 function Connect-WaykDenUser(
-    [switch]$Force
+    [switch]$Force,
+
+    [Parameter(Mandatory=$true)]
+    [string]$DenUrl
 ){
-    $WaykDenConfig = Get-WaykDenConfig -PwshObject
-    $Realm = $WaykDenConfig.DenPickyConfigObject.Realm
-    $WaykDenUrl = $WaykDenConfig.DenServerConfigObject.ExternalUrl
     $WaykNowConfig = Get-WaykNowInfo
 
     #Get lucid URI
-    $val = (Invoke-RestMethod -Uri "$WaykDenUrl/.well-known/configuration" -Method 'GET' -ContentType 'application/json')
+    $val = (Invoke-RestMethod -Uri "$DenUrl/.well-known/configuration" -Method 'GET' -ContentType 'application/json')
     $lucidUrl = $val.lucid_uri
+    $Realm = $val.realm
 
     #Get Realm folder
     $WaykDenPath = $WaykNowConfig.DenPath + "/"+ $Realm
@@ -32,6 +33,9 @@ function Connect-WaykDenUser(
             $openIdConfig = Invoke-RestMethod -Uri "$lucidUrl/openid/.well-known/openid-configuration" -Method 'GET' -ContentType 'application/json'
             $access_token = $result.access_token
             
+            $Env:DEN_ACCESS_TOKEN = $access_token
+            $Env:DEN_REFRESH_TOKEN = $result.refresh_token
+
             $Header= @{
                 Authorization = "Bearer " + $access_token
                 Accept = '*/*'
@@ -55,7 +59,7 @@ function Connect-WaykDenUser(
     else{
         # if force, disconnect the current sessions
         if($Force){
-            $_ = Disconnect-WaykDenUser
+            $_ = Disconnect-WaykDenUser $DenUrl
         }
 
         $Form = @{
@@ -119,15 +123,15 @@ function Connect-WaykDenUser(
 }
 
 function Disconnect-WaykDenUser(
+    [Parameter(Mandatory=$true)]
+    [string]$DenUrl
 ){
-    $WaykDenConfig = Get-WaykDenConfig -PwshObject
-    $Realm = $WaykDenConfig.DenPickyConfigObject.Realm
-    $WaykDenUrl = $WaykDenConfig.DenServerConfigObject.ExternalUrl
     $WaykNowConfig = Get-WaykNowInfo
-    $WaykDenPath = $WaykNowConfig.DenPath + "/"+ $Realm
 
-    $val = (Invoke-RestMethod -Uri "$WaykDenUrl/.well-known/configuration" -Method 'GET' -ContentType 'application/json')
+    $val = (Invoke-RestMethod -Uri "$DenUrl/.well-known/configuration" -Method 'GET' -ContentType 'application/json')
     $lucidUrl = $val.lucid_uri
+    $Realm = $val.realm
+    $WaykDenPath = $WaykNowConfig.DenPath + "/"+ $Realm
 
     $oauthDeviceCodeJson = Get-WaykNowDenOauthJson $WaykDenPath
     if($oauthDeviceCodeJson.device_code){

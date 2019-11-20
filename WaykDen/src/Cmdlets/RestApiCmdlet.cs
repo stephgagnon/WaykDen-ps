@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Text;
 using Newtonsoft.Json;
 using WaykDen.Controllers;
+using WaykDen.Utils;
 
 namespace WaykDen.Cmdlets
 {
@@ -48,28 +49,53 @@ namespace WaykDen.Cmdlets
 
                 if (!string.IsNullOrEmpty(accessToken) && !string.IsNullOrEmpty(refreshToken))
                 {
-                    WebRequest request = WebRequest.Create(this.ServerUrl + "/.well-known/configuration");
-                    request.ContentType = "application/json";
-                    request.Method = "GET";
+                    string[] base64Strings = accessToken.Split('.');
+                    if (base64Strings.Length > 0)
+                    {
+                        string base64 = base64Strings[1];
+                        var base64EncodedBytes = Base64Url.Decode(base64);
+                        string json = Encoding.UTF8.GetString(base64EncodedBytes);
+                        AccessTokenDecodedObject access = JsonConvert.DeserializeObject<AccessTokenDecodedObject>(json);
+                        DateTime expirationDate = DateTimeOffset.FromUnixTimeSeconds(access.exp).DateTime;
 
-                    WebResponse response = request.GetResponse();
-                    string responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
-                    LucidObject lucidResult = JsonConvert.DeserializeObject<LucidObject>(responseString);
+                        if ((expirationDate - DateTime.UtcNow).TotalSeconds < 30)
+                        {
+                            WebRequest request = WebRequest.Create(this.ServerUrl + "/.well-known/configuration");
+                            request.ContentType = "application/json";
+                            request.Method = "GET";
 
-                    var dict = new Dictionary<string, string>();
-                    dict.Add("grant_type", "refresh_token");
-                    dict.Add("refresh_token", refreshToken);
-                    dict.Add("client_id", lucidResult.wayk_client_id);
-                    HttpClient client = new HttpClient();
-                    HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, lucidResult.lucid_uri + "/auth/token") { Content = new FormUrlEncodedContent(dict) };
-                    HttpResponseMessage res = client.SendAsync(req).Result;
+                            WebResponse response = request.GetResponse();
+                            string responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
+                            LucidObject lucidResult = JsonConvert.DeserializeObject<LucidObject>(responseString);
 
-                    AccessTokenObject accessTokenObject = JsonConvert.DeserializeObject<AccessTokenObject>(res.Content.ReadAsStringAsync().Result);
+                            var dict = new Dictionary<string, string>
+                            {
+                                { "grant_type", "refresh_token" },
+                                { "refresh_token", refreshToken },
+                                { "client_id", lucidResult.wayk_client_id }
+                            };
 
-                    Environment.SetEnvironmentVariable(DEN_ACCESS_TOKEN, accessTokenObject.access_token);
-                    Environment.SetEnvironmentVariable(DEN_REFRESH_TOKEN, accessTokenObject.refresh_token);
-                    this.ApiKey = accessTokenObject.access_token;
-                    client.Dispose();
+                            using (HttpClient client = new HttpClient())
+                            {
+                                HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, lucidResult.lucid_uri + "/auth/token") { Content = new FormUrlEncodedContent(dict) };
+                                HttpResponseMessage res = client.SendAsync(req).Result;
+
+                                AccessTokenObject accessTokenObject = JsonConvert.DeserializeObject<AccessTokenObject>(res.Content.ReadAsStringAsync().Result);
+
+                                Environment.SetEnvironmentVariable(DEN_ACCESS_TOKEN, accessTokenObject.access_token);
+                                Environment.SetEnvironmentVariable(DEN_REFRESH_TOKEN, accessTokenObject.refresh_token);
+                                this.ApiKey = accessTokenObject.access_token;
+                            }
+                        }
+                        else
+                        {
+                            this.ApiKey = accessToken;
+                        }
+                    }
+                    else
+                    {
+                        this.OnError(new Exception("Error on the Access Token, please reconnect your den user"));
+                    }
                 }
                 else
                 {
@@ -115,6 +141,11 @@ namespace WaykDen.Cmdlets
             public string access_token { get; set; }
 
             public string refresh_token { get; set; }
+        }
+
+        private class AccessTokenDecodedObject
+        {
+            public long exp { get; set; }
         }
     }
 }

@@ -1,35 +1,27 @@
 function Connect-WaykDen(
-[string] $ApiKey,
-[string] $ServerUrl,
-[switch] $UseUserLogin
+[Parameter(Mandatory=$true)]
+[string] $DenUrl,
+[switch]$Force,
+[string] $ApiKey
 ){
-    $config = $null
-    if(!($ApiKey) -OR !($ServerUrl)){
-        $config = Get-WaykDenConfig -PwshObject
-    }
-
-    if($config){
-        if(!($ApiKey)){
-            $ApiKey = $config.DenServerConfigObject.ApiKey;
-        }
-        if(!($ServerUrl)){
-            $ServerUrl = $config.DenServerConfigObject.ExternalUrl
-        }
-    }
-
-    $result = Invoke-WebRequest -Uri $ServerUrl/health -Method GET
+    $result = Invoke-WebRequest -Uri $DenUrl/health -Method GET
     if($result.StatusCode -EQ 200){
-        if ($UseUserLogin) {
-            Connect-WaykDenUser -Force
-        }
-        else{
+        if ($ApiKey) {
             $Env:DEN_API_KEY = $ApiKey
         }
-        $Env:DEN_SERVER_URL = $ServerUrl
-        Write-Host "Success! Server URL: " $ServerUrl
+        else{
+            if($Force){
+                Connect-WaykDenUser -Force $DenUrl
+            }else{
+                Connect-WaykDenUser $DenUrl
+            }
+        }
+
+        $Env:DEN_SERVER_URL = $DenUrl
+        Write-Host "Success! Server URL: " $DenUrl
     }
     else{
-        throw "Having trouble reaching " + $ServerUrl
+        throw "Having trouble reaching " + $DenUrl
     }
 }
 
