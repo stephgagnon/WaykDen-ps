@@ -485,14 +485,19 @@ If you add a site, a country or a global license, you don't have to assign it to
 
 == Usage
 
-Many commands are available to manage the WaykDen server. All those commands required the WaykDen Url and the WaykDen Api Key since you can run them from any path on your system. So you can specify parameters `ServerUrl` and `ApiKey` on every command or you can use the command `Connect-WaykDen` to specify these values only once. Information will be kept in environment variables to be used for all future calls. 
+Many commands are available to manage the WaykDen server. All those commands required the WaykDen Url and the WaykDen Api Key or the Access Token since you can run them from any path on your system. So you can specify parameters `ServerUrl` and `ApiKey` on every command or you can use the command `Connect-WaykDenUser` to specify these values only once. Information will be kept in environment variables to be used for all future calls. 
 
 [source, sh]
 ----
-PS > Connect-WaykDen -ServerUrl https://den.ngrok.io -ApiKey 6ezyCcnsZIG6Fa7JpmZDdDLKUEG9yoDM
+PS > Connect-WaykDenUser -DenUrl https://den.ngrok.io -ApiKey 6ezyCcnsZIG6Fa7JpmZDdDLKUEG9yoDM
 ----
 
-To simplify the connection, you can also run the command `Connect-WaykDen` in the same folder as your server configuration (WaykDen.db) without any parameters. Information from the WaykDen configuration will be used.
+Instant of API Key, you can connect with a user account, and it's token will be used for the commands, but the user need the administrator privileges.
+
+[source, sh]
+----
+PS > Connect-WaykDenUser -DenUrl https://den.ngrok.io 
+----
 
 Once it is done, you should have two environment variables defined.
 
@@ -502,8 +507,20 @@ PS > echo $env:DEN_SERVER_URL
 https://den.ngrok.io
 PS > echo $env:DEN_API_KEY
 6ezyCcnsZIG6Fa7JpmZDdDLKUEG9yoDM
+OR
+PS > echo $env:DEN_ACCESS_TOKEN
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----
 
+
+==== Disconnect WaykDen User
+The command `Disconnect-WaykDenUser` will logout your user on WaykDen, and clear the environment variable of WaykDen.
+
+[source,sh]
+----
+PS ~/WaykNow-ps> Disconnect-WaykDenUser
+
+----
 
 === Connection management
 
@@ -650,26 +667,6 @@ Any session between two users can be stopped at any moment. It is as simple as u
 [source, sh]
 ----
 PS > Disconnect-WaykDenSession -SessionID a99170f6-5895-4a4a-93e7-03321868e516
-----
-
-=== User management
-==== Connect WaykDen User
-The command `Connect-WaykDenUser` will start a user connection to the WaykDen , you can use the parameter -Force to force reconnect the actual user.
-
-[source,sh]
-----
-PS ~/WaykNow-ps> Connect-WaykDenUser
-"name" is now connected
-----
-
-
-==== Disconnect WaykDen User
-The command `Disconnect-WaykDenUser` will logout your user on WaykDen.
-
-[source,sh]
-----
-PS ~/WaykNow-ps> Disconnect-WaykDenUser
-
 ----
 
 == Devolutions Jet

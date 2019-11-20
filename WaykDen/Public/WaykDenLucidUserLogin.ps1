@@ -2,17 +2,17 @@
 . "$PSScriptRoot/../Private/FileHelper.ps1"
 . "$PSScriptRoot/../Private/JsonHelper.ps1"
 
-function Connect-WaykDenUser(
-    [switch]$Force
+function Connect-WaykDenLucidUser(
+    [switch]$Force,
+    [Parameter(Mandatory=$true)]
+    [string]$DenUrl = $Env:DEN_SERVER_URL
 ){
-    $WaykDenConfig = Get-WaykDenConfig -PwshObject
-    $Realm = $WaykDenConfig.DenPickyConfigObject.Realm
-    $WaykDenUrl = $WaykDenConfig.DenServerConfigObject.ExternalUrl
     $WaykNowConfig = Get-WaykNowInfo
 
     #Get lucid URI
-    $val = (Invoke-RestMethod -Uri "$WaykDenUrl/.well-known/configuration" -Method 'GET' -ContentType 'application/json')
+    $val = (Invoke-RestMethod -Uri "$DenUrl/.well-known/configuration" -Method 'GET' -ContentType 'application/json')
     $lucidUrl = $val.lucid_uri
+    $Realm = $val.realm
 
     #Get Realm folder
     $WaykDenPath = $WaykNowConfig.DenPath + "/"+ $Realm
@@ -32,6 +32,9 @@ function Connect-WaykDenUser(
             $openIdConfig = Invoke-RestMethod -Uri "$lucidUrl/openid/.well-known/openid-configuration" -Method 'GET' -ContentType 'application/json'
             $access_token = $result.access_token
             
+            $Env:DEN_ACCESS_TOKEN = $access_token
+            $Env:DEN_REFRESH_TOKEN = $result.refresh_token
+
             $Header= @{
                 Authorization = "Bearer " + $access_token
                 Accept = '*/*'
@@ -55,7 +58,7 @@ function Connect-WaykDenUser(
     else{
         # if force, disconnect the current sessions
         if($Force){
-            $_ = Disconnect-WaykDenUser
+            $_ = Disconnect-WaykDenUser $DenUrl
         }
 
         $Form = @{
@@ -99,7 +102,8 @@ function Connect-WaykDenUser(
                     $name = $userInfo.username
                 }
                 Write-Host "`"$name`" is now connected"
-
+                $Env:DEN_ACCESS_TOKEN = $access_token
+                $Env:DEN_REFRESH_TOKEN = $result.refresh_token
             }
             catch [Microsoft.PowerShell.Commands.HttpResponseException]{
                 $pokeCode = $_.Exception.Response.StatusCode.Value__
@@ -118,15 +122,18 @@ function Connect-WaykDenUser(
 }
 
 function Disconnect-WaykDenUser(
+    [string]$DenUrl = $Env:DEN_SERVER_URL
 ){
-    $WaykDenConfig = Get-WaykDenConfig -PwshObject
-    $Realm = $WaykDenConfig.DenPickyConfigObject.Realm
-    $WaykDenUrl = $WaykDenConfig.DenServerConfigObject.ExternalUrl
-    $WaykNowConfig = Get-WaykNowInfo
-    $WaykDenPath = $WaykNowConfig.DenPath + "/"+ $Realm
+    if(!($DenUrl)){
+        $DenUrl = Read-Host -Prompt "DenUrl"
+    }
 
-    $val = (Invoke-RestMethod -Uri "$WaykDenUrl/.well-known/configuration" -Method 'GET' -ContentType 'application/json')
+    $WaykNowConfig = Get-WaykNowInfo
+
+    $val = (Invoke-RestMethod -Uri "$DenUrl/.well-known/configuration" -Method 'GET' -ContentType 'application/json')
     $lucidUrl = $val.lucid_uri
+    $Realm = $val.realm
+    $WaykDenPath = $WaykNowConfig.DenPath + "/"+ $Realm
 
     $oauthDeviceCodeJson = Get-WaykNowDenOauthJson $WaykDenPath
     if($oauthDeviceCodeJson.device_code){
@@ -144,6 +151,9 @@ function Disconnect-WaykDenUser(
         $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
         [System.IO.File]::WriteAllLines($oauthPath , $fileValue, $Utf8NoBomEncoding)
     }
+
+    $Env:DEN_ACCESS_TOKEN = ""
+    $Env:DEN_REFRESH_TOKEN = ""
 }
 
-Export-ModuleMember -Function Connect-WaykDenUser, Disconnect-WaykDenUser
+Export-ModuleMember -Function Disconnect-WaykDenUser
