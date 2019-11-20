@@ -99,7 +99,8 @@ function Connect-WaykDenUser(
                     $name = $userInfo.username
                 }
                 Write-Host "`"$name`" is now connected"
-
+                $Env:DEN_ACCESS_TOKEN = $access_token
+                $Env:DEN_REFRESH_TOKEN = $result.refresh_token
             }
             catch [Microsoft.PowerShell.Commands.HttpResponseException]{
                 $pokeCode = $_.Exception.Response.StatusCode.Value__

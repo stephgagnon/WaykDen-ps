@@ -504,6 +504,12 @@ PS > echo $env:DEN_API_KEY
 6ezyCcnsZIG6Fa7JpmZDdDLKUEG9yoDM
 ----
 
+Instant of API Key, you can connect with a user account with the tag -UseUserLogin, and his token will be used for the commands, but the user need the admin privileges.
+
+[source, sh]
+----
+PS > Connect-WaykDen -UseUserLogin
+----
 
 === Connection management
 

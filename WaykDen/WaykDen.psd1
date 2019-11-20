@@ -68,7 +68,7 @@
     NestedModules = @('bin\WaykDen.dll')
     
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-    FunctionsToExport = @('Connect-WaykDenUser', 'Disconnect-WaykDenUser')
+    FunctionsToExport = @('Connect-WaykDenUser', 'Disconnect-WaykDenUser', 'Connect-WaykDen')
     
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport = @('New-WaykDenConfig', 'Set-WaykDenConfig', 'Get-WaykDenConfig',
@@ -81,7 +81,6 @@
     'Get-WaykDenConnection',
     'Set-WaykDenWebCertificate',
     'Add-WaykDenConfigKey', 'Remove-WaykDenConfigKey', 'Edit-WaykDenConfigKey',
-    'Connect-WaykDen',
     'Get-WaykDenGroup','Add-WaykDenGroup', 'Remove-WaykDenGroup', 'Set-WaykDenGroupMember', 'Remove-WaykDenGroupMember', 'Set-WaykDenRoleGroup',
     'Get-WaykDenRole','Add-WaykDenRole', 'Remove-WaykDenRole', 'Set-WaykDenRoleMember', 'Remove-WaykDenRoleMember')
     
