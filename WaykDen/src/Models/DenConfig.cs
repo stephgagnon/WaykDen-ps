@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using Newtonsoft.Json;
@@ -11,7 +10,6 @@ namespace WaykDen.Models
         public DenMongoConfigObject DenMongoConfigObject {get; set;}
         public DenPickyConfigObject DenPickyConfigObject {get; set;}
         public DenLucidConfigObject DenLucidConfigObject {get; set;}
-        public DenRouterConfigObject DenRouterConfigObject {get; set;}
         public DenServerConfigObject DenServerConfigObject {get; set;}
         public DenTraefikConfigObject DenTraefikConfigObject {get; set;}
         public DenImageConfigObject DenImageConfigObject {get; set;}
@@ -29,7 +27,7 @@ namespace WaykDen.Models
                     if(!Attribute.IsDefined(childProperty, typeof(JsonIgnoreAttribute)))
                     {
                         var value = childProperty.GetValue(denConfigPropertyValue);
-                        if(string.IsNullOrEmpty(value.ToString()))
+                        if(string.IsNullOrEmpty(value?.ToString()))
                         {
                             continue;
                         }
@@ -48,7 +46,6 @@ namespace WaykDen.Models
             string DenOriginalImageLucid = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenLucidImage : DenImageConfigObject.WindowsDenLucidImage;
             string DenOriginalImageMongo = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenMongoImage : DenImageConfigObject.WindowsDenMongoImage;
             string DenOriginalImagePicky = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenPickyImage : DenImageConfigObject.WindowsDenPickyImage;
-            string DenOriginalImageRouter = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenRouterImage : DenImageConfigObject.WindowsDenRouterImage;
             string DenOriginalImageServer = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenServerImage : DenImageConfigObject.WindowsDenServerImage;
             string DenOriginalImageTraefik = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenTraefikImage : DenImageConfigObject.WindowsDenTraefikImage;
             string DenOriginalImageJetImage = platform == Platforms.Linux ? DenImageConfigObject.LinuxDevolutionsJetImage : DenImageConfigObject.WindowsDevolutionsJetImage;
@@ -56,7 +53,6 @@ namespace WaykDen.Models
             sb.AppendLine($"$DenOriginalImageLucid = \'{DenOriginalImageLucid}\'");
             sb.AppendLine($"$DenOriginalImageMongo = \'{DenOriginalImageMongo}\'");
             sb.AppendLine($"$DenOriginalImagePicky = \'{DenOriginalImagePicky}\'");
-            sb.AppendLine($"$DenOriginalImageRouter = \'{DenOriginalImageRouter}\'");
             sb.AppendLine($"$DenOriginalImageServer = \'{DenOriginalImageServer}\'");
             sb.AppendLine($"$DenOriginalImageTraefik = \'{DenOriginalImageTraefik}\'");
             sb.AppendLine($"$DenOriginalImageJetImage = \'{DenOriginalImageJetImage}\'");

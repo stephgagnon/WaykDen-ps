@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Management.Automation;
 using WaykDen.Controllers;
@@ -84,8 +83,6 @@ namespace WaykDen.Cmdlets
             string originalLucid = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenLucidImage : DenImageConfigObject.WindowsDenLucidImage;
             string originalMongo = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenMongoImage : DenImageConfigObject.WindowsDenMongoImage;
             string originalPicky = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenPickyImage : DenImageConfigObject.WindowsDenPickyImage;
-            string originalRouter = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenRouterImage : DenImageConfigObject.WindowsDenRouterImage;
-            string originalServer = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenServerImage : DenImageConfigObject.WindowsDenServerImage;
             string originalTraefik = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenTraefikImage : DenImageConfigObject.WindowsDenTraefikImage;
             string originalJet = platform == Platforms.Linux ? DenImageConfigObject.LinuxDevolutionsJetImage : DenImageConfigObject.WindowsDevolutionsJetImage;
 
@@ -100,14 +97,6 @@ namespace WaykDen.Cmdlets
             if (denImageConfig.DenPickyImage != originalPicky)
             {
                 ShowDockerImageIsOverride(denImageConfig.DenPickyImage, originalPicky);
-            }
-            if (denImageConfig.DenRouterImage != originalRouter)
-            {
-                ShowDockerImageIsOverride(denImageConfig.DenRouterImage, originalRouter);
-            }
-            if (denImageConfig.DenServerImage != originalServer)
-            {
-                ShowDockerImageIsOverride(denImageConfig.DenServerImage, originalServer);
             }
             if (denImageConfig.DenTraefikImage != originalTraefik)
             {

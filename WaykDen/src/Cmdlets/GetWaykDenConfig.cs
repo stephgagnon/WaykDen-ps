@@ -1,8 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Management.Automation;
 using WaykDen.Models;
-using WaykDen.Controllers;
 
 namespace WaykDen.Cmdlets
 {
@@ -13,14 +11,21 @@ namespace WaykDen.Cmdlets
         public SwitchParameter PwshObject { get; set; } = false;
 
         private const string WORKING_DIRECTORY = "Working Directory";
+
         public DenMongoConfigObject DenMongoConfigObject => this.DenConfig.DenMongoConfigObject;
+
         public DenPickyConfigObject DenPickyConfigObject => this.DenConfig.DenPickyConfigObject;
+
         public DenLucidConfigObject DenLucidConfigObject => this.DenConfig.DenLucidConfigObject;
-        public DenRouterConfigObject DenRouterConfigObject => this.DenConfig.DenRouterConfigObject;
+
         public DenServerConfigObject DenServerConfigObject => this.DenConfig.DenServerConfigObject;
+
         public DenTraefikConfigObject DenTraefikConfigObject => this.DenConfig.DenTraefikConfigObject;
+
         public DenImageConfigObject DenImageConfigObject => this.DenConfig.DenImageConfigObject;
+
         public DenDockerConfigObject DenDockerConfigObject => this.DenConfig.DenDockerConfigObject;
+
         public DenConfig DenConfig {get; set;}
 
         protected override void ProcessRecord()

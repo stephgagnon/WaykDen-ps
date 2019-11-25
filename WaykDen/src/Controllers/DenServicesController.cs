@@ -13,34 +13,43 @@ namespace WaykDen.Controllers
     public class DenServicesController
     {
         private const string WAYK_DEN_HOME = "WAYK_DEN_HOME";
+
         private const string DEN_NETWORK_NAME = "den-network";
+
         public string Path {get; set;} = string.Empty;
+
         public DenConfig DenConfig {get;}
+
         public DenNetwork DenNetwork {get;}
+
         public DockerClient DockerClient {get;}
+
         public List<DenService> RunningDenServices = new List<DenService>();
+
         public int ServicesCount;
+
         private DenConfigController denConfigController;
+
         private Dictionary<Container, string> ContainersName = new Dictionary<Container, string>()
         {
             {Container.DenMongo, "den-mongo"},
             {Container.DenPicky, "den-picky"},
             {Container.DenLucid, "den-lucid"},
-            {Container.DenRouter, "den-router"},
             {Container.DenServer, "den-server"},
             {Container.Traefik, "traefik"},
             {Container.DevolutionsJet, "devolutions-jet"}
         };
+
         private enum Container
         {
             DenMongo,
             DenPicky,
             DenLucid,
-            DenRouter,
             DenServer,
             Traefik,
             DevolutionsJet
         }
+
         private enum ContainerState
         {
             Created = 0x0001,
@@ -102,12 +111,6 @@ namespace WaykDen.Controllers
         {
             DenLucidService lucid = new DenLucidService(this);
             return await this.StartService(lucid);
-        }
-
-        private async Task<bool> StartDenRouter()
-        {
-            DenRouterService router = new DenRouterService(this);
-            return await this.StartService(router);
         }
 
         private async Task<bool> StartDenServer()
@@ -238,17 +241,14 @@ namespace WaykDen.Controllers
             this.ContainersName.TryGetValue(Container.DenMongo, out var mongo);
             this.ContainersName.TryGetValue(Container.DenPicky, out var picky);
             this.ContainersName.TryGetValue(Container.DenLucid, out var lucid);
-            this.ContainersName.TryGetValue(Container.DenRouter, out var router);
             this.ContainersName.TryGetValue(Container.DenServer, out var server);
             this.ContainersName.TryGetValue(Container.Traefik, out var traefik);
             this.ContainersName.TryGetValue(Container.DevolutionsJet, out var jet);
 
-            string[] containersName = new string[]
-            {
+            string[] containersName = {
                 mongo,
                 picky,
                 lucid,
-                router,
                 server,
                 traefik,
                 jet
@@ -404,7 +404,6 @@ namespace WaykDen.Controllers
                 bool started = await this.StartDenMongo();
                 started = started ? await this.StartDenPicky(): false;
                 started = started ? await this.StartDenLucid(): false;
-                started = started ? await this.StartDenRouter(): false;
                 started = started ? await this.StartDenServer(): false;
 
                 if(started)
@@ -468,7 +467,7 @@ namespace WaykDen.Controllers
 
         private DenService[] GetDenServicesConfig()
         {
-            return new DenService[]{new DenMongoService(this), new DenPickyService(this), new DenLucidService(this), new DenRouterService(this), new DenServerService(this), new DenTraefikService(this)};
+            return new DenService[]{new DenMongoService(this), new DenPickyService(this), new DenLucidService(this), new DenServerService(this), new DenTraefikService(this)};
         }
         public void WriteLog(string message)
         {

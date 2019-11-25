@@ -11,47 +11,69 @@ namespace WaykDen.Cmdlets
     public class NewWaykDenConfig : WaykDenConfigCmdlet
     {
         public const string DOCKER_DEFAULT_CLIENT_URI_LINUX = "unix:///var/run/docker.sock";
+
         public const string DOCKER_DEFAULT_CLIENT_URI_WINDOWS = "npipe://./pipe/docker_engine";
+
         private const string DEFAULT_MONGO_URL = "mongodb://den-mongo:27017";
+
         private DenConfig DenConfig {get; set;}
+
         [Parameter(HelpMessage = "Url of a running MongoDB instance.")]
         public string MongoUrl {get; set;} = string.Empty;
+
         [Parameter(Mandatory=true, HelpMessage = "Name of domain for WaykDen. (Not a DNS domain)")]
         public string Realm {get; set;} = string.Empty;
+
         [Parameter(Mandatory=true, HelpMessage = "WaykDen server external URL."), ValidatePattern("^(?:http(s)?:\\/\\/).*")]
         public string ExternalUrl {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "LDAP or AD server URL")]
         public string LDAPServerUrl {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "Specify a username with read access on AD.")]
         public string LDAPUsername {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "Password of the user with read access on AD.")]
         public string LDAPPassword {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = " Group of users who can be authenticated on WaykDen.")]
         public string LDAPUserGroup {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "Type of LDAP server. ActiveDirectory to use AD integration; JumpCloud to use JumpCloud integration"),
          ValidateSet(new string[]{"ActiveDirectory", "JumpCloud"})]
         public string LDAPServerType {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "Base DN is the Distinguished Named (DN) where all users and groups can be found. Example: Exemple : ou=Users,o=YOUR_ORG_ID,dc=jumpcloud,dc=com")]
         public string LDAPBaseDN {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "URL where Devolutions Jet will be listening (tcp listener).")]
         public string JetServerUrl {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "URL where Devolutions Jet will be listening (http listener).")]
         public string JetRelayUrl {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "Force the Wayk client to be logged and authenticated. WaykDen will give an ID only if the user is authenticated.")]
         public SwitchParameter LoginRequired {get; set;} = false;
+
         [Parameter(HelpMessage = "Docker client endpoint URI.")]
         public string DockerClientUri {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "Port where WaykDen server will be listening.")]
         public string WaykDenPort {get; set;} = "4000";
+
         [Parameter(HelpMessage = "Path to a x509 certificate or chain in PEM format to use https with Traefik.")]
         public string CertificatePath {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "Path to the private key of the given certificate for Traefik. In a case of a chain, the leaf certicate private key")]
         public string PrivateKeyPath {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "Use Linux or Windows  container."), ValidateSet(new string[]{"Linux", "Windows"})]
         public string Platform {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "URL of a syslog server.")]
         public string SyslogServer {get; set;} = string.Empty;
-        private string dockerDefaultEndpoint
+
+        private string DockerDefaultEndpoint
         {
             get
             {
@@ -64,10 +86,6 @@ namespace WaykDen.Cmdlets
                     return DOCKER_DEFAULT_CLIENT_URI_WINDOWS;
                 }
             }
-        }
-
-        public NewWaykDenConfig()
-        {
         }
 
         protected override void ProcessRecord()
@@ -94,7 +112,7 @@ namespace WaykDen.Cmdlets
                     {
                         DenDockerConfigObject = new DenDockerConfigObject
                         {
-                            DockerClientUri = string.IsNullOrEmpty(this.DockerClientUri) ? this.dockerDefaultEndpoint : this.DockerClientUri,
+                            DockerClientUri = string.IsNullOrEmpty(this.DockerClientUri) ? this.DockerDefaultEndpoint : this.DockerClientUri,
                             Platform = platform.ToString(),
                             SyslogServer = this.SyslogServer
                         },
@@ -118,11 +136,6 @@ namespace WaykDen.Cmdlets
                             ApiKey = DenServiceUtils.GenerateRandom(32)
                         },
 
-                        DenRouterConfigObject = new DenRouterConfigObject
-                        {
-                            PublicKey = KeyCertUtils.PemToDer(rsaKeyGenerator.PublicKey)
-                        },
-
                         DenServerConfigObject = new DenServerConfigObject
                         {
                             ApiKey = DenServiceUtils.GenerateRandom(32),
@@ -137,7 +150,8 @@ namespace WaykDen.Cmdlets
                             PrivateKey = KeyCertUtils.PemToDer(rsaKeyGenerator.PrivateKey),
                             JetServerUrl = this.JetServerUrl != null ? this.JetServerUrl : string.Empty,
                             JetRelayUrl = this.JetRelayUrl != null ? this.JetRelayUrl : string.Empty,
-                            LoginRequired = this.LoginRequired ? "True": "False"
+                            LoginRequired = this.LoginRequired ? "True": "False",
+                            PublicKey = KeyCertUtils.PemToDer(rsaKeyGenerator.PublicKey)
                         },
 
                         DenTraefikConfigObject = new DenTraefikConfigObject

@@ -64,21 +64,14 @@ services:";
                     sb.AppendLine("      - den-picky");
                     break;
 
-                case DenRouterService denRouter:
-                    sb.AppendLine("    depends_on:");
-                    sb.AppendLine("        - den-lucid");
-                    break;
-
                 case DenServerService denServer:
-                    dependency = new string[] { "den-router", "den-lucid" };
+                    dependency = new string[] { "den-lucid" };
                     dependencyPort = new string[] { "10254/healtz", "4242/health" };
                     sb.AppendLine("    depends_on:");
                     sb.AppendLine("        - traefik");
                     break;
 
                 case DenTraefikService denTraefik:
-                    sb.AppendLine("    depends_on:");
-                    sb.AppendLine("        - den-router");
                     break;
             }
 
@@ -260,7 +253,7 @@ services:";
 
     [backends.router]
         [backends.router.servers.router]
-        url = ""http://den-router:4491""
+        url = ""http://den-server:4491""
         weight = 10
 
     [backends.server]
@@ -369,11 +362,6 @@ if([string]::IsNullOrEmpty($Action)){
             {
                 case DenLucidService denLucid:
                     cmd = podman ? "--healthcheck-command=\'curl -sS http://den-lucid:4242/health\'" : "--health-cmd=\'curl -sS http://den-lucid:4242/health\'";
-                    sb.AppendLine($"${variablesPrefix}HealthCheck = \"{cmd}\"");
-                    break;
-
-                case DenRouterService denRouter:
-                    cmd = podman ? "--healthcheck-command=\'curl -sS http://den-router:10254/healtz\'" : "--health-cmd=\'curl -sS http://den-router:10254/healtz\'";
                     sb.AppendLine($"${variablesPrefix}HealthCheck = \"{cmd}\"");
                     break;
 
@@ -551,7 +539,7 @@ param(
             $id = Invoke-Expression ${0}Run
             $running = {0} inspect -f '{{{{.State.Running}}}}' $id
             if($running -like 'true'){{
-                if(($servicesName[$i] -match 'den-lucid') -or ($servicesName[$i] -match 'den-router') -or ($servicesName[$i] -match 'den-server')){{
+                if(($servicesName[$i] -match 'den-lucid') -or ($servicesName[$i] -match 'den-server')){{
                     $healthy = IsContainerHealthy($id)
 
                     if($healthy -like 'true'){{
@@ -608,9 +596,6 @@ param(
         }}
         if(!($DenImageDenPickyImage -eq $DenOriginalImagePicky)){{
             ShowDockerImageIsOverride $DenImageDenPickyImage $DenOriginalImagePicky
-        }}
-        if(!($DenImageDenRouterImage -eq $DenOriginalImageRouter)){{
-            ShowDockerImageIsOverride $DenImageDenRouterImage $DenOriginalImageRouter
         }}
         if(!($DenImageDenServerImage -eq $DenOriginalImageServer)){{
             ShowDockerImageIsOverride $DenImageDenServerImage $DenOriginalImageServer
