@@ -72,6 +72,9 @@ namespace WaykDen.Cmdlets
             this.WriteObject(new DenObject {Property = $"Den-Server : {nameof(this.DenServerConfigObject.JetServerUrl)}", Value = this.DenServerConfigObject.JetServerUrl});
             this.WriteObject(new DenObject {Property = $"Den-Server : {nameof(this.DenServerConfigObject.JetRelayUrl)}", Value = this.DenServerConfigObject.JetRelayUrl});
             this.WriteObject(new DenObject {Property = $"Den-Server : {nameof(this.DenServerConfigObject.LoginRequired)}", Value = this.DenServerConfigObject.LoginRequired});
+            this.WriteObject(new DenObject { Property = $"Den-Server : {nameof(this.DenServerConfigObject.NatsUsername)}", Value = this.DenServerConfigObject.NatsUsername });
+            this.WriteObject(new DenObject { Property = $"Den-Server : {nameof(this.DenServerConfigObject.NatsPassword)}", Value = this.DenServerConfigObject.NatsPassword });
+            this.WriteObject(new DenObject { Property = $"Den-Server : {nameof(this.DenServerConfigObject.RedisPassword)}", Value = this.DenServerConfigObject.RedisPassword });
             this.WriteObject(new DenObject {Property = $"Traefik : {nameof(this.DenTraefikConfigObject.WaykDenPort)}", Value = this.DenTraefikConfigObject.WaykDenPort});
             base.ProcessRecord();
         }

@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Management.Automation;
 using WaykDen.Controllers;
 using WaykDen.Models;
@@ -72,6 +71,15 @@ namespace WaykDen.Cmdlets
 
         [Parameter(HelpMessage = "URL of a syslog server.")]
         public string SyslogServer {get; set;} = string.Empty;
+
+        [Parameter(HelpMessage = "Username for Nats container.")]
+        public string NatsUsername { get; set; } = string.Empty;
+
+        [Parameter(HelpMessage = "Password for Nats container.")]
+        public string NatsPassword { get; set; } = string.Empty;
+
+        [Parameter(HelpMessage = "Password for Redis container.")]
+        public string RedisPassword { get; set; } = string.Empty;
 
         private string DockerDefaultEndpoint
         {
@@ -151,7 +159,10 @@ namespace WaykDen.Cmdlets
                             JetServerUrl = this.JetServerUrl != null ? this.JetServerUrl : string.Empty,
                             JetRelayUrl = this.JetRelayUrl != null ? this.JetRelayUrl : string.Empty,
                             LoginRequired = this.LoginRequired ? "True": "False",
-                            PublicKey = KeyCertUtils.PemToDer(rsaKeyGenerator.PublicKey)
+                            PublicKey = KeyCertUtils.PemToDer(rsaKeyGenerator.PublicKey),
+                            NatsUsername = this.NatsUsername,
+                            NatsPassword = this.NatsPassword,
+                            RedisPassword = this.RedisPassword
                         },
 
                         DenTraefikConfigObject = new DenTraefikConfigObject
@@ -198,6 +209,10 @@ namespace WaykDen.Cmdlets
             this.DenConfig.DenServerConfigObject.LoginRequired = this.LoginRequired ? "True" : "False";
             this.DenConfig.DenServerConfigObject.LDAPServerUrl = !string.IsNullOrEmpty(this.LDAPServerUrl) ? this.LDAPServerUrl : this.DenConfig.DenServerConfigObject.LDAPServerUrl;
             this.DenConfig.DenTraefikConfigObject.WaykDenPort = !string.IsNullOrEmpty(this.WaykDenPort) ? this.WaykDenPort : this.DenConfig.DenTraefikConfigObject.WaykDenPort;
+
+            this.DenConfig.DenServerConfigObject.NatsUsername = !string.IsNullOrEmpty(this.NatsUsername) ? this.NatsUsername : this.DenConfig.DenServerConfigObject.NatsUsername;
+            this.DenConfig.DenServerConfigObject.NatsPassword = !string.IsNullOrEmpty(this.NatsPassword) ? this.NatsPassword : this.DenConfig.DenServerConfigObject.NatsPassword;
+            this.DenConfig.DenServerConfigObject.RedisPassword = !string.IsNullOrEmpty(this.RedisPassword) ? this.RedisPassword : this.DenConfig.DenServerConfigObject.RedisPassword;
         }
     }
 }

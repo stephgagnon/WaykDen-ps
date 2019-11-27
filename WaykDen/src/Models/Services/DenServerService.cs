@@ -1,6 +1,9 @@
 using System.IO;
 using WaykDen.Utils;
 using WaykDen.Controllers;
+using System;
+using System.Management.Automation;
+using System.Threading;
 
 namespace WaykDen.Models.Services
 {
@@ -32,11 +35,18 @@ namespace WaykDen.Models.Services
         private const string DEN_LOGIN_REQUIRED_ENV = "DEN_LOGIN_REQUIRED";
         private const string DEN_SERVER_LINUX_PATH = "/etc/den-server";
         private const string DEN_SERVER_WINDOWS_PATH = "c:\\den-server";
-        private const string DEN_SERVER_HEALTHCHECK = "curl -sS http://den-server:10255/health";
-        public DenServerService(DenServicesController controller):base(controller, DENSERVER_NAME)
+
+        private const string NATS_HOST = "NATS_HOST";
+        private const string NATS_USERNAME = "NATS_USERNAME";
+        private const string NATS_PASSWORD = "NATS_PASSWORD";
+        private const string REDIS_HOST = "REDIS_HOST";
+        private const string REDIS_PASSWORD = "REDIS_PASSWORD";
+
+        public DenServerService(DenServicesController controller, int instanceCount = 1) :base(controller, instanceCount == 1 ? DENSERVER_NAME : DENSERVER_NAME + "_" + instanceCount)
         {
             this.ImageName = this.DenConfig.DenImageConfigObject.DenServerImage;
-            this.HealthCheck.Add(DEN_SERVER_HEALTHCHECK);
+            string healthCheck = "curl -sS http://" + (instanceCount == 1 ? DENSERVER_NAME : DENSERVER_NAME+ "_" + instanceCount) + ":10255/health";
+            this.HealthCheck.Add(healthCheck);
 
             string externalRouterUrl = this.DenConfig.DenServerConfigObject.ExternalUrl;
             if(externalRouterUrl.StartsWith("https"))
@@ -105,7 +115,58 @@ namespace WaykDen.Models.Services
             this.Cmd.Add("--db_url");
             this.Cmd.Add(this.DenConfig.DenMongoConfigObject.Url);
             this.Cmd.Add("-m");
-            this.Cmd.Add("onprem");
+
+            string natsHost = string.Empty;
+            string redisHost = string.Empty;
+
+            using (PowerShell PowerShellInstance = PowerShell.Create())
+            {
+                PowerShellInstance.AddScript("docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' den-nats");
+                var result = PowerShellInstance.Invoke();
+                foreach (var item in result)
+                {
+                    natsHost = item.ToString();
+                }
+            }
+            using (PowerShell PowerShellInstance = PowerShell.Create())
+            {
+                PowerShellInstance.AddScript("docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' den-redis");
+                var result = PowerShellInstance.Invoke();
+                foreach (var item in result)
+                {
+                    redisHost = item.ToString();
+                }
+            }
+
+            if (!string.IsNullOrEmpty(natsHost)
+                && !string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.NatsUsername)
+                && !string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.NatsPassword)
+                && !string.IsNullOrEmpty(redisHost)
+                && !string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.RedisPassword))
+            {
+                this.Cmd.Add("cloud");
+
+                this.Env.Add($"{NATS_HOST}={natsHost}");
+                this.Env.Add($"{NATS_USERNAME}={this.DenConfig.DenServerConfigObject.NatsUsername}");
+                this.Env.Add($"{NATS_PASSWORD}={this.DenConfig.DenServerConfigObject.NatsPassword}");
+
+                this.Env.Add($"{REDIS_HOST}={redisHost}");
+                this.Env.Add($"{REDIS_PASSWORD}={this.DenConfig.DenServerConfigObject.RedisPassword}");
+
+                this.Cmd.Add("--use-nats");
+                this.Cmd.Add(natsHost);
+                this.Cmd.Add(this.DenConfig.DenServerConfigObject.NatsUsername);
+                this.Cmd.Add(this.DenConfig.DenServerConfigObject.NatsPassword);
+
+                this.Cmd.Add("--use-redis");
+                this.Cmd.Add(redisHost);
+                this.Cmd.Add(this.DenConfig.DenServerConfigObject.RedisPassword);
+            }
+            else
+            {
+                this.Cmd.Add("onprem");
+            }
+
             this.Cmd.Add("-l");
             this.Cmd.Add("trace");
         }

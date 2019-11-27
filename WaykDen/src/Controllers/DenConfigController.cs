@@ -184,6 +184,10 @@ namespace WaykDen.Controllers
             bool jetServerUrlOk = values.TryGetValue(nameof(DenServerConfigObject.JetServerUrl), out var jetServerUrl);
             bool jetRelayUrlOk = values.TryGetValue(nameof(DenServerConfigObject.JetRelayUrl), out var jetRelayUrl);
             bool loginRequiredOk = values.TryGetValue(nameof(DenServerConfigObject.LoginRequired), out var loginRequired);
+            bool natsUsernameOK = values.TryGetValue(nameof(DenServerConfigObject.NatsUsername), out var natsUsername);
+            bool natsPasswordOK = values.TryGetValue(nameof(DenServerConfigObject.NatsPassword), out var natsPAssword);
+            bool redisPasswordOK = values.TryGetValue(nameof(DenServerConfigObject.RedisPassword), out var redisPassword);
+
             return new DenServerConfigObject()
             {
                 ApiKey = apiKeyOk ? ((string)apikey) : string.Empty,
@@ -199,7 +203,10 @@ namespace WaykDen.Controllers
                 JetServerUrl = jetServerUrlOk && !string.IsNullOrEmpty((string) jetServerUrl) ? ((string) jetServerUrl) : DEFAULT_JET_SERVER_URL,
                 JetRelayUrl = jetRelayUrlOk && !string.IsNullOrEmpty((string) jetRelayUrl) ? ((string) jetRelayUrl) : DEFAULT_JET_RELAY_URL,
                 LoginRequired = loginRequiredOk ? ((string) loginRequired) : "false",
-                PublicKey = publicKey
+                PublicKey = publicKey,
+                NatsUsername = natsUsernameOK ? ((string)natsUsername) : string.Empty,
+                NatsPassword = natsPasswordOK ? ((string)natsPAssword) : string.Empty,
+                RedisPassword = redisPasswordOK ? ((string)redisPassword) : string.Empty,
             };
         }
 

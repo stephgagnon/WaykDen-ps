@@ -58,6 +58,10 @@ namespace WaykDen.Models
         public string JetServerUrl {get; set;}
         public string JetRelayUrl {get; set;}
         public string LoginRequired {get; set;}
+
+        public string NatsUsername { get; set; }
+        public string NatsPassword { get; set; }
+        public string RedisPassword { get; set; }
     }
 
     public class DenTraefikConfigObject

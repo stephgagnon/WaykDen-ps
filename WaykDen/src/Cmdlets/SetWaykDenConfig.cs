@@ -12,37 +12,63 @@ namespace WaykDen.Cmdlets
     {
         [Parameter(HelpMessage = "Url of a running MongoDB instance.")]
         public string MongoUrl {get; set;}= string.Empty;
+
         [Parameter(HelpMessage = "Name of a domain for WaykDen. (Not a DNS domain)")]
         public string Realm {get; set;}= string.Empty;
+
         [Parameter(HelpMessage = "WaykDen server external URL."), ValidatePattern("^(?:http(s)?:\\/\\/).*")]
         public string ExternalUrl {get; set;}= string.Empty;
+
         [Parameter(HelpMessage = "LDAP or AD server URL")]
         public string LDAPServerUrl {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "Specify a username with read access on AD.")]
         public string LDAPUsername {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "Password of the user with read access on AD.")]
         public string LDAPPassword {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = " Group of users who can be authenticated on WaykDen.")]
         public string LDAPUserGroup {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "Type of LDAP server. ActiveDirectory to use AD integration; JumpCloud to use JumpCloud integration"),
          ValidateSet(new string[]{"ActiveDirectory", "JumpCloud"})]
         public string LDAPServerType {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "Base DN is the Distinguished Named (DN) where all users and groups can be found. Example: Exemple : ou=Users,o=YOUR_ORG_ID,dc=jumpcloud,dc=com")]
         public string LDAPBaseDN {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "Devolutions Jet URL")]
         public string JetServerUrl {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "Docker client endpoint URI.")]
         public string DockerClientUri {get; set;}= string.Empty;
+
         [Parameter(HelpMessage = "Port where WaykDen server will be listening.")]
         public string WaykDenPort {get; set;}= string.Empty;
+
         public string Certificate {get; set;} = string.Empty;
+
         public string PrivateKey {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "Force the Wayk client to be logged and authenticated. WaykDen will give an ID only if the user is authenticated."), ValidateSet(new string[]{"True", "False"})]
         public string LoginRequired {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "Use Linux or Windows  container."), ValidateSet(new string[]{"Linux", "Windows"})]
         public string Platform {get; set;} = string.Empty;
+
         [Parameter(HelpMessage = "URL of a syslog server.")]
         public string SyslogServer {get; set;} = string.Empty;
+
+        [Parameter(HelpMessage = "Username for Nats container.")]
+        public string NatsUsername { get; set; } = string.Empty;
+
+        [Parameter(HelpMessage = "Password for Nats container.")]
+        public string NatsPassword { get; set; } = string.Empty;
+
+        [Parameter(HelpMessage = "Password for Redis container.")]
+        public string RedisPassword { get; set; } = string.Empty;
+
         [Parameter(HelpMessage = "Remove parameter"), ValidateSet(
             new string[]
             {
@@ -60,11 +86,18 @@ namespace WaykDen.Cmdlets
                 "Certificate",
                 "PrivateKey",
                 "SyslogServer",
-                "JetServerUrl"
+                "JetServerUrl",
+                "NatsUsername",
+                "NatsPassword",
+                "RedisPassword"
+
             }
         )]
+
         public string[] Remove {get; set;} = null;
+
         private Dictionary<string, (Type, string)> dictionary;
+
         public SetWaykDenConfig()
         {
             this.dictionary = new Dictionary<string, (Type, string)>
@@ -86,6 +119,10 @@ namespace WaykDen.Cmdlets
                 {nameof(this.WaykDenPort), (typeof(DenTraefikConfigObject), "WaykDenPort")},
                 {nameof(this.Certificate), (typeof(DenTraefikConfigObject), "Certificate")},
                 {nameof(this.PrivateKey), (typeof(DenTraefikConfigObject), "PrivateKey")},
+                {nameof(this.NatsUsername), (typeof(DenServerConfigObject), "NatsUsername")},
+                {nameof(this.NatsPassword), (typeof(DenServerConfigObject), "NatsPassword")},
+                {nameof(this.RedisPassword), (typeof(DenServerConfigObject), "RedisPassword")},
+
             };
         }
 
@@ -93,7 +130,7 @@ namespace WaykDen.Cmdlets
         {
             try
             { 
-                (string, bool)[] values = new (string, bool)[]
+                (string, bool)[] values =
                 {
                     (nameof(this.DockerClientUri), !string.IsNullOrEmpty(this.DockerClientUri)),
                     (nameof(this.Platform), !string.IsNullOrEmpty(this.Platform)),
@@ -110,6 +147,10 @@ namespace WaykDen.Cmdlets
                     (nameof(this.JetServerUrl), !string.IsNullOrEmpty(this.JetServerUrl)),
                     (nameof(this.LoginRequired), !string.IsNullOrEmpty(this.LoginRequired)),
                     (nameof(this.WaykDenPort), !string.IsNullOrEmpty(this.WaykDenPort)),
+                    (nameof(this.NatsUsername), !string.IsNullOrEmpty(this.NatsUsername)),
+                    (nameof(this.NatsPassword), !string.IsNullOrEmpty(this.NatsPassword)),
+                    (nameof(this.RedisPassword), !string.IsNullOrEmpty(this.RedisPassword)),
+
                 };
 
                 (string, bool)[] names = values.Where(x => x.Item2.Equals(true)).ToArray();

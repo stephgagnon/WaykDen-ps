@@ -9,6 +9,9 @@ namespace WaykDen.Cmdlets
     [Cmdlet("Start", "WaykDen")]
     public class StartWaykDen : WaykDenConfigCmdlet
     {
+        [Parameter(Mandatory = false)]
+        public int InstanceCount { get; set; } = 1;
+
         private Exception error;
         private DenServicesController denServicesController;
         private bool started = false;
@@ -19,7 +22,7 @@ namespace WaykDen.Cmdlets
                 this.denServicesController = new DenServicesController(this.Path, this.DenConfigController);
                 this.denServicesController.OnLog += this.OnLog;
                 this.denServicesController.OnError += this.OnError;
-                Task<bool> start = this.denServicesController.StartWaykDen();
+                Task<bool> start = this.denServicesController.StartWaykDen(this.InstanceCount);
                 this.started = true;
 
                 while(!start.IsCompleted && !start.IsCanceled)

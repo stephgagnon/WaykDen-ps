@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Management.Automation;
+using Docker.DotNet.Models;
 using WaykDen.Controllers;
 
 namespace WaykDen.Models.Services
@@ -22,6 +23,10 @@ namespace WaykDen.Models.Services
                 $"{PICKY_DB_URL_ENV}={this.DenConfig.DenMongoConfigObject.Url}"};
 
             this.Env = env;
+
+            // Uncomment for debug den-server-rs
+            ////this.ExposedPorts.Add("12345", new EmptyStruct());
+            ////this.PortBindings.Add("12345", new List<PortBinding>() { new PortBinding() { HostIP = "0.0.0.0", HostPort = "12345" } });
         }
     }
 }

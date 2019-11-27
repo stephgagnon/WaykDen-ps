@@ -113,9 +113,9 @@ namespace WaykDen.Controllers
             return await this.StartService(lucid);
         }
 
-        private async Task<bool> StartDenServer()
+        private async Task<bool> StartDenServer(int instanceCount = 1)
         {
-            DenServerService server = new DenServerService(this);
+            DenServerService server = new DenServerService(this, instanceCount);
             return await this.StartService(server);
         }
 
@@ -354,7 +354,7 @@ namespace WaykDen.Controllers
             return networkIds;
         }
 
-        public async Task<bool> StartWaykDen()
+        public async Task<bool> StartWaykDen(int instanceCount = 1)
         {
             try
             {
@@ -404,9 +404,14 @@ namespace WaykDen.Controllers
                 bool started = await this.StartDenMongo();
                 started = started ? await this.StartDenPicky(): false;
                 started = started ? await this.StartDenLucid(): false;
-                started = started ? await this.StartDenServer(): false;
+                while (instanceCount != 0)
+                {
+                    started = started ? await this.StartDenServer(instanceCount) : false;
+                    instanceCount--;
+                    this.WriteLog(instanceCount.ToString());
+                }
 
-                if(started)
+                if (started)
                 {
                     Task<bool> traefikStarted = this.StartTraefikService();
                     traefikStarted.Wait();
