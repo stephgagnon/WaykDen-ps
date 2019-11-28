@@ -1,8 +1,5 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Collections;
-using System.Management.Automation;
 using Newtonsoft.Json;
 
 namespace WaykDen.Models
@@ -40,14 +37,6 @@ namespace WaykDen.Models
         public string AdminUsername {get; set;}
     }
 
-    public class DenRouterConfigObject
-    {
-        [JsonIgnore]
-        public int Id {get; set;}
-        [JsonIgnore]
-        public byte[] PublicKey {get; set;}
-    }
-
     public class DenServerConfigObject
     {
         [JsonIgnore]
@@ -56,6 +45,9 @@ namespace WaykDen.Models
         public string ApiKey {get; set;}
         [JsonIgnore]
         public byte[] PrivateKey {get; set;}
+        [JsonIgnore]
+        public byte[] PublicKey { get; set; }
+
         public string ExternalUrl {get; set;}
         public string LDAPServerUrl {get; set;}
         public string LDAPUsername {get; set;}
@@ -66,6 +58,10 @@ namespace WaykDen.Models
         public string JetServerUrl {get; set;}
         public string JetRelayUrl {get; set;}
         public string LoginRequired {get; set;}
+
+        public string NatsUsername { get; set; }
+        public string NatsPassword { get; set; }
+        public string RedisPassword { get; set; }
     }
 
     public class DenTraefikConfigObject
@@ -91,32 +87,28 @@ namespace WaykDen.Models
         private const string MONGO = "mongo";
         private const string PICKY = "picky";
         private const string LUCID = "lucid";
-        private const string ROUTER = "router";
         private const string SERVER = "server";
         private const string TRAEFIK = "traefik";
         private const string JET = "jet";
 
         public const string LinuxDenMongoImage = "library/mongo:4.1-bionic";
         public const string LinuxDenLucidImage = "devolutions/den-lucid:3.6.5-buster";
-        public const string LinuxDenPickyImage = "devolutions/picky:3.0.0-buster";
-        public const string LinuxDenRouterImage = "devolutions/den-router:0.5.0-buster";
-        public const string LinuxDenServerImage = "devolutions/den-server:1.6.0-buster";
+        public const string LinuxDenPickyImage = "devolutions/picky:4.0.0-buster";
+        public const string LinuxDenServerImage = "devolutions/den-server:1.8.0-buster";
         public const string LinuxDenTraefikImage = "library/traefik:1.7";
-        public const string LinuxDevolutionsJetImage = "devolutions/devolutions-jet:0.4.0-stretch";
+        public const string LinuxDevolutionsJetImage = "devolutions/devolutions-jet:0.6.0";
         public const string WindowsDenMongoImage = "library/mongo:4.2.0-rc3-windowsservercore-ltsc2016";
         public const string WindowsDenLucidImage = "devolutions/den-lucid:3.6.5-servercore-ltsc2019";
-        public const string WindowsDenPickyImage = "devolutions/picky:3.0.0-servercore-ltsc2019";
-        public const string WindowsDenRouterImage = "devolutions/den-router:0.5.0-servercore-ltsc2019";
-        public const string WindowsDenServerImage = "devolutions/den-server:1.6.0-servercore-ltsc2019";
+        public const string WindowsDenPickyImage = "devolutions/picky:4.0.0-servercore-ltsc2019";
+        public const string WindowsDenServerImage = "devolutions/den-server:1.8.0-servercore-ltsc2019";
         public const string WindowsDenTraefikImage = "sixeyed/traefik:v1.7.8-windowsservercore-ltsc2019";
-        public const string WindowsDevolutionsJetImage = "devolutions/devolutions-jet:0.4.0-servercore-ltsc2019";
+        public const string WindowsDevolutionsJetImage = "devolutions/devolutions-jet:0.6.0-servercore-ltsc2019";
 
         [JsonIgnore]
         public int Id {get; set;}
         public string DenMongoImage {get; set;}
         public string DenPickyImage {get; set;}
         public string DenLucidImage {get; set;}
-        public string DenRouterImage {get; set;}
         public string DenServerImage {get; set;}
         public string DenTraefikImage {get; set;}
         public string DevolutionsJetImage {get; set;}
@@ -128,7 +120,6 @@ namespace WaykDen.Models
                     {MONGO, LinuxDenMongoImage},
                     {PICKY, LinuxDenPickyImage},
                     {LUCID, LinuxDenLucidImage},
-                    {ROUTER, LinuxDenRouterImage},
                     {SERVER, LinuxDenServerImage},
                     {TRAEFIK, LinuxDenTraefikImage},
                     {JET, LinuxDevolutionsJetImage}
@@ -141,7 +132,6 @@ namespace WaykDen.Models
                     {MONGO, WindowsDenMongoImage},
                     {PICKY, WindowsDenPickyImage},
                     {LUCID, WindowsDenLucidImage},
-                    {ROUTER, WindowsDenRouterImage},
                     {SERVER, WindowsDenServerImage},
                     {TRAEFIK, WindowsDenTraefikImage},
                     {JET, WindowsDevolutionsJetImage}
@@ -155,7 +145,6 @@ namespace WaykDen.Models
                 string mongoEnvironment = Environment.GetEnvironmentVariable("DEN_MONGO_IMAGE");
                 string pickyEnvironment = Environment.GetEnvironmentVariable("DEN_PICKY_IMAGE");
                 string lucidEnvironment = Environment.GetEnvironmentVariable("DEN_LUCID_IMAGE");
-                string routeurEnvironment = Environment.GetEnvironmentVariable("DEN_ROUTER_IMAGE");
                 string serverEnvironment = Environment.GetEnvironmentVariable("DEN_SERVER_IMAGE");
                 string traefikEnvironment = Environment.GetEnvironmentVariable("DEN_TRAEFIK_IMAGE");
                 string jetEnvironment = Environment.GetEnvironmentVariable("DEN_JET_IMAGE");
@@ -172,10 +161,6 @@ namespace WaykDen.Models
                     this.DenLucidImage = lucidEnvironment;
                 }else {
                     this.DenLucidImage = images.TryGetValue(LUCID, out string lucid) ? lucid : throw new Exception("Could not find image for Den-lucid");
-                }if (!string.IsNullOrEmpty(routeurEnvironment)) {
-                    this.DenRouterImage = routeurEnvironment;
-                }else{
-                    this.DenRouterImage = images.TryGetValue(ROUTER, out string router) ? router : throw new Exception("Could not find image for Den-router");
                 }if (!string.IsNullOrEmpty(serverEnvironment)){
                     this.DenServerImage = serverEnvironment;
                 }else {

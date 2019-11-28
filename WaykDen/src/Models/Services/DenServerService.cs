@@ -1,13 +1,16 @@
 using System.IO;
 using WaykDen.Utils;
 using WaykDen.Controllers;
+using System;
+using System.Management.Automation;
+using System.Threading;
 
 namespace WaykDen.Models.Services
 {
     public class DenServerService : DenHealthCheckService
     {
         public const string DENSERVER_NAME = "den-server";
-        private const string DENSERVER_IMAGE = "devolutions/waykden-rs:1.1.0-dev";
+        ////private const string DENSERVER_IMAGE = "devolutions/waykden-rs:1.1.0-dev";
         private const string DEN_PRIVATE_KEY_FILE_ENV = "DEN_PRIVATE_KEY_FILE";
         private const string DEN_PUBLIC_KEY_FILE_ENV = "DEN_PUBLIC_KEY_FILE";
         private const string PICKY_REALM_ENV = "PICKY_REALM";
@@ -15,7 +18,6 @@ namespace WaykDen.Models.Services
         private const string PICKY_API_KEY_ENV = "PICKY_APIKEY";
         private const string AUDIT_TRAILS_ENV = "AUDIT_TRAILS";
         private const string LUCID_AUTHENTICATION_KEY_ENV = "LUCID_AUTHENTICATION_KEY";
-        private const string ROUTER_INTERNAL_URL_ENV = "DEN_ROUTER_INTERNAL_URL";
         private const string ROUTER_EXTERNAL_URL_ENV = "DEN_ROUTER_EXTERNAL_URL";
         private const string LUCID_INTERNAL_URL_ENV = "LUCID_INTERNAL_URL";
         private const string LUCID_EXTERNAL_URL_ENV = "LUCID_EXTERNAL_URL";
@@ -28,17 +30,23 @@ namespace WaykDen.Models.Services
         private const string LDAP_SERVER_TYPE_ENV = "LDAP_SERVER_TYPE";
         private const string LDAP_BASE_DN_ENV = "LDAP_BASE_DN";
         private const string PICKY_URL = "http://den-picky:12345";
-        private const string ROUTER_INTERNAL_URL = "ws://den-router:4491";
         private const string LUCID_INTERNAL_URL = "http://den-lucid:4242";
         private const string DEN_API_KEY_ENV = "DEN_API_KEY";
         private const string DEN_LOGIN_REQUIRED_ENV = "DEN_LOGIN_REQUIRED";
         private const string DEN_SERVER_LINUX_PATH = "/etc/den-server";
         private const string DEN_SERVER_WINDOWS_PATH = "c:\\den-server";
-        private const string DEN_SERVER_HEALTHCHECK = "curl -sS http://den-server:10255/health";
-        public DenServerService(DenServicesController controller):base(controller, DENSERVER_NAME)
+
+        private const string NATS_HOST = "NATS_HOST";
+        private const string NATS_USERNAME = "NATS_USERNAME";
+        private const string NATS_PASSWORD = "NATS_PASSWORD";
+        private const string REDIS_HOST = "REDIS_HOST";
+        private const string REDIS_PASSWORD = "REDIS_PASSWORD";
+
+        public DenServerService(DenServicesController controller, int instanceCount = 1, string clientID = null) :base(controller, instanceCount == 1 ? DENSERVER_NAME : DENSERVER_NAME + "_" + instanceCount)
         {
             this.ImageName = this.DenConfig.DenImageConfigObject.DenServerImage;
-            this.HealthCheck.Add(DEN_SERVER_HEALTHCHECK);
+            string healthCheck = "curl -sS http://" + (instanceCount == 1 ? DENSERVER_NAME : DENSERVER_NAME+ "_" + instanceCount) + ":10255/health";
+            this.HealthCheck.Add(healthCheck);
 
             string externalRouterUrl = this.DenConfig.DenServerConfigObject.ExternalUrl;
             if(externalRouterUrl.StartsWith("https"))
@@ -52,19 +60,18 @@ namespace WaykDen.Models.Services
             this.Env.Add($"{PICKY_API_KEY_ENV}={this.DenConfig.DenPickyConfigObject.ApiKey}");
             this.Env.Add($"{AUDIT_TRAILS_ENV}={this.DenConfig.DenServerConfigObject.AuditTrails}");
             this.Env.Add($"{LUCID_AUTHENTICATION_KEY_ENV}={this.DenConfig.DenLucidConfigObject.ApiKey}");
-            this.Env.Add($"{ROUTER_INTERNAL_URL_ENV}={ROUTER_INTERNAL_URL}");
             this.Env.Add($"{ROUTER_EXTERNAL_URL_ENV}={externalRouterUrl}/cow");
             this.Env.Add($"{LUCID_INTERNAL_URL_ENV}={LUCID_INTERNAL_URL}");
             this.Env.Add($"{LUCID_EXTERNAL_URL_ENV}={this.DenConfig.DenServerConfigObject.ExternalUrl}/lucid");
             this.Env.Add($"{DEN_LOGIN_REQUIRED_ENV}={this.DenConfig.DenServerConfigObject.LoginRequired.ToLower()}");
 
-            if((this.DenConfig.DenServerConfigObject.PrivateKey != null && this.DenConfig.DenServerConfigObject.PrivateKey.Length > 0) &&
-            (this.DenConfig.DenRouterConfigObject.PublicKey != null && this.DenConfig.DenRouterConfigObject.PublicKey.Length > 0))
+            if ((this.DenConfig.DenServerConfigObject.PrivateKey != null && this.DenConfig.DenServerConfigObject.PrivateKey.Length > 0) &&
+            (this.DenConfig.DenServerConfigObject.PublicKey != null && this.DenConfig.DenServerConfigObject.PublicKey.Length > 0))
             {
                 this.ImportKey();
             }
 
-            if(!string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.LDAPUsername))
+            if (!string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.LDAPUsername))
             {
                 this.Env.Add($"{LDAP_USERNAME_ENV}={this.DenConfig.DenServerConfigObject.LDAPUsername}");
             }
@@ -108,7 +115,64 @@ namespace WaykDen.Models.Services
             this.Cmd.Add("--db_url");
             this.Cmd.Add(this.DenConfig.DenMongoConfigObject.Url);
             this.Cmd.Add("-m");
-            this.Cmd.Add("onprem");
+
+            string natsHost = string.Empty;
+            string redisHost = string.Empty;
+
+            using (PowerShell PowerShellInstance = PowerShell.Create())
+            {
+                PowerShellInstance.AddScript("docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' den-nats");
+                var result = PowerShellInstance.Invoke();
+                foreach (var item in result)
+                {
+                    natsHost = item.ToString();
+                }
+            }
+            using (PowerShell PowerShellInstance = PowerShell.Create())
+            {
+                PowerShellInstance.AddScript("docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' den-redis");
+                var result = PowerShellInstance.Invoke();
+                foreach (var item in result)
+                {
+                    redisHost = item.ToString();
+                }
+            }
+
+            if (!string.IsNullOrEmpty(natsHost)
+                && !string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.NatsUsername)
+                && !string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.NatsPassword)
+                && !string.IsNullOrEmpty(redisHost)
+                && !string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.RedisPassword))
+            {
+                this.Cmd.Add("cloud");
+
+                this.Cmd.Add("--wayk-client-id");
+                this.Cmd.Add(clientID);
+
+                this.Env.Add($"JET_SERVER_URL=api.jet-relay.xyz:8080");
+                this.Env.Add($"JET_RELAY_URL=https://api.jet-relay.xyz");
+
+                this.Env.Add($"{NATS_HOST}={natsHost}");
+                this.Env.Add($"{NATS_USERNAME}={this.DenConfig.DenServerConfigObject.NatsUsername}");
+                this.Env.Add($"{NATS_PASSWORD}={this.DenConfig.DenServerConfigObject.NatsPassword}");
+
+                this.Env.Add($"{REDIS_HOST}={redisHost}");
+                this.Env.Add($"{REDIS_PASSWORD}={this.DenConfig.DenServerConfigObject.RedisPassword}");
+
+                this.Cmd.Add("--use-nats");
+                this.Cmd.Add(natsHost);
+                this.Cmd.Add(this.DenConfig.DenServerConfigObject.NatsUsername);
+                this.Cmd.Add(this.DenConfig.DenServerConfigObject.NatsPassword);
+
+                this.Cmd.Add("--use-redis");
+                this.Cmd.Add(redisHost);
+                this.Cmd.Add(this.DenConfig.DenServerConfigObject.RedisPassword);
+            }
+            else
+            {
+                this.Cmd.Add("onprem");
+            }
+
             this.Cmd.Add("-l");
             this.Cmd.Add("trace");
         }
@@ -124,7 +188,7 @@ namespace WaykDen.Models.Services
             }
 
             File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}den-server.key", KeyCertUtils.DerToPem(this.DenConfig.DenServerConfigObject.PrivateKey));
-            File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}den-router.key", KeyCertUtils.DerToPem(this.DenConfig.DenRouterConfigObject.PublicKey));
+            File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}den-router.key", KeyCertUtils.DerToPem(this.DenConfig.DenServerConfigObject.PublicKey));
             string mountPoint = this.DenConfig.DenDockerConfigObject.Platform == Platforms.Linux.ToString() ? DEN_SERVER_LINUX_PATH : DEN_SERVER_WINDOWS_PATH;
             this.Volumes.Add($"den-server:{mountPoint}:ro");
             this.Env.Add($"{DEN_PRIVATE_KEY_FILE_ENV}={mountPoint}/den-server.key");

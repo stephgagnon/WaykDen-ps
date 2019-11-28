@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using LiteDB;
-using WaykDen.Cmdlets;
 using WaykDen.Models;
 using WaykDen.Utils;
 
@@ -17,7 +15,6 @@ namespace WaykDen.Controllers
         private const string DEN_MONGO_CONFIG_COLLECTION = "DenMongoConfig";
         private const string DEN_PICKY_CONFIG_COLLECTION = "DenPickyConfig";
         private const string DEN_LUCID_CONFIG_COLLECTION = "DenLucidConfig";
-        private const string DEN_ROUTER_CONFIG_COLLECTION = "DenRouterConfig";
         private const string DEN_SERVER_CONFIG_COLLECTION = "DenServerConfig";
         private const string DEN_TRAEFIK_CONFIG_COLLECTION = "DenTraefikConfig";
         private const string DEN_DOCKER_CONFIG_COLLECTION = "DenDockerConfig";
@@ -90,7 +87,6 @@ namespace WaykDen.Controllers
             this.StoreMongo(db, config.DenMongoConfigObject);
             this.StorePicky(db,config.DenPickyConfigObject);
             this.StoreLucid(db, config.DenLucidConfigObject);
-            this.StoreRouter(db, config.DenRouterConfigObject);
             this.StoreServer(db, config.DenServerConfigObject);
             this.StoreTraefik(db, config.DenTraefikConfigObject);
             this.StoreDocker(db, config.DenDockerConfigObject);
@@ -101,7 +97,6 @@ namespace WaykDen.Controllers
             this.UpdateMongo(db, config.DenMongoConfigObject);
             this.UpdatePicky(db, config.DenPickyConfigObject);
             this.UpdateLucid(db, config.DenLucidConfigObject);
-            this.UpdateRouter(db, config.DenRouterConfigObject);
             this.UpdateServer(db, config.DenServerConfigObject);
             this.UpdateTraefik(db, config.DenTraefikConfigObject);
             this.UpdateDocker(db, config.DenDockerConfigObject);
@@ -121,7 +116,6 @@ namespace WaykDen.Controllers
                     DenLucidConfigObject = this.GetLucid(db),
                     DenPickyConfigObject = this.GetPicky(db),
                     DenMongoConfigObject = this.GetMongo(db),
-                    DenRouterConfigObject = this.GetRouter(db),
                     DenServerConfigObject = this.GetServer(db),
                     DenTraefikConfigObject = this.GetTraefik(db),
                     DenDockerConfigObject = this.GetDocker(db)
@@ -172,17 +166,6 @@ namespace WaykDen.Controllers
             };
         }
 
-        private DenRouterConfigObject GetRouter(LiteDatabase db)
-        {
-            var coll = db.GetCollection(DEN_ROUTER_CONFIG_COLLECTION);
-            var values = coll.FindById(DB_ID);
-            values.TryGetValue(nameof(DenRouterConfigObject.PublicKey), out var pubkey);
-            return new DenRouterConfigObject()
-            {
-                PublicKey = pubkey
-            };
-        }
-
         private DenServerConfigObject GetServer(LiteDatabase db)
         {
             var coll = db.GetCollection(DEN_SERVER_CONFIG_COLLECTION);
@@ -197,9 +180,14 @@ namespace WaykDen.Controllers
             bool ldapUsernameOk = values.TryGetValue(nameof(DenServerConfigObject.LDAPUsername), out var ldapusername);
             bool ldapBaseDnOk = values.TryGetValue(nameof(DenServerConfigObject.LDAPBaseDN), out var ldapbasedn);
             values.TryGetValue(nameof(DenServerConfigObject.PrivateKey), out var privatekey);
+            values.TryGetValue(nameof(DenServerConfigObject.PublicKey), out var publicKey);
             bool jetServerUrlOk = values.TryGetValue(nameof(DenServerConfigObject.JetServerUrl), out var jetServerUrl);
             bool jetRelayUrlOk = values.TryGetValue(nameof(DenServerConfigObject.JetRelayUrl), out var jetRelayUrl);
             bool loginRequiredOk = values.TryGetValue(nameof(DenServerConfigObject.LoginRequired), out var loginRequired);
+            bool natsUsernameOK = values.TryGetValue(nameof(DenServerConfigObject.NatsUsername), out var natsUsername);
+            bool natsPasswordOK = values.TryGetValue(nameof(DenServerConfigObject.NatsPassword), out var natsPAssword);
+            bool redisPasswordOK = values.TryGetValue(nameof(DenServerConfigObject.RedisPassword), out var redisPassword);
+
             return new DenServerConfigObject()
             {
                 ApiKey = apiKeyOk ? ((string)apikey) : string.Empty,
@@ -214,7 +202,11 @@ namespace WaykDen.Controllers
                 PrivateKey = privatekey,
                 JetServerUrl = jetServerUrlOk && !string.IsNullOrEmpty((string) jetServerUrl) ? ((string) jetServerUrl) : DEFAULT_JET_SERVER_URL,
                 JetRelayUrl = jetRelayUrlOk && !string.IsNullOrEmpty((string) jetRelayUrl) ? ((string) jetRelayUrl) : DEFAULT_JET_RELAY_URL,
-                LoginRequired = loginRequiredOk ? ((string) loginRequired) : "false"
+                LoginRequired = loginRequiredOk ? ((string) loginRequired) : "false",
+                PublicKey = publicKey,
+                NatsUsername = natsUsernameOK ? ((string)natsUsername) : string.Empty,
+                NatsPassword = natsPasswordOK ? ((string)natsPAssword) : string.Empty,
+                RedisPassword = redisPasswordOK ? ((string)redisPassword) : string.Empty,
             };
         }
 
@@ -266,12 +258,6 @@ namespace WaykDen.Controllers
             col.Insert(DB_ID, lucid);
         }
 
-        private void StoreRouter(LiteDatabase db, DenRouterConfigObject router)
-        {
-            var col = db.GetCollection<DenRouterConfigObject>(DEN_ROUTER_CONFIG_COLLECTION);
-            col.Insert(DB_ID, router);
-        }
-
         private void StoreServer(LiteDatabase db, DenServerConfigObject server)
         {
             var col = db.GetCollection<DenServerConfigObject>(DEN_SERVER_CONFIG_COLLECTION);
@@ -306,12 +292,6 @@ namespace WaykDen.Controllers
         {
             var col = db.GetCollection<DenLucidConfigObject>(DEN_LUCID_CONFIG_COLLECTION);
             col.Update(DB_ID, lucid);
-        }
-
-        private void UpdateRouter(LiteDatabase db, DenRouterConfigObject router)
-        {
-            var col = db.GetCollection<DenRouterConfigObject>(DEN_ROUTER_CONFIG_COLLECTION);
-            col.Update(DB_ID, router);
         }
 
         private void UpdateServer(LiteDatabase db, DenServerConfigObject server)

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Management.Automation;
 using WaykDen.Models;
-using WaykDen.Controllers;
 
 namespace WaykDen.Cmdlets
 {
@@ -13,14 +11,21 @@ namespace WaykDen.Cmdlets
         public SwitchParameter PwshObject { get; set; } = false;
 
         private const string WORKING_DIRECTORY = "Working Directory";
+
         public DenMongoConfigObject DenMongoConfigObject => this.DenConfig.DenMongoConfigObject;
+
         public DenPickyConfigObject DenPickyConfigObject => this.DenConfig.DenPickyConfigObject;
+
         public DenLucidConfigObject DenLucidConfigObject => this.DenConfig.DenLucidConfigObject;
-        public DenRouterConfigObject DenRouterConfigObject => this.DenConfig.DenRouterConfigObject;
+
         public DenServerConfigObject DenServerConfigObject => this.DenConfig.DenServerConfigObject;
+
         public DenTraefikConfigObject DenTraefikConfigObject => this.DenConfig.DenTraefikConfigObject;
+
         public DenImageConfigObject DenImageConfigObject => this.DenConfig.DenImageConfigObject;
+
         public DenDockerConfigObject DenDockerConfigObject => this.DenConfig.DenDockerConfigObject;
+
         public DenConfig DenConfig {get; set;}
 
         protected override void ProcessRecord()
@@ -67,6 +72,9 @@ namespace WaykDen.Cmdlets
             this.WriteObject(new DenObject {Property = $"Den-Server : {nameof(this.DenServerConfigObject.JetServerUrl)}", Value = this.DenServerConfigObject.JetServerUrl});
             this.WriteObject(new DenObject {Property = $"Den-Server : {nameof(this.DenServerConfigObject.JetRelayUrl)}", Value = this.DenServerConfigObject.JetRelayUrl});
             this.WriteObject(new DenObject {Property = $"Den-Server : {nameof(this.DenServerConfigObject.LoginRequired)}", Value = this.DenServerConfigObject.LoginRequired});
+            this.WriteObject(new DenObject { Property = $"Den-Server : {nameof(this.DenServerConfigObject.NatsUsername)}", Value = this.DenServerConfigObject.NatsUsername });
+            this.WriteObject(new DenObject { Property = $"Den-Server : {nameof(this.DenServerConfigObject.NatsPassword)}", Value = this.DenServerConfigObject.NatsPassword });
+            this.WriteObject(new DenObject { Property = $"Den-Server : {nameof(this.DenServerConfigObject.RedisPassword)}", Value = this.DenServerConfigObject.RedisPassword });
             this.WriteObject(new DenObject {Property = $"Traefik : {nameof(this.DenTraefikConfigObject.WaykDenPort)}", Value = this.DenTraefikConfigObject.WaykDenPort});
             base.ProcessRecord();
         }

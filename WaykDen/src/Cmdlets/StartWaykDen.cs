@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Management.Automation;
 using WaykDen.Controllers;
@@ -10,6 +9,12 @@ namespace WaykDen.Cmdlets
     [Cmdlet("Start", "WaykDen")]
     public class StartWaykDen : WaykDenConfigCmdlet
     {
+        [Parameter(Mandatory = false)]
+        public int InstanceCount { get; set; } = 1;
+
+        [Parameter(Mandatory = false)]
+        public string ClientID { get; set; }
+
         private Exception error;
         private DenServicesController denServicesController;
         private bool started = false;
@@ -20,7 +25,7 @@ namespace WaykDen.Cmdlets
                 this.denServicesController = new DenServicesController(this.Path, this.DenConfigController);
                 this.denServicesController.OnLog += this.OnLog;
                 this.denServicesController.OnError += this.OnError;
-                Task<bool> start = this.denServicesController.StartWaykDen();
+                Task<bool> start = this.denServicesController.StartWaykDen(this.InstanceCount, ClientID);
                 this.started = true;
 
                 while(!start.IsCompleted && !start.IsCanceled)
@@ -84,8 +89,6 @@ namespace WaykDen.Cmdlets
             string originalLucid = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenLucidImage : DenImageConfigObject.WindowsDenLucidImage;
             string originalMongo = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenMongoImage : DenImageConfigObject.WindowsDenMongoImage;
             string originalPicky = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenPickyImage : DenImageConfigObject.WindowsDenPickyImage;
-            string originalRouter = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenRouterImage : DenImageConfigObject.WindowsDenRouterImage;
-            string originalServer = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenServerImage : DenImageConfigObject.WindowsDenServerImage;
             string originalTraefik = platform == Platforms.Linux ? DenImageConfigObject.LinuxDenTraefikImage : DenImageConfigObject.WindowsDenTraefikImage;
             string originalJet = platform == Platforms.Linux ? DenImageConfigObject.LinuxDevolutionsJetImage : DenImageConfigObject.WindowsDevolutionsJetImage;
 
@@ -100,14 +103,6 @@ namespace WaykDen.Cmdlets
             if (denImageConfig.DenPickyImage != originalPicky)
             {
                 ShowDockerImageIsOverride(denImageConfig.DenPickyImage, originalPicky);
-            }
-            if (denImageConfig.DenRouterImage != originalRouter)
-            {
-                ShowDockerImageIsOverride(denImageConfig.DenRouterImage, originalRouter);
-            }
-            if (denImageConfig.DenServerImage != originalServer)
-            {
-                ShowDockerImageIsOverride(denImageConfig.DenServerImage, originalServer);
             }
             if (denImageConfig.DenTraefikImage != originalTraefik)
             {
