@@ -1,9 +1,9 @@
 # How to:
-# New-WaykDenConfig -NatsUsername david -NatsPassword 123456 -RedisPassword 123456789
+# New-WaykDenConfig -NatsUsername user -NatsPassword secret -RedisPassword secret123
 # OR
-# Set-WaykDenConfig -NatsUsername david -NatsPassword 123456 -RedisPassword 123456789
+# Set-WaykDenConfig -NatsUsername user -NatsPassword secret -RedisPassword secret123
 # To show the info: Get-WaykDenConfig
-# en then ./StartNatsRedis.ps1 -NatsUsername david -NatsPassword 123456 -RedisPassword 123456789
+# en then ./StartNatsRedis.ps1 -NatsUsername user -NatsPassword secret -RedisPassword secret123
 
 param(
     [Parameter(Mandatory=$false, HelpMessage="Nats Username")]

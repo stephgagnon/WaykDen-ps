@@ -113,15 +113,15 @@ namespace WaykDen.Controllers
             return await this.StartService(lucid);
         }
 
-        private async Task<bool> StartDenServer(int instanceCount = 1)
+        private async Task<bool> StartDenServer(int instanceCount = 1, string clientID = null)
         {
-            DenServerService server = new DenServerService(this, instanceCount);
+            DenServerService server = new DenServerService(this, instanceCount, clientID);
             return await this.StartService(server);
         }
 
-        private async Task<bool> StartTraefikService()
+        private async Task<bool> StartTraefikService(int instanceCount = 1)
         {
-            DenTraefikService traefik = new DenTraefikService(this);
+            DenTraefikService traefik = new DenTraefikService(this, instanceCount);
             return await this.StartService(traefik);
         }
 
@@ -354,7 +354,7 @@ namespace WaykDen.Controllers
             return networkIds;
         }
 
-        public async Task<bool> StartWaykDen(int instanceCount = 1)
+        public async Task<bool> StartWaykDen(int instanceCount = 1, string clientID = null)
         {
             try
             {
@@ -403,17 +403,18 @@ namespace WaykDen.Controllers
 
                 bool started = await this.StartDenMongo();
                 started = started ? await this.StartDenPicky(): false;
-                started = started ? await this.StartDenLucid(): false;
-                while (instanceCount != 0)
+                started = started ? await this.StartDenLucid() : false;
+
+                int count = 1;
+                while (count != instanceCount + 1)
                 {
-                    started = started ? await this.StartDenServer(instanceCount) : false;
-                    instanceCount--;
-                    this.WriteLog(instanceCount.ToString());
+                    started = started ? await this.StartDenServer(count, clientID) : false;
+                    count++;
                 }
 
                 if (started)
                 {
-                    Task<bool> traefikStarted = this.StartTraefikService();
+                    Task<bool> traefikStarted = this.StartTraefikService(instanceCount);
                     traefikStarted.Wait();
                     started = await traefikStarted;
                     if(!started)

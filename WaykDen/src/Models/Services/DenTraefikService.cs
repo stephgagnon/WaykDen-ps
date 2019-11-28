@@ -18,7 +18,7 @@ namespace WaykDen.Models.Services
         public string Entrypoints = "ws";
         public string WaykDenPort => this.DenConfig.DenTraefikConfigObject.WaykDenPort;
         public string Url => this.DenConfig.DenServerConfigObject.ExternalUrl;
-        public DenTraefikService(DenServicesController controller):base(controller, TRAEFIK_NAME)
+        public DenTraefikService(DenServicesController controller, int instanceCount = 1) :base(controller, TRAEFIK_NAME)
         {
             this.ImageName = this.DenConfig.DenImageConfigObject.DenTraefikImage;
             this.ExposedPorts.Add(this.WaykDenPort, new EmptyStruct());
@@ -41,7 +41,7 @@ namespace WaykDen.Models.Services
               this.ImportCertificate();
             }
 
-            string traefikToml = ExportDenConfigUtils.CreateTraefikToml(this);
+            string traefikToml = ExportDenConfigUtils.CreateTraefikToml(this, instanceCount);
             File.WriteAllText($"{path}{System.IO.Path.DirectorySeparatorChar}traefik.toml", traefikToml);
             
             

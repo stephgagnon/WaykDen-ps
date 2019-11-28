@@ -42,7 +42,7 @@ namespace WaykDen.Models.Services
         private const string REDIS_HOST = "REDIS_HOST";
         private const string REDIS_PASSWORD = "REDIS_PASSWORD";
 
-        public DenServerService(DenServicesController controller, int instanceCount = 1) :base(controller, instanceCount == 1 ? DENSERVER_NAME : DENSERVER_NAME + "_" + instanceCount)
+        public DenServerService(DenServicesController controller, int instanceCount = 1, string clientID = null) :base(controller, instanceCount == 1 ? DENSERVER_NAME : DENSERVER_NAME + "_" + instanceCount)
         {
             this.ImageName = this.DenConfig.DenImageConfigObject.DenServerImage;
             string healthCheck = "curl -sS http://" + (instanceCount == 1 ? DENSERVER_NAME : DENSERVER_NAME+ "_" + instanceCount) + ":10255/health";
@@ -145,6 +145,12 @@ namespace WaykDen.Models.Services
                 && !string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.RedisPassword))
             {
                 this.Cmd.Add("cloud");
+
+                this.Cmd.Add("--wayk-client-id");
+                this.Cmd.Add(clientID);
+
+                this.Env.Add($"JET_SERVER_URL=api.jet-relay.xyz:8080");
+                this.Env.Add($"JET_RELAY_URL=https://api.jet-relay.xyz");
 
                 this.Env.Add($"{NATS_HOST}={natsHost}");
                 this.Env.Add($"{NATS_USERNAME}={this.DenConfig.DenServerConfigObject.NatsUsername}");

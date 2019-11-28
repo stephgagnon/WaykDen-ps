@@ -33,8 +33,8 @@ namespace WaykDen.Models.Services
             this.Volumes.Add($"{this.Name}data:{mountPoint}");
 
             // Uncomment for debug den-server-rs
-            //this.ExposedPorts.Add("27017", new EmptyStruct());
-            //this.PortBindings.Add("27017", new List<PortBinding>() { new PortBinding() { HostIP = "0.0.0.0", HostPort = "27017" } });
+            ////this.ExposedPorts.Add("27017", new EmptyStruct());
+            ////this.PortBindings.Add("27017", new List<PortBinding>() { new PortBinding() { HostIP = "0.0.0.0", HostPort = "27017" } });
         }
 
         public override async Task<CreateContainerResponse> CreateContainer(string image)
