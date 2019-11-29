@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using System;
+using System.ComponentModel;
 using System.Management.Automation;
 
 namespace WaykDen.Models
@@ -143,31 +144,55 @@ namespace WaykDen.Models
 
     public class User
     {
+        [DefaultValue("")]
+        public string id {get; set;}
 
-        public Oid _id {get; set;} = new Oid();
-        public string account_id {get; set;} = string.Empty;
-        public string username {get; set;} = string.Empty;
-        public string given_name {get; set;} = string.Empty;
-        public string family_name {get; set;} = string.Empty;
-        public string name {get; set;} = string.Empty;
-        public string email {get; set;} = string.Empty;
-        public Address address {get; set;} = new Address();
-        public string phone_number {get; set;} = string.Empty;
-        public string picture {get; set;} = string.Empty;
-        public string locale {get; set;} = string.Empty;
-        public Oid license_id {get; set;} = new Oid();
-        public Oid role_id { get; set; } = new Oid();
+        [DefaultValue("")]
+        public string account_id {get; set;}
+
+        [DefaultValue("")]
+        public string username {get; set;}
+
+        [DefaultValue("")]
+        public string given_name {get; set;}
+
+        [DefaultValue("")]
+        public string family_name {get; set;}
+
+        [DefaultValue("")]
+        public string name {get; set;}
+
+        [DefaultValue("")]
+        public string email {get; set;}
+
+        [DefaultValue(null)]
+        public Address address {get; set;}
+
+        [DefaultValue("")]
+        public string phone_number {get; set;}
+        
+        [DefaultValue("")]
+        public string picture {get; set;}
+
+        [DefaultValue("")]
+        public string locale {get; set;}
+
+        [DefaultValue("")]
+        public string license_id {get; set;}
+
+        [DefaultValue("")]
+        public string role_id { get; set; }
 
         public UserObject ToUserObject()
         {
             return new UserObject
             {
-                ID = this._id.oid,
+                ID = this.id,
                 Username = this.username,
                 Name = this.name,
                 Email = this.email,
-                LicenseID = license_id.oid,
-                RoleID = role_id.oid
+                LicenseID = license_id,
+                RoleID = role_id
             };
         }
     }

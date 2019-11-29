@@ -43,7 +43,8 @@ namespace WaykDen.Cmdlets
                 string post = this.DenRestAPIController.PostCreateUser(data);
                 if (!string.IsNullOrEmpty(post))
                 {
-                    this.WriteObject(new User { _id = new Oid { oid = post }, username = Username, email = this.Email, name = this.Name }.ToUserObject());
+                    var user = this.DenRestAPIController.DeserializeString<User>(post);
+                    this.WriteObject(user?.ToUserObject());
                 }
             }
             catch (Exception e)
