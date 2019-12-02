@@ -10,8 +10,8 @@ namespace WaykDen.Controllers
     public class DenConfigController
     {
         private const string DEFAULT_MONGO_URL = "mongodb://den-mongo:27017";
-        private const string DEFAULT_JET_SERVER_URL = "jet.wayk.net:8080";
-        private const string DEFAULT_JET_RELAY_URL = "https://jet.wayk.net";
+        private const string DEFAULT_JET_SERVER_URL = "api.jet-relay.net:8080";
+        private const string DEFAULT_JET_RELAY_URL = "https://api.jet-relay.net";
         private const string DEN_MONGO_CONFIG_COLLECTION = "DenMongoConfig";
         private const string DEN_PICKY_CONFIG_COLLECTION = "DenPickyConfig";
         private const string DEN_LUCID_CONFIG_COLLECTION = "DenLucidConfig";
