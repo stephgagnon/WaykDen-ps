@@ -1,0 +1,1 @@
+docker build -t mongo:4.0.12-rc3-windowsservercore-ltsc2019 ./
