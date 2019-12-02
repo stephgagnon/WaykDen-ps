@@ -1,1 +1,1 @@
-docker build -t mongo:4.0.12-rc3-windowsservercore-ltsc2019 ./
+docker build -t devolutions/mongo:4.0.12-windowsservercore-ltsc2019 ./

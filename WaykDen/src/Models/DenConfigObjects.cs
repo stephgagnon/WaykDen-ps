@@ -97,7 +97,7 @@ namespace WaykDen.Models
         public const string LinuxDenServerImage = "devolutions/den-server:1.8.0-buster";
         public const string LinuxDenTraefikImage = "library/traefik:1.7";
         public const string LinuxDevolutionsJetImage = "devolutions/devolutions-jet:0.6.0";
-        public const string WindowsDenMongoImage = "mongo:4.0.12-rc3-windowsservercore-ltsc2019";
+        public const string WindowsDenMongoImage = "devolutions/mongo:4.0.12-windowsservercore-ltsc2019";
         public const string WindowsDenLucidImage = "devolutions/den-lucid:3.6.5-servercore-ltsc2019";
         public const string WindowsDenPickyImage = "devolutions/picky:4.0.0-servercore-ltsc2019";
         public const string WindowsDenServerImage = "devolutions/den-server:1.8.0-servercore-ltsc2019";
