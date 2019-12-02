@@ -41,6 +41,9 @@ namespace WaykDen.Cmdlets
         [Parameter(HelpMessage = "Devolutions Jet URL")]
         public string JetServerUrl {get; set;} = string.Empty;
 
+        [Parameter(HelpMessage = "URL where Devolutions Jet will be listening (http listener).")]
+        public string JetRelayUrl { get; set; } = string.Empty;
+
         [Parameter(HelpMessage = "Docker client endpoint URI.")]
         public string DockerClientUri {get; set;}= string.Empty;
 
@@ -87,6 +90,7 @@ namespace WaykDen.Cmdlets
                 "PrivateKey",
                 "SyslogServer",
                 "JetServerUrl",
+                "JetRelayUrl",
                 "NatsUsername",
                 "NatsPassword",
                 "RedisPassword"
@@ -115,6 +119,7 @@ namespace WaykDen.Cmdlets
                 {nameof(this.LDAPServerType), (typeof(DenServerConfigObject), "LDAPServerType")},
                 {nameof(this.LDAPBaseDN), (typeof(DenServerConfigObject), "LDAPBaseDN")},
                 {nameof(this.JetServerUrl), (typeof(DenServerConfigObject), "JetServerUrl")},
+                {nameof(this.JetRelayUrl), (typeof(DenServerConfigObject), "JetRelayUrl")},
                 {nameof(this.LoginRequired), (typeof(DenServerConfigObject), "LoginRequired")},
                 {nameof(this.WaykDenPort), (typeof(DenTraefikConfigObject), "WaykDenPort")},
                 {nameof(this.Certificate), (typeof(DenTraefikConfigObject), "Certificate")},
@@ -145,6 +150,7 @@ namespace WaykDen.Cmdlets
                     (nameof(this.LDAPServerType), !string.IsNullOrEmpty(this.LDAPServerType)),
                     (nameof(this.LDAPBaseDN), !string.IsNullOrEmpty(this.LDAPBaseDN)),
                     (nameof(this.JetServerUrl), !string.IsNullOrEmpty(this.JetServerUrl)),
+                    (nameof(this.JetRelayUrl), !string.IsNullOrEmpty(this.JetRelayUrl)),
                     (nameof(this.LoginRequired), !string.IsNullOrEmpty(this.LoginRequired)),
                     (nameof(this.WaykDenPort), !string.IsNullOrEmpty(this.WaykDenPort)),
                     (nameof(this.NatsUsername), !string.IsNullOrEmpty(this.NatsUsername)),
