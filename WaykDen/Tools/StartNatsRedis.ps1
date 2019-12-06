@@ -3,14 +3,14 @@
 # OR
 # Set-WaykDenConfig -NatsUsername user -NatsPassword secret -RedisPassword secret123
 # To show the info: Get-WaykDenConfig
-# en then ./StartNatsRedis.ps1 -NatsUsername user -NatsPassword secret -RedisPassword secret123
+# and then ./StartNatsRedis.ps1 -NatsUsername user -NatsPassword secret -RedisPassword secret123
 
 param(
-    [Parameter(Mandatory=$false, HelpMessage="Nats Username")]
+    [Parameter(Mandatory=$true, HelpMessage="Nats Username")]
     [string] $NatsUsername,
-    [Parameter(Mandatory=$false, HelpMessage="Nats Password")]
+    [Parameter(Mandatory=$true, HelpMessage="Nats Password")]
     [string] $NatsPassword,
-    [Parameter(Mandatory=$false, HelpMessage="Redis Password")]
+    [Parameter(Mandatory=$true, HelpMessage="Redis Password")]
     [string] $RedisPassword
 )
 
@@ -31,5 +31,13 @@ function Start-Redis(
     & docker run -d --network=den-network -p 6379:6379 --name den-redis redis redis-server --requirepass $RedisPassword
 }
 
+function Create-Network{
+    $network = $(docker network ls -qf “name=den-network”)
+    if(!($network)){
+        docker network create den-network
+    }
+}  
+
+Create-Network
 Start-Nats $NatsUsername $NatsPassword
 Start-Redis $RedisPassword

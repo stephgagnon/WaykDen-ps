@@ -12,9 +12,6 @@ namespace WaykDen.Cmdlets
         [Parameter(Mandatory = false)]
         public int InstanceCount { get; set; } = 1;
 
-        [Parameter(Mandatory = false)]
-        public string ClientID { get; set; }
-
         private Exception error;
         private DenServicesController denServicesController;
         private bool started = false;
@@ -25,7 +22,7 @@ namespace WaykDen.Cmdlets
                 this.denServicesController = new DenServicesController(this.Path, this.DenConfigController);
                 this.denServicesController.OnLog += this.OnLog;
                 this.denServicesController.OnError += this.OnError;
-                Task<bool> start = this.denServicesController.StartWaykDen(this.InstanceCount, ClientID);
+                Task<bool> start = this.denServicesController.StartWaykDen(this.InstanceCount);
                 this.started = true;
 
                 while(!start.IsCompleted && !start.IsCanceled)
