@@ -42,10 +42,10 @@ namespace WaykDen.Models.Services
         private const string REDIS_HOST = "REDIS_HOST";
         private const string REDIS_PASSWORD = "REDIS_PASSWORD";
 
-        public DenServerService(DenServicesController controller, int instanceCount = 1, string clientID = null) :base(controller, instanceCount == 1 ? DENSERVER_NAME : DENSERVER_NAME + "_" + instanceCount)
+        public DenServerService(DenServicesController controller, bool multipleInstance = false, int instanceId = 1) :base(controller, instanceId == 1 ? DENSERVER_NAME : DENSERVER_NAME + "_" + instanceId)
         {
             this.ImageName = this.DenConfig.DenImageConfigObject.DenServerImage;
-            string healthCheck = "curl -sS http://" + (instanceCount == 1 ? DENSERVER_NAME : DENSERVER_NAME+ "_" + instanceCount) + ":10255/health";
+            string healthCheck = "curl -sS http://" + (instanceId == 1 ? DENSERVER_NAME : DENSERVER_NAME+ "_" + instanceId) + ":10255/health";
             this.HealthCheck.Add(healthCheck);
 
             string externalRouterUrl = this.DenConfig.DenServerConfigObject.ExternalUrl;
@@ -115,6 +115,7 @@ namespace WaykDen.Models.Services
             this.Cmd.Add("--db_url");
             this.Cmd.Add(this.DenConfig.DenMongoConfigObject.Url);
             this.Cmd.Add("-m");
+            this.Cmd.Add("onprem");
 
             string natsHost = string.Empty;
             string redisHost = string.Empty;
@@ -138,39 +139,23 @@ namespace WaykDen.Models.Services
                 }
             }
 
-            if (!string.IsNullOrEmpty(natsHost)
-                && !string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.NatsUsername)
-                && !string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.NatsPassword)
-                && !string.IsNullOrEmpty(redisHost)
-                && !string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.RedisPassword))
-            {
-                this.Cmd.Add("cloud");
+            if (multipleInstance) {
+                if (!string.IsNullOrEmpty(natsHost)
+                    && !string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.NatsUsername)
+                    && !string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.NatsPassword)
+                    && !string.IsNullOrEmpty(redisHost)
+                    && !string.IsNullOrEmpty(this.DenConfig.DenServerConfigObject.RedisPassword))
+                {
+                    this.Env.Add($"{NATS_HOST}={natsHost}");
+                    this.Env.Add($"{NATS_USERNAME}={this.DenConfig.DenServerConfigObject.NatsUsername}");
+                    this.Env.Add($"{NATS_PASSWORD}={this.DenConfig.DenServerConfigObject.NatsPassword}");
 
-                this.Cmd.Add("--wayk-client-id");
-                this.Cmd.Add(clientID);
-
-                this.Env.Add($"JET_SERVER_URL=api.jet-relay.xyz:8080");
-                this.Env.Add($"JET_RELAY_URL=https://api.jet-relay.xyz");
-
-                this.Env.Add($"{NATS_HOST}={natsHost}");
-                this.Env.Add($"{NATS_USERNAME}={this.DenConfig.DenServerConfigObject.NatsUsername}");
-                this.Env.Add($"{NATS_PASSWORD}={this.DenConfig.DenServerConfigObject.NatsPassword}");
-
-                this.Env.Add($"{REDIS_HOST}={redisHost}");
-                this.Env.Add($"{REDIS_PASSWORD}={this.DenConfig.DenServerConfigObject.RedisPassword}");
-
-                this.Cmd.Add("--use-nats");
-                this.Cmd.Add(natsHost);
-                this.Cmd.Add(this.DenConfig.DenServerConfigObject.NatsUsername);
-                this.Cmd.Add(this.DenConfig.DenServerConfigObject.NatsPassword);
-
-                this.Cmd.Add("--use-redis");
-                this.Cmd.Add(redisHost);
-                this.Cmd.Add(this.DenConfig.DenServerConfigObject.RedisPassword);
-            }
-            else
-            {
-                this.Cmd.Add("onprem");
+                    this.Env.Add($"{REDIS_HOST}={redisHost}");
+                    this.Env.Add($"{REDIS_PASSWORD}={this.DenConfig.DenServerConfigObject.RedisPassword}");
+                }
+                else {
+                    throw new Exception("Den server can't be launched with multiple instances. NATS and REDIS configuration have to be provided.");
+                }
             }
 
             this.Cmd.Add("-l");
