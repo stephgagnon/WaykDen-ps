@@ -1,0 +1,1 @@
+docker build -t devolutions/picky:4.0.0-servercore-1803 ./

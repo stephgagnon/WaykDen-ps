@@ -143,6 +143,8 @@ namespace WaykDen.Models.Services
                 string[] repo = this.ImageName.Split(':');
                 if(repo.Length > 1)
                 {
+
+
                     await this.DockerClient.Images.CreateImageAsync
                     (
                         new ImagesCreateParameters
@@ -158,7 +160,10 @@ namespace WaykDen.Models.Services
             }
             catch(Exception e)
             {
-                this.DenServicesController.WriteError(e);
+                if (this is DenMongoService && this.DenConfig.DenDockerConfigObject.Platform == "Linux")
+                {
+                    this.DenServicesController.WriteError(e);
+                }
             }
         }
 

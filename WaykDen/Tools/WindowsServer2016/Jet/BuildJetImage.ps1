@@ -1,0 +1,1 @@
+docker build -t devolutions/devolutions-jet:0.6.0-servercore-1803 ./

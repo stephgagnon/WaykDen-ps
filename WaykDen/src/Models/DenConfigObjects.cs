@@ -82,8 +82,63 @@ namespace WaykDen.Models
         Linux
     }
 
+    public enum WindowsVersion
+    {
+        WindowsServer2019,
+        WindowsServer2016,
+        None,
+    }
+
     public class DenImageConfigObject
     {
+        private static WindowsVersion WindowsVersion;
+
+        static DenImageConfigObject()
+        {
+            switch (Environment.OSVersion.Version.Build)
+            {
+                case 18363: // 1909
+                case 18362: // 1903
+                case 17763: // 1809
+                    WindowsVersion = WindowsVersion.WindowsServer2019;
+                    break;
+                case 17134: // 1803
+                    WindowsVersion = WindowsVersion.WindowsServer2016;
+                    break;
+                default:
+                    WindowsVersion = WindowsVersion.None;
+                    break;
+            }
+            if (WindowsVersion == WindowsVersion.WindowsServer2019)
+            {
+                WindowsDenMongoImage = Windows2019DenMongoImage;
+                WindowsDenLucidImage = Windows2019DenLucidImage;
+                WindowsDenPickyImage = Windows2019DenPickyImage;
+                WindowsDenServerImage = Windows2019DenServerImage;
+                WindowsDenTraefikImage = Windows2019DenTraefikImage;
+                WindowsDevolutionsJetImage = Windows2019DevolutionsJetImage;
+
+            }
+            else if (WindowsVersion == WindowsVersion.WindowsServer2016)
+            {
+                WindowsDenMongoImage = Windows2016DenMongoImage;
+                WindowsDenLucidImage = Windows2016DenLucidImage;
+                WindowsDenPickyImage = Windows2016DenPickyImage;
+                WindowsDenServerImage = Windows2016DenServerImage;
+                WindowsDenTraefikImage = Windows2016DenTraefikImage;
+                WindowsDevolutionsJetImage = Windows2016DevolutionsJetImage;
+            }
+            else
+            {
+                WindowsDenMongoImage = LinuxDenMongoImage;
+                WindowsDenLucidImage = LinuxDenLucidImage;
+                WindowsDenPickyImage = LinuxDenPickyImage;
+                WindowsDenServerImage = LinuxDenServerImage;
+                WindowsDenTraefikImage = LinuxDenTraefikImage;
+                WindowsDevolutionsJetImage = LinuxDevolutionsJetImage;
+            }
+        }
+
         private const string MONGO = "mongo";
         private const string PICKY = "picky";
         private const string LUCID = "lucid";
@@ -97,12 +152,28 @@ namespace WaykDen.Models
         public const string LinuxDenServerImage = "devolutions/den-server:1.8.0-buster";
         public const string LinuxDenTraefikImage = "library/traefik:1.7";
         public const string LinuxDevolutionsJetImage = "devolutions/devolutions-jet:0.6.0";
-        public const string WindowsDenMongoImage = "devolutions/mongo:4.0.12-windowsservercore-ltsc2019";
-        public const string WindowsDenLucidImage = "devolutions/den-lucid:3.6.5-servercore-ltsc2019";
-        public const string WindowsDenPickyImage = "devolutions/picky:4.0.0-servercore-ltsc2019";
-        public const string WindowsDenServerImage = "devolutions/den-server:1.8.0-servercore-ltsc2019";
-        public const string WindowsDenTraefikImage = "sixeyed/traefik:v1.7.8-windowsservercore-ltsc2019";
-        public const string WindowsDevolutionsJetImage = "devolutions/devolutions-jet:0.6.0-servercore-ltsc2019";
+
+        private const string Windows2019DenMongoImage = "devolutions/mongo:4.0.12-servercore-ltsc2019";
+        private const string Windows2019DenLucidImage = "devolutions/den-lucid:3.6.5-servercore-ltsc2019-test";
+        private const string Windows2019DenPickyImage = "devolutions/picky:4.0.0-servercore-ltsc2019";
+        private const string Windows2019DenServerImage = "devolutions/den-server:1.8.0-servercore-ltsc2019";
+        private const string Windows2019DenTraefikImage = "sixeyed/traefik:v1.7.8-windowsservercore-ltsc2019";
+        private const string Windows2019DevolutionsJetImage = "devolutions/devolutions-jet:0.6.0-servercore-ltsc2019";
+
+        private const string Windows2016DenMongoImage = "mongo:4.1-windowsservercore-1803";
+        private const string Windows2016DenLucidImage = "devolutions/den-lucid:3.6.5-servercore-1803";
+        private const string Windows2016DenPickyImage = "devolutions/picky:4.0.0-servercore-1803";
+        private const string Windows2016DenServerImage = "devolutions/den-server:1.8.0-servercore-1803";
+        private const string Windows2016DenTraefikImage = "devolutions/traefik:1.7.8-servercore-1803";
+        private const string Windows2016DevolutionsJetImage = "devolutions/devolutions-jet:0.6.0-servercore-1803";
+
+        public static string WindowsDenMongoImage { get; private set; }
+        public static string WindowsDenLucidImage { get; private set; }
+        public static string WindowsDenPickyImage { get; private set; }
+        public static string WindowsDenServerImage { get; private set; }
+        public static string WindowsDenTraefikImage { get; private set; }
+        public static string WindowsDevolutionsJetImage { get; private set; }
+
         [JsonIgnore]
         public int Id {get; set;}
         public string DenMongoImage {get; set;}
