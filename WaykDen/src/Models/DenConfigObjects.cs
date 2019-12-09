@@ -149,14 +149,14 @@ namespace WaykDen.Models
         public const string LinuxDenMongoImage = "library/mongo:4.1-bionic";
         public const string LinuxDenLucidImage = "devolutions/den-lucid:3.6.5-buster";
         public const string LinuxDenPickyImage = "devolutions/picky:4.0.0-buster";
-        public const string LinuxDenServerImage = "devolutions/den-server:1.8.0-buster";
+        public const string LinuxDenServerImage = "devolutions/den-server:1.9.0-buster-dev";
         public const string LinuxDenTraefikImage = "library/traefik:1.7";
         public const string LinuxDevolutionsJetImage = "devolutions/devolutions-jet:0.6.0";
-
+      
         private const string Windows2019DenMongoImage = "devolutions/mongo:4.0.12-servercore-ltsc2019";
         private const string Windows2019DenLucidImage = "devolutions/den-lucid:3.6.5-servercore-ltsc2019-test";
         private const string Windows2019DenPickyImage = "devolutions/picky:4.0.0-servercore-ltsc2019";
-        private const string Windows2019DenServerImage = "devolutions/den-server:1.8.0-servercore-ltsc2019";
+        private const string Windows2019DenServerImage = "devolutions/den-server:1.9.0-servercore-ltsc2019-dev";
         private const string Windows2019DenTraefikImage = "sixeyed/traefik:v1.7.8-windowsservercore-ltsc2019";
         private const string Windows2019DevolutionsJetImage = "devolutions/devolutions-jet:0.6.0-servercore-ltsc2019";
 
