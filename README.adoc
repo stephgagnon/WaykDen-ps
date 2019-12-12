@@ -1,3 +1,4 @@
+:imagesdir: ./Images
 :toc:
 :toclevels: 4
 
@@ -189,37 +190,7 @@ On Linux you need to do manual operations for all browsers. The system store is 
 
 Advanced users can do some script to ease the process of installing root_ca on there infrastructure or they can also use policies to install the root_ca on there domains. You can find more informations about this to this https://support.mozilla.org/en-US/kb/setting-certificate-authorities-firefox[link], this http://www.chromium.org/Home/chromium-security/root-ca-policy[link] and this https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/Tools[link]
 
-== Running
-
-Start Wayk Den, and wait for all microservices to start:
-
-[source, sh]
-----
-PS > Start-WaykDen
-----
-
-Once started, Wayk Den listens on http://localhost:4000 by default. We recommend using a reverse tunnel such as https://ngrok.com/[ngrok] or https://www.cloudflare.com/en-ca/products/argo-tunnel/[argo tunnels] from Cloudflare. In this case, a tunnel is used to expose localhost:4000 on the den.contoso.net external url.
-
-You can check that all containers are up and running with the `docker ps -f network=den-network` command.
-
-To confirm everything is correctly configured, you should be able to get a response from the Wayk Den well known configuration endpoint:
-
-[source, sh]
-----
-curl http://localhost:4000/.well-known/configuration
-{"den_router_uri":"https://den.contoso.net/cow","lucid_uri":"https://den.contoso.net/lucid","realm":"contoso.net","wayk_client_id":"zqdvSbCRWdDrj1fQXwzPQbCg"}
-----
-
-If you have correctly configured external access, you should be able to get the same response using the external configuration URL (https://den.contoso.net/.well-known/configuration).
-
-Stop Wayk Den, and wait for all microservices to stop:
-
-[source, sh]
-----
-PS > Stop-WaykDen
-----
-
-=== User Management
+==== User Configuration
 
 User using Wayk Now client can log in to be authenticated with Wayk Den Server. The server, by default, will provide a Wayk Den ID to any user who wants to connect to it. The server can be configured in a way forcing the user to be authenticated to accept a connection with the server. The command `Set-WaykDenConfig -LoginRequired True` can be used to force users to log in.
 
@@ -270,29 +241,79 @@ The following command will set LDAP property value for JumpCloud.
 Set-WaykDenConfig -LDAPServerType JumpCloud -LDAPUsername "uid=ldap-user,ou=Users,o=YOUR_ORG_ID,dc=jumpcloud,dc=com" -LDAPPassword ldap-password -LDAPServerUrl ldaps://ldap.jumpcloud.com:636 -LDAPBaseDn "ou=Users,o=YOUR_ORG_ID,dc=jumpcloud,dc=com -LDAPUserGroup wayk-users"
 ----
 
-==== Adding User/Removing Users
-You can use `Add-WaykDenUser` to add users.
-The required field are the Username and the Password and optionally you can set the Name and the Email of the user.
+== Running
+
+Start Wayk Den, and wait for all microservices to start:
 
 [source, sh]
 ----
- PS > Add-WaykDenUser -Username David - Password psw -Email david@devolutions.net -Name Jack
+PS > Start-WaykDen
+----
+
+Once started, Wayk Den listens on http://localhost:4000 by default. We recommend using a reverse tunnel such as https://ngrok.com/[ngrok] or https://www.cloudflare.com/en-ca/products/argo-tunnel/[argo tunnels] from Cloudflare. In this case, a tunnel is used to expose localhost:4000 on the den.contoso.net external url.
+
+You can check that all containers are up and running with the `docker ps -f network=den-network` command.
+
+To confirm everything is correctly configured, you should be able to get a response from the Wayk Den well known configuration endpoint:
+
+[source, sh]
+----
+curl http://localhost:4000/.well-known/configuration
+{"den_router_uri":"https://den.contoso.net/cow","lucid_uri":"https://den.contoso.net/lucid","realm":"contoso.net","wayk_client_id":"zqdvSbCRWdDrj1fQXwzPQbCg"}
+----
+
+If you have correctly configured external access, you should be able to get the same response using the external configuration URL (https://den.contoso.net/.well-known/configuration).
+
+Finally, when you want to stop your server, the command `Stop-WaykDen` can be used and all microservices will be stopped.
+
+At this point, you should be able to connect your WaykNow client on your WaykDen server. But note that you will not be able to creation session yet since licenses are needed for that operation. 
+
+== Server Management
+
+There are two options to manage your server. First, what we recommand, is to have a look to our web interface. The web interface is hosted directly at your external adress. In our case, we could open the web interface at https://den.contoso.net. 
+
+You can also continue with the cmdlet where command line interface will let you add/remove users, add/remove licenses and so on. Those commands should be used if you want to script some operations. So depending on what you prefer, you can jump to the next section where the web interface is described, or you can jump over to go to the cmdlet management section. 
+
+=== Server Management: Web interface
+
+A web interface is available directly and the URL is your external URL, for example, https://den.contoso.net. If you open the web interface, you will be prompted to enter a username/password. If it is the first time that you are launching the server, it exists a user called "devolutions" with a password "devolutions". You can use these credential to get in the first time. 
+
+image::login.png[]
+
+After that, once you are logged in, you should be asked to create a first administrator user. Once it is done, the user "devolutions/devolutions" doesn't exist anymore. 
+
+image::createAdminUser.png[]
+
+Finally, you should have access to different pages that will help you to manage your users, licenses, roles, etc.
+
+image::webUiOverview.png[]
+
+=== Server Management: Cmdlet
+
+=== User Management
+
+==== Adding Users/Removing Users
+You can use `Add-WaykDenUser` to add a user. The required fields are the Username and the Password and optionally, you can set the Name and the Email of the user.
+
+[source, sh]
+----
+ PS > Add-WaykDenUser -Username bAnderson -Password psw -Email bAnderson@contoso.net -Name Bob
 ----
 
 The use will be returned as a result.
 [source, sh]
 ID        : 5d83d2973766610100edd9ef
-Username  : David
-Name      : Jack
-Email     : david@devolutions.net
+Username  : bAnderson
+Name      : Bob
+Email     : bAnderson@contoso.net
 LicenseID : 
 
-If you want to remove that user, you can execute the command `Remove-WaykDenUser`, you have to specify the User Id to remove.
+If you want to remove that user, you can execute the command `Remove-WaykDenUser`. You have to specify the User Id to remove it.
 
 [source, sh]
  PS > Remove-WaykDenUser -ID 5d83d2973766610100edd9ef
 
-==== Set User
+==== Updating Users
 Updates an existing WaykDen User with the command `Set-WaykDenUser`, the User Id is needed for this one, you can modify the Password, the Name and the Email
 
 [source, sh]
