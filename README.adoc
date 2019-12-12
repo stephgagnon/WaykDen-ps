@@ -28,7 +28,7 @@ Install-Module -Name WaykDen -AllowPrerelease
 Import-Module WaykDen
 ----
 
-If you encounter issues with the `Install-Module` command, you may have to https://docs.microsoft.com/en-ca/powershell/gallery/installing-psget[install or update PowerShellGet].
+If you encounter issues with the `Install-Module` command, you may have to https://docs.microsoft.com/en-us/powershell/scripting/gallery/installing-psget[install or update PowerShellGet].
 
 You can then list all commands exported from the `WaykDen` module:
 
@@ -61,15 +61,37 @@ Import-Module "./WaykDen" -Force
 
 Wayk Den is composed of multiple microservices running inside Docker containers. The PowerShell cmdlet simplifies the usage of Docker for users not familiar with it. For more advanced users, the cmdlet can export a usable docker-compose configuration file.
 
-The current version of Wayk Den requires support for Linux containers and bind mounts. Windows containers will be supported in the future.
+==== Linux/macOS
 
-On Windows, the recommended option is to use https://hub.docker.com/editions/community/docker-ce-desktop-windows[Docker Desktop for Windows]. This version of Docker requires Hyper-V for Linux container support.
-
-For bind mount support with Linux containers on Windows, you need to go in the Docker settings and https://rominirani.com/docker-on-windows-mounting-host-directories-d96f3f056a2c[select the required drives from the "Shared Drives" section].
-
-On macOS and Linux, follow the instructions here to install Docker CE correctly. It is recommended to use the official Docker packages instead as documented in the https://docs.docker.com/install/[Docker install page].
+On Linux/macOS, follow the instructions here to install Docker CE correctly. It is recommended to use the official Docker packages instead as documented in the https://docs.docker.com/install/[Docker install page].
 
 On Linux, do not forget to https://docs.docker.com/install/linux/linux-postinstall/[add your user to the docker group] after installation.
+
+To confirm that Docker is up and running, use the `docker run hello-world` command. If you don't see the "Hello from Docker!" message, something is wrong with your Docker installation.
+
+==== Windows Server
+
+To install Docker Engine - Enterprise, you have to open a powershell windows and run those commands:
+
+[source, sh]
+----
+PS > Install-Module -Name DockerMsftProvider -Repository PSGallery -Force
+PS > Install-Package -Name docker -ProviderName DockerMsftProvider -Force
+----
+
+Note that you can add `-Update` to the command if you want to update a previous installation of that package. For more information or any issue with those commands, you can have a look to https://github.com/OneGet/MicrosoftDockerProvider[Docker installer for Windows]
+
+After docker has been installed, the command `Start-Service Docker` will launch the docker engine service. 
+
+To confirm that Docker is up and running, use the `docker run hello-world` command. If you don't see the "Hello from Docker!" message, something is wrong with your Docker installation.
+
+==== Windows Client
+
+To use a Windows Client, we recommend to use https://hub.docker.com/editions/community/docker-ce-desktop-windows[Docker Desktop for Windows]. With that tool, Windows and Linux container are supported. Windows containers are recommended, but if you want to use Linux container, it is important to know that Hyper-V has to be installed.
+
+To use Windows containers, you have to https://docs.docker.com/docker-for-windows/#switch-between-windows-and-linux-containers[switch to Windows containers]. 
+
+To use Linux containers, you have to be able to use bind mount. To be supported with Linux containers on Windows, you need to go in the Docker settings and https://rominirani.com/docker-on-windows-mounting-host-directories-d96f3f056a2c[select the required drives from the "Shared Drives" section].
 
 To confirm that Docker is up and running, use the `docker run hello-world` command. If you don't see the "Hello from Docker!" message, something is wrong with your Docker installation.
 
@@ -87,6 +109,19 @@ Create a new Wayk Den configuration file, using "contoso.net" as realm and "http
 ----
 PS > New-WaykDenConfig -Realm contoso.net -ExternalUrl https://den.contoso.net
 ----
+
+Once it is created, the command `Get-WaykDenConfig` can be used to get the configuration and see how the server is configured.
+
+=== Platform configuration
+
+By default, the configuration is built to use a Linux platform. If you configure a WaykDen server on a Windows host where Windows containers are used, you have to change the platform configuration with this command:
+
+[source, sh]
+----
+PS > Set-WaykDenConfig -Platform Windows
+----
+
+If you run Linux containers on a Windows client platform, your platform configuration should remain to Linux.
 
 === Certificate configuration
 
