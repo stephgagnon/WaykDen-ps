@@ -190,7 +190,7 @@ On Linux you need to do manual operations for all browsers. The system store is 
 
 Advanced users can do some script to ease the process of installing root_ca on there infrastructure or they can also use policies to install the root_ca on there domains. You can find more informations about this to this https://support.mozilla.org/en-US/kb/setting-certificate-authorities-firefox[link], this http://www.chromium.org/Home/chromium-security/root-ca-policy[link] and this https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/Tools[link]
 
-==== User Configuration
+=== User Configuration
 
 User using Wayk Now client can log in to be authenticated with Wayk Den Server. The server, by default, will provide a Wayk Den ID to any user who wants to connect to it. The server can be configured in a way forcing the user to be authenticated to accept a connection with the server. The command `Set-WaykDenConfig -LoginRequired True` can be used to force users to log in.
 
@@ -276,19 +276,23 @@ You can also continue with the cmdlet where command line interface will let you 
 
 === Server Management: Web interface
 
-A web interface is available directly and the URL is your external URL, for example, https://den.contoso.net. If you open the web interface, you will be prompted to enter a username/password. If it is the first time that you are launching the server, it exists a user called "devolutions" with a password "devolutions". You can use these credential to get in the first time. 
+A web interface is hosted on your server. You can access it by opening a web browser on your external URL used when you created your server configuration. In our example, it is https://den.contoso.net. If you open the web interface, you will be prompted to enter a username/password. If it is the first time that you are launching the server, it exists a user called "devolutions" with a password "devolutions". You can use those credentials to get in the first time. 
 
 image::login.png[]
 
-After that, once you are logged in, you should be asked to create a first administrator user. Once it is done, the user "devolutions/devolutions" doesn't exist anymore. 
+After that, once you are logged in, the system will ask to create a first administrator user. 
 
 image::createAdminUser.png[]
+
+Once it is done, the user "devolutions/devolutions" doesn't exist anymore. The user just created can be used in all next access to the management interface.
 
 Finally, you should have access to different pages that will help you to manage your users, licenses, roles, etc.
 
 image::webUiOverview.png[]
 
 === Server Management: Cmdlet
+
+The cmdlet has been built to be able to script any operation with the server. Next sections explains more how to use those different commands. But it is important to know that you can get all possible commands by running `Get-Command -Module WaykDen` command in powershell. And if you want help on a specific command, you can run `Get-Help _command_name_`.
 
 === User Management
 
@@ -320,7 +324,7 @@ Updates an existing WaykDen User with the command `Set-WaykDenUser`, the User Id
 PS > Set-WaykDenUser -UserID 5d851bc6373735010078cd8d -Password qwerty -Name NewName -Email newName@mail.net
 
 ==== Listing users
-Once you have configured the server to integrate an LDAP server, it is possible to list all users, you can use `Get-WaykDenUser` to get users information.
+It is possible to list all users with the command `Get-WaykDenUser`.
 
 [source, sh]
 ----
