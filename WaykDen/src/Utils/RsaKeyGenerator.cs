@@ -6,7 +6,6 @@ namespace WaykDen.Utils
 {
     public class RsaKeyGenerator
     {
-        private const int RSA_KEY_SIZE = 2048;
         public string PrivateKey {get; set;} = string.Empty;
         public string PublicKey {get; set;} = string.Empty;
         public RsaKeyGenerator()

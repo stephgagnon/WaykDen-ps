@@ -41,10 +41,6 @@ namespace WaykDen.Models.Services
             };
 
             this.Env.AddRange(environment);
-
-            // Uncomment for debug den-server-rs
-            ////this.ExposedPorts.Add("4242", new EmptyStruct());
-            ////this.PortBindings.Add("4242", new List<PortBinding>() { new PortBinding() { HostIP = "0.0.0.0", HostPort = "4242" } });
         }
     }
 }

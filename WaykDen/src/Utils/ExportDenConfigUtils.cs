@@ -10,7 +10,7 @@ namespace WaykDen.Utils
     public class ExportDenConfigUtils
     {
         private const string DOCKER_COMPOSE_VERSION = "3.4";
-        private static List<string> volumesString = new List<string>();
+        
         public static string[] CreateDockerCompose(DenService[] services, Platforms platform)
         {
             string traefiktoml = string.Empty;

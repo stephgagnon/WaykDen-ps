@@ -36,8 +36,7 @@ namespace WaykDen.Controllers
             {Container.DenPicky, "den-picky"},
             {Container.DenLucid, "den-lucid"},
             {Container.DenServer, "den-server"},
-            {Container.Traefik, "traefik"},
-            {Container.DevolutionsJet, "devolutions-jet"}
+            {Container.Traefik, "traefik"}
         };
 
         private enum Container
@@ -125,30 +124,6 @@ namespace WaykDen.Controllers
             return await this.StartService(traefik);
         }
 
-        public async Task<bool> StartDevolutionsJet()
-        {
-            DevolutionsJetService jet = new DevolutionsJetService(this);
-            bool started = await this.StartService(jet);
-            return started;
-        }
-
-        public async Task StopDevolutionsJet()
-        {   
-            if(!this.ContainersName.TryGetValue(Container.DevolutionsJet, out string jetContainer))
-            {
-                return;
-            }
-
-            List<string> jet= await this.ListContainers(ContainerState.Running, ContainerFilter.Name, jetContainer);
-            if(jet.Count > 0)
-            {
-                foreach(string container in jet)
-                {
-                    await this.StopContainer(container);
-                }
-            }
-        }
-
         private async Task<bool> StartService(DenService service)
         {
             string id = string.Empty;
@@ -201,12 +176,6 @@ namespace WaykDen.Controllers
             return started;
         }
 
-        private async Task<List<string>> CheckIfExists(string name)
-        {
-            List<string> containers = await this.ListContainers(ContainerState.Running, ContainerFilter.Name, name);
-            return containers;
-        }
-
         private async Task<bool> StopContainer(string id)
         {
             TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
@@ -221,14 +190,6 @@ namespace WaykDen.Controllers
 
             bool result = await tcs.Task;
             return result;
-        }
-
-        public async Task StopDenNetwork(string id)
-        {
-            await this.DockerClient.Networks.DeleteNetworkAsync
-            (
-                id
-            );
         }
 
         public async Task<List<string>> GetRunningContainers()
@@ -250,8 +211,7 @@ namespace WaykDen.Controllers
                 picky,
                 lucid,
                 server,
-                traefik,
-                jet
+                traefik
             };
             
             foreach(string name in containersName)
