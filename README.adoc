@@ -90,7 +90,7 @@ PS > New-WaykDenConfig -Realm contoso.net -ExternalUrl https://den.contoso.net
 
 === Certificate configuration
 
-==== Use certificates with Wayk Den
+==== Using certificates with Wayk Den
 
 To expose Wayk Den to the external world, you will need a TLS certificate from a trusted certificate authority such as https://letsencrypt.org/[Let's Encrypt]. Wayk Now will validate certificates in the same way as a browser does for a website.
 
@@ -126,7 +126,7 @@ There, we will create an authority and a certificate more in a demonstration pur
 
 Unfortunately, Step can't be used on Windows but you can use it through a Linux system under WSL (Windows Subsystem for Linux).
 
-You can install Step on MacOs simply by executing `brew install step`
+You can install Step on macOS simply by executing `brew install step`
 
 For Linux you need to install https://github.com/smallstep/cli/releases[Step] and https://github.com/smallstep/certificates/releases[Step-ca] from release.
 
@@ -148,7 +148,7 @@ In Windows you can easily import your root_ca in the system store by just double
 
 This is true for almost all browsers but Firefox. Firefox use his own keystore so you need to import your root_ca manually. In Firefox type `about:preferences#privacy` in your url, then under `Security` click on `View Certificates...` button and in `Authorities` tab click on `Import`.
 
-On MacOs you can avoid all previous manual operation by typing `step certificate install $HOME/.step/certs/root_ca.crt`. 
+On macOS you can avoid all previous manual operation by typing `step certificate install $HOME/.step/certs/root_ca.crt`. 
 
 On Linux you need to do manual operations for all browsers. The system store is not used.
 
@@ -235,254 +235,6 @@ The following command will set LDAP property value for JumpCloud.
 Set-WaykDenConfig -LDAPServerType JumpCloud -LDAPUsername "uid=ldap-user,ou=Users,o=YOUR_ORG_ID,dc=jumpcloud,dc=com" -LDAPPassword ldap-password -LDAPServerUrl ldaps://ldap.jumpcloud.com:636 -LDAPBaseDn "ou=Users,o=YOUR_ORG_ID,dc=jumpcloud,dc=com -LDAPUserGroup wayk-users"
 ----
 
-==== Adding User/Removing Users
-You can use `Add-WaykDenUser` to add users.
-The required field are the Username and the Password and optionally you can set the Name and the Email of the user.
-
-[source, sh]
-----
- PS > Add-WaykDenUser -Username David - Password psw -Email david@devolutions.net -Name Jack
-----
-
-The use will be returned as a result.
-[source, sh]
-ID        : 5d83d2973766610100edd9ef
-Username  : David
-Name      : Jack
-Email     : david@devolutions.net
-LicenseID : 
-
-If you want to remove that user, you can execute the command `Remove-WaykDenUser`, you have to specify the User Id to remove.
-
-[source, sh]
- PS > Remove-WaykDenUser -ID 5d83d2973766610100edd9ef
-
-==== Set User
-Updates an existing WaykDen User with the command `Set-WaykDenUser`, the User Id is needed for this one, you can modify the Password, the Name and the Email
-
-[source, sh]
-PS > Set-WaykDenUser -UserID 5d851bc6373735010078cd8d -Password qwerty -Name NewName -Email newName@mail.net
-
-==== Listing users
-Once you have configured the server to integrate an LDAP server, it is possible to list all users, you can use `Get-WaykDenUser` to get users information.
-
-[source, sh]
-----
-PS > Get-WaykDenUser
-
-ID        : 5d2f7ed6de217e7817fc251d
-Username  : user01@contoso.net
-Name      : name
-Email     : 
-LicenseID :
-
-ID        : 5d28acd25f8ccd7845dbfb38
-Username  : user02@contoso.net
-Name      : name
-Email     : 
-LicenseID :
-----
-
-You can also get information for a specific user if you specify the user ID or the username on the command
-
-[source, sh]
-----
-PS > Get-WaykDenUser -Username user01@contoso.net
-
-ID        : 5d2f7ed6de217e7817fc251d
-Username  : user01@contoso.net
-Name      : name
-Email     : 
-LicenseID :
-----
-
-You can also get user from a group  if you set the Group ID and optionnaly the User ID
-
-[source, sh]
-PS > Get-WaykDenUser -GroupID 5d83cca93766610100edd9ec
-
-The result is the same thant the listing of users:
-
-[source, sh]
-ID        : 5d83c85b3766610100edd9e8
-Username  : david
-Name      : 
-Email     : 
-LicenseID : 
-===
-ID        : 5d83d4d93766610100edd9f0
-Username  : Jdufaud
-Name      : 
-Email     : 
-LicenseID 
-
-==== Users synchronization
-
-If a user is added to the LDAP server (Active Directory or JumpCloud), it will not be available in Wayk Den right away. A synchronization has to be done. Wayk Den will synchronized users on a regular basis, every 30 minutes. If you want to force a synchronisation, you can run `Sync-WaykDenUser`. After that command, the command `Get-WaykDenUser` can be run and all changes should be available. Note that if you have removed users in the LDAP server, those users will not be deleted from Wayk Den server because we want to keep user information of sessions.
-
-==== Assigning User to Group
-You can add a user to a group with the command `Set-WaykDenGroupMember`, this command need the Group ID and the User ID.
-
-[source, sh]
-PS > Set-WaykDenGroupMember -GroupID 5d83cca93766610100edd9ec -UserID 5d83d4d93766610100edd9f0
-
-==== Remove User from group
-You have the possibility to remove a user from a group with the command `Remove-WaykDenUserFromGroup` the Group ID and the User Id are needed for this one.
-
-[source, sh]
-PS > Remove-WaykDenUserFromGroup -GroupID 5d83cca93766610100edd9ec -UserID 5d83d4d93766610100edd9f0
-
-==== Assigning Role to User
-You can assign Role to User with the following command `Set-WaykDenRoleMember`, you need to give the ID of the User and the Role Name.
-
-[source, sh]
-PS >  Set-WaykDenRoleMember -UserID 5d83d4d93766610100edd9f0 -RoleName GuestRole
-
-==== Remove User from Role
-You can remove the Role of the User with the following command `Remove-WaykDenRoleMember`, you need to give the ID of the User.
-
-[source, sh]
-PS >  Remove-WaykDenRoleMember -UserID 5d83d4d93766610100edd9f0
-
-
-=== Group Management
-==== Adding/Removing Groups
-You can add group with the command `Add-WaykDenGroup` and the variable Group Name is needed for the name of the group.
-
-[source, sh]
-PS >  Add-WaykDenGroup -GroupName GuestGroup
-
-The result will be the group previously created
-[source, sh]
-ID                       Name       RoleID
---                       ----       ------
-5d83e0d13766610100edd9f2 GuestGroup 
-
-You can also delete a group by the command
-`Remove-WaykDenGroup`, The Group ID will be needed.
-
-[source, sh]
-PS >  Remove-WaykDenGroup -GroupID 5d83e0d13766610100edd9f2
-
-==== Listing Groups
-It is possible to list all groups, you can use `Get-WaykDenGroup` to get groups information.
-
-[source, sh]
-----
-PS > Get-WaykDenGroup
-
-ID                       Name           RoleID
---                       ----           ------
-5d83cca93766610100edd9ec GuestGroup
-----
-
-==== Assigning Role to Groups
-You can assign role to groups with the following command `Set-WaykDenRoleGroup`, you need to give the ID of the group and the Role Name to execute this one.
-
-[source, sh]
-PS >  Set-WaykDenRoleGroup -GroupID 5d83cca93766610100edd9ec -RoleName GuestRole
-
-=== Role Management
-==== Adding/Removing Roles
-To Add Roles use the command `Add-WaykDenRole`, the Role Name is needed for this one.
-
-[source, sh]
-PS >  Add-WaykDenRole -RoleName GuestRole
-
-The result is the created role:
-
-[source, sh]
-ID                       Name
---                       ----
-5d83e2cc3766610100edd9f3 GuestRole
-
-To Delete a role the command `Remove-WaykDenRole` is available with the parameter Role ID.
-
-[source, sh]
-PS >  Remove-WaykDenRole -RoleID 5d83e2cc3766610100edd9f3
-
-==== Listing Roles
-Use the command `Get-WaykDenRole` to list all the roles
-
-[source, sh]
-PS >  Get-WaykDenRole
-ID                       Name
---                       ----
-000000000000000000000000 admin
-5d83e2cc3766610100edd9f3 GuestRole
-
-=== License Management
-Users need a license to do some operations. For instance, a license is required for a user who wants to open a session on a server. So you have to add licenses and assign them to your users if you want them to able to do operation requesting a license. There is one exception for site, country or global license and the last section describe the small difference for that kind of license. 
-
-==== Adding/Removing licenses
-Licenses can be added with the command `Add-WaykDenLicense`. You only have to specify the serial key to add it. The license ID will be returned as a result.
-
-[source, sh]
-----
-PS > Add-WaykDenLicense -Serial XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
-5d2ccce9653232010092c19f
-----
-
-Once it is added, you can visualized all licenses added with the command `Get-WaykDenLicense`. This command will show you all licenses added to the WaykDen server, including license information.
-
-[source, sh]
-----
-PS > Get-WaykDenLicense
-
-ID           : 5d2ccce9653232010092c19f
-SerialNumber : XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
-Expiration   : 2020-07-31 8:00:00 p.m.
-Product      : WaykNow
-Trial        : False
-Count        : 1
-Type         : None
-
-ID           : 5d2cceb2653232010092c1a1
-SerialNumber : XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
-Expiration   : 2020-07-31 8:00:00 p.m.
-Product      : WaykNow
-Trial        : False
-Count        : 10
-Type         : None
-
-ID           : 5d2ccebf653232010092c1a2
-SerialNumber : XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
-Expiration   : 2020-07-31 8:00:00 p.m.
-Product      : WaykNow
-Trial        : False
-Count        : 1
-Type         : Site
-----
-
-If you want to remove that license, you can do it with command `Remove-WaykDenLicense`. You only have to specify the license ID to remove.
-
-[source, sh]
-----
-PS > Remove-WaykDenLicense -LicenseID 5d2ccce9653232010092c19f
-----
-
-==== Assigning licenses to users
-Once you have added licenses, you have to assign those licenses to users. To do that, we use the command  `Set-WaykDenUserLicense`. You must specify the user ID or the username to identify the user and the license ID or the serial key to identify the license.
-[source, sh]
-----
-PS > Set-WaykDenUserLicense -Username user@contoso.local -Serial XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
-
-PS > Set-WaykDenUserLicense -UserID 5d28acd15f8ccd7845dbfb1d -LicenseID 5d2ccea3653232010092c1a0
-----
-
-To be sure that the license has been assigned to your user, you can get the user information with the command `Get-WaykDenUser -Username _username_`
-
-If the assignment doesn't work, verify if the license is already assigned to the maximum number of user. A license is valid for a specific number of user. Trying to assign a license to more user than that number will fail.
-
-Finally, a license can be unassigned from a user with the command `Clear-WaykDenUserLicense` 
-
-----
-PS > Clear-WaykDenUserLicense -UserID 5d28acd15f8ccd7845dbfb1d
-----
-
-==== Site/Country/Global licensing
-If you add a site, a country or a global license, you don't have to assign it to the users. Wayk Den server will consider all users licensed if a such license exist. Note that you will be able to assign that license to your users, but it is not mandatory.
-
 == Usage
 
 Many commands are available to manage the WaykDen server. All those commands required the WaykDen Url and the WaykDen Api Key or the Access Token since you can run them from any path on your system. So you can specify parameters `ServerUrl` and `ApiKey` on every command or you can use the command `Connect-WaykDenUser` to specify these values only once. Information will be kept in environment variables to be used for all future calls. 
@@ -512,161 +264,12 @@ PS > echo $env:DEN_ACCESS_TOKEN
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ----
 
-
-==== Disconnect WaykDen User
 The command `Disconnect-WaykDenUser` will logout your user on WaykDen, and clear the environment variable of WaykDen.
 
 [source,sh]
 ----
 PS ~/WaykNow-ps> Disconnect-WaykDenUser
 
-----
-
-=== Connection management
-
-==== Listing connections
-It is possible to list all active user connections to your WaykDen server
-
-[source, sh]
-----
-PS > Get-WaykDenConnection
-
-ID           : b90345b3-e8a4-53ff-98d8-747eb9d026af
-MachineName  : MachineName01
-UserAgent    : WaykNow/3.3.0 (Linux; Ubuntu 18.04.2 LTS)
-UserID       : 5d28acd15f8ccd7845dbfb1d
-DenID        : 426853
-Connected    : True
-State        : ONLINE
-LastSeen     : 2019-07-16 10:39:42 a.m.
-----
-
-It is also possible to list all offline user connections
-
-[source, sh]
-----
-PS > Get-WaykDenConnection
-
-ID           : 2839eaa7-640f-9e76-1f88-9769ee5320c8
-MachineName  : MachineName02
-UserAgent    : WaykNow/3.2.1 (Windows; Windows 10 Pro 1809)
-UserID       : 5d28acd15f8ccd7845dbfb1d
-DenID        : 898579
-Connected    : False
-State        : OFFLINE
-LastSeen     : 2019-07-15 8:55:20 a.m.
-----
-
-An offline connection is a client who has already been connected to your server but who is not connected at that moment. Information is kept by the server to keep track of who has accessed your server.
-
-Also, UserID could be empty if the WaykDen server doesn't requires the user to be logged. So as long as the user is not logged in the client, the field UserID will be empty.
-
-Finally, as a side note, if you have some windows machine where WaykNow is installed with the msi package for the unattended access, two connections from that computer will be listed. That's normal since there is one connection that should be always online. The second connection is only the client connection.
-
-=== Session management
-
-Wayk Den server keep a trace of all sessions opened via the server. It is important to be aware that if you want to know who were involved in a session, user has to be logged in Wayk Now. To force user to be logged in, you can have a look to the parameter `LoginRequired` in the Wayk Den config explained in a previous section.
-
-==== Listing sessions
-It is possible to list all wayk sessions currently in progress. You will get information about the client and the server connected together.
-
-[source, sh]
-----
-PS > Get-WaykDenSession
-
-ID                 : a99170f6-5895-4a4a-93e7-03321868e516
-ClientDenID        : 426853
-ServerDenID        : 347610
-ClientConnectionID : b90345b3-e8a4-53ff-98d8-747eb9d026af
-ClientMachineName  : MachineName01
-ClientUserAgent    : WaykNow/3.3.0 (Linux; Ubuntu 18.04.2 LTS)
-ClientUserID       : 5d28acd15f8ccd7845dbfb1d
-ClientUsername     : fdubois@horizon.local
-ServerConnectionID : 699812c9-d2a4-374f-655e-b74d55cf9844
-ServerMachineName  : MachineName02
-ServerUserAgent    : WaykNow/3.3.0 (Windows; Windows 10 Pro 1809)
-ServerUserID       : 
-ServerUsername     : 
-StartTime          : 2019-07-16 11:28:52 a.m.
-EndTime            : 
-LastUpdate         : 2019-07-16 11:33:12 a.m.
-----
-
-It is also possible to list all terminated session
-
-[source, sh]
-----
-PS > Get-WaykDenSession -Terminated
-
-ID                 : e47f3b8f-6d8a-4140-aec4-0fcbde7d4e83
-ClientDenID        : 426853
-ServerDenID        : 347610
-ClientConnectionID : b90345b3-e8a4-53ff-98d8-747eb9d026af
-ClientMachineName  : MachineName01
-ClientUserAgent    : WaykNow/3.3.0 (Linux; Ubuntu 18.04.2 LTS)
-ClientUserID       : 5d28acd15f8ccd7845dbfb1d
-ClientUsername     : user@contoso.local
-ServerConnectionID : 699812c9-d2a4-374f-655e-b74d55cf9844
-ServerMachineName  : MachineName02
-ServerUserAgent    : WaykNow/3.3.0 (Windows; Windows 10 Pro 1809)
-ServerUserID       : 
-ServerUsername     : 
-StartTime          : 2019-07-16 11:24:22 a.m.
-EndTime            : 2019-07-16 11:24:37 a.m.
-LastUpdate         : 0001-01-01 12:00:00 a.m.
-EndedGracefully    : True
-----
-
-The field "EndedGracefully" indicate if you can trust the end time. If the session didn't end gracefully, it means that WaykDen server lost connection with client before the end of the session so the server doesn't know how much time the session continue after. The end time indicate the last time where the server was aware of that session. If the session ended gracefully, the end time indicate the real end time where the session has been stopped.
-
-Similar to what we have in the connection information, the user information can be empty if no user is logged on the WaykNow client.
-
-After a long period, the list of session terminated could be long. You can filter them by date by using the parameter `After` and/or `Before`
-
-For example, this command will show you all sessions started in the last hour
-[source, sh]
-----
-PS > Get-WaykDenSession -All -After (Get-Date).AddHours(-1) 
-
-ID                 : e47f3b8f-6d8a-4140-aec4-0fcbde7d4e83
-ClientDenID        : 426853
-ServerDenID        : 347610
-ClientConnectionID : b90345b3-e8a4-53ff-98d8-747eb9d026af
-ClientMachineName  : MachineName01
-ClientUserAgent    : WaykNow/3.3.0 (Linux; Ubuntu 18.04.2 LTS)
-ClientUserID       : 5d28acd15f8ccd7845dbfb1d
-ClientUsername     : user@contoso.local
-ServerConnectionID : 699812c9-d2a4-374f-655e-b74d55cf9844
-ServerMachineName  : MachineName02
-ServerUserAgent    : WaykNow/3.3.0 (Windows; Windows 10 Pro 1809)
-ServerUserID       : 
-ServerUsername     : 
-StartTime          : 2019-07-16 11:24:22 a.m.
-EndTime            : 2019-07-16 11:24:37 a.m.
-LastUpdate         : 0001-01-01 12:00:00 a.m.
-EndedGracefully    : True
-----
-
-Finally, since there is many fields displayed with a session, note that it is possible to filter and keep only fields that you want to see.
-
-A lot of information is provided, but you can filter to keep only fields that you want to see.
-
-[source, sh]
-----
-PS > Get-WaykDenSession | Select-Object -Property ID,ClientMachineName,ServerMachineName
-
-ID                                   ClientMachineName ServerMachineName
---                                   ----------------- -----------------
-a99170f6-5895-4a4a-93e7-03321868e516 MachineName01     MachineName02
-----
-
-==== Disconnecting sessions
-
-Any session between two users can be stopped at any moment. It is as simple as using the command `Disconnect-WaykDenSession` and specify the session ID. The session ID can be retrieved with the command `Get-WaykDenSession` shown previously.
-
-[source, sh]
-----
-PS > Disconnect-WaykDenSession -SessionID a99170f6-5895-4a4a-93e7-03321868e516
 ----
 
 == Devolutions Jet
@@ -686,7 +289,7 @@ In that command, a few parameters have to be set
 
 - _log_level_: It can be 'error', 'info' or 'debug'. We recommand to set it to 'info'. By default, if RUST_LOG is not specified, the log level will be 'error'.
 
-- _jet_version_: The jet version has to be changed to the specific version that you want to use. All versions are available on https://cloud.docker.com/u/devolutions/repository/docker/devolutions/devolutions-jet[dockerhub]. 
+- _jet_version_: The jet version has to be changed to the specific version that you want to use. All versions are available on https://cloud.docker.com/u/devolutions/repository/docker/devolutions/devolutions-jet[Docker Hub]. 
 
 - _port_: The port uses can also be changed to the port that you prefer. Instead of `8080:8080`, you can change the parameter to `12345:8080` and the exposed port will be 12345. The second port 8080 is only the port number used inside the docker container and it has to be 8080.
 

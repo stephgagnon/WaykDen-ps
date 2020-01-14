@@ -11,7 +11,7 @@
     RootModule = 'WaykDen.psm1'
     
     # Version number of this module.
-    ModuleVersion = '2019.2.0'
+    ModuleVersion = '2020.1.0'
 
     # Supported PSEditions
     CompatiblePSEditions = 'Desktop', 'Core'
@@ -26,7 +26,7 @@
     CompanyName = 'Devolutions'
 
     # Copyright statement for this module
-    Copyright = '(c) 2019 Devolutions Inc. All rights reserved.'
+    Copyright = '(c) 2019-2020 Devolutions Inc. All rights reserved.'
 
     # Description of the functionality provided by this module
     Description = 'Devolutions Wayk Den PowerShell Module'
@@ -74,15 +74,7 @@
     CmdletsToExport = @('New-WaykDenConfig', 'Set-WaykDenConfig', 'Get-WaykDenConfig',
     'Remove-WaykDenConfig', 'Export-WaykDenConfig',
     'Start-WaykDen', 'Stop-WaykDen', 'Restart-WaykDen',
-    'Add-WaykDenLicense', 'Get-WaykDenLicense', 'Remove-WaykDenLicense',
-    'Set-WaykDenUserLicense', 'Clear-WaykDenUserLicense',
-    'Get-WaykDenUser', 'Sync-WaykDenUser','Add-WaykDenUser', 'Remove-WaykDenUser', 'Set-WaykDenUser',
-    'Get-WaykDenSession', 'Disconnect-WaykDenSession',
-    'Get-WaykDenConnection',
-    'Set-WaykDenWebCertificate',
-    'Add-WaykDenConfigKey', 'Remove-WaykDenConfigKey', 'Edit-WaykDenConfigKey',
-    'Get-WaykDenGroup','Add-WaykDenGroup', 'Remove-WaykDenGroup', 'Set-WaykDenGroupMember', 'Remove-WaykDenGroupMember', 'Set-WaykDenRoleGroup',
-    'Get-WaykDenRole','Add-WaykDenRole', 'Remove-WaykDenRole', 'Set-WaykDenRoleMember', 'Remove-WaykDenRoleMember')
+    'Set-WaykDenWebCertificate')
     
     # Variables to export from this module
     VariablesToExport = @()
@@ -114,13 +106,13 @@
             ProjectUri = 'https://github.com/Devolutions/WaykDen-ps'
 
             # A URL to an icon representing this module.
-            IconUri = 'https://webdevolutions.blob.core.windows.net/images/projects/wayk-now/logos/wayk-now-icon-ps.png'
+            IconUri = 'https://raw.githubusercontent.com/Devolutions/WaykDen-ps/master/logo.png'
 
             # ReleaseNotes of this module
             # ReleaseNotes = ''
 
             # Prerelease string of this module
-            Prerelease = '-beta1'
+            # Prerelease = ''
 
             # Flag to indicate whether the module requires explicit user acceptance for install/update/save
             # RequireLicenseAcceptance = $false
@@ -138,5 +130,3 @@
     # DefaultCommandPrefix = ''
     
     }
-    
-    
