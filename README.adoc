@@ -5,9 +5,12 @@
 
 WaykDen-ps is a PowerShell cmdlet for Wayk Den, the centralized server for https://wayk.devolutions.net[Devolutions Wayk Now]. For assistance or feature requests, please use the https://forum.devolutions.net/#WaykNow[Wayk Now forums] or open a ticket on this github project.
 
+Make sure you have all software prerequisites (see link:Installation[Installation] section) then read our quick link:docs\getting-started-argo.adoc[getting started guide]. Once you have been familiarized with Wayk Den, come back to this page for more details on specific aspects of the software.
+
 == Installation
 
 === PowerShell Core
+
 On Windows, the regular PowerShell already installed can be used. On macOS and Linux, you need PowerShell Core 6.0:
 
 PowerShell Core 6.0::
@@ -16,6 +19,7 @@ https://github.com/PowerShell/PowerShell#get-powershell
 To launch a PowerShell Core terminal, use the `pwsh` command.
 
 === Wayk Den PowerShell module
+
 A powershell module is available to configure and manage the Wayk Den server. It is available on PSGallery or it could be built directly from https://github.com/Devolutions/WaykDen-ps[source code]. We recommand to install the latest version available on PSGallery, but if needed, a section describe how to build it if you need it.
 
 ==== Installation from PSGallery
@@ -24,7 +28,7 @@ The Wayk Den PowerShell module is https://www.powershellgallery.com/packages/Way
 
 [source,sh]
 ----
-Install-Module -Name WaykDen -AllowPrerelease
+Install-Module -Name WaykDen
 Import-Module WaykDen
 ----
 
@@ -116,43 +120,20 @@ PS > Set-WaykDenWebCertificate -CertificatePath /path/to/certificate.pem -Privat
 PS > Set-WaykDenWebCertificate -CertificatePath /path/to/certificate.pfx -KeyPassword <password>
 ----
 
-==== SmallStep third-party can help you
+If you want to roll your own certificate authority, you can check link:docs\smallstep-ca.adoc[smallstep ca].
 
-Step and Step-ca are command line tools to ease the process of authority and certificate creation and management. By using your own authority you will be able to use Wayk Den in https without the requirement of paying for a third party certificate. In other hand, managing his own certificate need more configuration for your infrastructure. 
+=== Relay Configuration
 
-There, we will create an authority and a certificate more in a demonstration purpose, but, with the appropriate knowledge, you can extend that to a production environment.
+To get started, it is recommended to try using our existing relay servers, even if you intend to deploy your own servers later on. It is the quickest path to getting something functional up and running.
 
-===== Step/Step-Ca Installation
+Set your Jet Relay Url to `https://api.jet-relay.net`:
 
-Unfortunately, Step can't be used on Windows but you can use it through a Linux system under WSL (Windows Subsystem for Linux).
+[source, sh]
+----
+PS > Set-WaykConfig -JetRelayUrl https://api.jet-relay.net
+----
 
-You can install Step on macOS simply by executing `brew install step`
-
-For Linux you need to install https://github.com/smallstep/cli/releases[Step] and https://github.com/smallstep/certificates/releases[Step-ca] from release.
-
-For other Linux distribution (non Debian based) you can build from https://github.com/smallstep/cli[Step] and https://github.com/smallstep/certificates[Step-ca] sources
-
-===== Generate authority and sign certificate
-
-Simply run command `step ca init` and enter asked information. For demo purpose you don't need complex information you can use whatever name you want as PKI and Provisioner. For DNS you can use localhost and for Address you can use something like :8443. This information are used to identify your authority and to know on which address your authority will listen to.
-
-Then run the authority server with `step-ca $HOME/.step/config/ca.json`. In a standard installation, the folder where your CA is generated is  $HOME/.step/
-
-Whith your server running, start a new terminal and type `step ca certificate "DNS" "DNS.pem" "DNS.key"` where DNS is the External Url you provided to your Wayk Den. After that you will find both, the pem and the key, in the folder where you typed the command. Use both of them with the <<certificate-command, command provided before>>.
-
-===== Make your certificate works
-
-To make your certificate valid in browsers you need to import the root_ca  authority to them. You can do it manually by importing the root_ca generated generally under `$HOME/.step/certs`. 
-
-In Windows you can easily import your root_ca in the system store by just double-clicking it. In this case browsers will use it to check the validity of your certificate.
-
-This is true for almost all browsers but Firefox. Firefox use his own keystore so you need to import your root_ca manually. In Firefox type `about:preferences#privacy` in your url, then under `Security` click on `View Certificates...` button and in `Authorities` tab click on `Import`.
-
-On macOS you can avoid all previous manual operation by typing `step certificate install $HOME/.step/certs/root_ca.crt`. 
-
-On Linux you need to do manual operations for all browsers. The system store is not used.
-
-Advanced users can do some script to ease the process of installing root_ca on there infrastructure or they can also use policies to install the root_ca on there domains. You can find more informations about this to this https://support.mozilla.org/en-US/kb/setting-certificate-authorities-firefox[link], this http://www.chromium.org/Home/chromium-security/root-ca-policy[link] and this https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/Tools[link]
+Continue your initial configuration, and once you know it is working, come back to the link:docs\devolutions-jet.adoc[Devolutions Jet] page for more information on how to deploy your own relays.
 
 == Running
 
@@ -234,86 +215,3 @@ The following command will set LDAP property value for JumpCloud.
 ----
 Set-WaykDenConfig -LDAPServerType JumpCloud -LDAPUsername "uid=ldap-user,ou=Users,o=YOUR_ORG_ID,dc=jumpcloud,dc=com" -LDAPPassword ldap-password -LDAPServerUrl ldaps://ldap.jumpcloud.com:636 -LDAPBaseDn "ou=Users,o=YOUR_ORG_ID,dc=jumpcloud,dc=com -LDAPUserGroup wayk-users"
 ----
-
-== Usage
-
-Many commands are available to manage the WaykDen server. All those commands required the WaykDen Url and the WaykDen Api Key or the Access Token since you can run them from any path on your system. So you can specify parameters `ServerUrl` and `ApiKey` on every command or you can use the command `Connect-WaykDenUser` to specify these values only once. Information will be kept in environment variables to be used for all future calls. 
-
-[source, sh]
-----
-PS > Connect-WaykDenUser -DenUrl https://den.ngrok.io -ApiKey 6ezyCcnsZIG6Fa7JpmZDdDLKUEG9yoDM
-----
-
-Instant of API Key, you can connect with a user account, and it's token will be used for the commands, but the user need the administrator privileges.
-
-[source, sh]
-----
-PS > Connect-WaykDenUser -DenUrl https://den.ngrok.io 
-----
-
-Once it is done, you should have two environment variables defined.
-
-[source, sh]
-----
-PS > echo $env:DEN_SERVER_URL
-https://den.ngrok.io
-PS > echo $env:DEN_API_KEY
-6ezyCcnsZIG6Fa7JpmZDdDLKUEG9yoDM
-OR
-PS > echo $env:DEN_ACCESS_TOKEN
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-----
-
-The command `Disconnect-WaykDenUser` will logout your user on WaykDen, and clear the environment variable of WaykDen.
-
-[source,sh]
-----
-PS ~/WaykNow-ps> Disconnect-WaykDenUser
-
-----
-
-== Devolutions Jet
-
-Devolutions Jet is a relay server for peer-to-peer connections. By default, jet.wayk.net:8080 is used by Wayk Den. But it is possible to use your own relay server and this section explains how. 
-
-The Devolutions Jet service is not deployed with other Wayk Den services because it makes more sense for that service to be directly exposed in the cloud to get better performance.
-
-That service is also available in a docker container. To launch that service, here is a docker command template that has to be used. 
-
-[source, sh, subs="quotes"]
-----
-docker run -d --name devolutions-jet -e RUST_LOG=_log_level_ -e JET_INSTANCE=_jet_instance_ -p _port_:8080 devolutions/devolutions-jet: _jet_version_
-----
-
-In that command, a few parameters have to be set
-
-- _log_level_: It can be 'error', 'info' or 'debug'. We recommand to set it to 'info'. By default, if RUST_LOG is not specified, the log level will be 'error'.
-
-- _jet_version_: The jet version has to be changed to the specific version that you want to use. All versions are available on https://cloud.docker.com/u/devolutions/repository/docker/devolutions/devolutions-jet[Docker Hub]. 
-
-- _port_: The port uses can also be changed to the port that you prefer. Instead of `8080:8080`, you can change the parameter to `12345:8080` and the exposed port will be 12345. The second port 8080 is only the port number used inside the docker container and it has to be 8080.
-
-- _jet_instance_: The JET_INSTANCE environment variable is used to specified the external URL for that specific Jet server. This address will be used by the WaykNow client to reach the relay server. If you have only one Jet server, the Devolutions Jet Server Url specified in the Wayk Den configuration will be the same as the jet instance value. However, if you want to deploy many jet servers, you can deployed a DNS load balancer who will forward requests to one of the jet server. In a such case, each jet server will specify their external address. It is needed because both peers in a connection has to reach the same jet server. So the WaykNow server will reach one server of the pool and send the jet instance information to the WaykNow client and the client will be able to reach the same Jet server.
-
-Here is a command example to launch Devolutions Jet service
-
-[source, sh]
-----
-docker run -d --name devolutions jet -e RUST_LOG=info -e JET_INSTANCE=jet.wayk.net -p 8080:8080 devolutions/devolutions-jet: 1.0.0-buster
-----
-
-To be sure that your Devolutions Jet server is running, you can run the command `docker logs devolutions-jet` where you should be able to see that your server is listening on the right port
-
-[source, sh]
-----
-INFO 2019-08-07T15:32:20Z: devolutions_jet: Starting http server ...
-INFO 2019-08-07T15:32:20Z: devolutions_jet::http::http_server: Loading http middlewares
-INFO 2019-08-07T15:32:20Z: devolutions_jet::http::http_server: Loading http controllers
-INFO 2019-08-07T15:32:20Z: devolutions_jet::http::http_server: Configuring http router
-INFO 2019-08-07T15:32:20Z: saphir::server: Saphir successfully started and listening on http://0.0.0.0:10256/
-INFO 2019-08-07T15:32:20Z: devolutions_jet: Http server succesfully started
-INFO 2019-08-07T15:32:20Z: devolutions_jet: Starting TCP jet server...
-INFO 2019-08-07T15:32:20Z: devolutions_jet: TCP jet server started successfully. Listening on 0.0.0.0:8080
-----
-
-Once you have deployed a jet server, you can update the jet server parameter in your Wayk Den configuration with the command `Set-WaykDenConfig -JetServerUrl _jetServerUrl_`. After, your jet server will be used by WaykNow client to establish peer-to-peer connection.
